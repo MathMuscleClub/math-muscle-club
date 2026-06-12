@@ -1,0 +1,71 @@
+\documentclass[11pt,a4paper]{ltjsarticle}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=24mm]{geometry}
+
+\title{平成16年 B問題}
+\author{数学科筋トレ部}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{B 第1問}
+有限次元線形空間 \(A,B,C,D\) の次元をそれぞれ \(a,b,c,d\) とし，線形写像
+\(g:B \to C\) の階数を \(r\) とする。線形写像
+\[
+  F:\operatorname{Hom}(A,B)\otimes \operatorname{Hom}(C,D)
+    \longrightarrow \operatorname{Hom}(A,D)
+\]
+を
+\[
+  F(f\otimes h)=hgf
+\]
+で定めたとき，\(F\) の階数を求めよ。
+
+\section*{B 第2問}
+\(n\) を自然数とし，\(L=\mathbb{C}(T_1,\ldots,T_n)\) を \(n\) 変数有理関数体とする。
+\(\mathbb{C}\) 上の \(L\) の自己同型 \(\sigma\) を
+\[
+  \sigma(T_i)=T_{i+1}\quad i=1,\ldots,n-1,
+  \qquad
+  \sigma(T_n)=T_1
+\]
+で定める。\(K=\{f\in L\mid \sigma(f)=f\}\) を不変部分体とする。
+
+\begin{enumerate}
+  \item 拡大次数 \([L:K]\) を求めよ。
+  \item \(L\) の線形部分空間 \(\bigoplus_{i=1}^{n}\mathbb{C}T_i\) を \(\sigma\) の作用に関する固有空間に分解せよ。
+  \item 多項式 \(f_1,\ldots,f_n \in \mathbb{C}[T_1,\ldots,T_n]\) で \(K=\mathbb{C}(f_1,\ldots,f_n)\) となるようなものを一組与えよ。
+  \item \(n=6\) のとき \(L\) と \(K\) の中間体をすべて求めよ。
+\end{enumerate}
+
+\section*{B 第3問}
+複素 \(2\times2\) 行列の全体を \(M_2(\mathbb{C})\) で表す。
+\[
+  X=\{(A,B)\in M_2(\mathbb{C})\times M_2(\mathbb{C})
+    \mid A^2=B^4=I,\ AB=B^3A\}
+\]
+とおき，\(H=\operatorname{GL}(2,\mathbb{C})\) の \(X\) への作用を
+\[
+  h(A,B)=(hAh^{-1},hBh^{-1}),
+  \qquad h\in H,\ (A,B)\in X
+\]
+で定義する。
+
+\begin{enumerate}
+  \item \(X\) の中の \(H\) 軌道の個数を求めよ。
+  \item \(X\) の中の各 \(H\) 軌道は
+  \(M_2(\mathbb{C})\times M_2(\mathbb{C})\simeq \mathbb{C}^8\) の閉部分集合であることを示せ。
+  ただし \(\mathbb{C}^8\) には \(16\) 次元ユークリッド空間としての位相を入れておく。
+  \item 上記の各 \(H\) 軌道に対し，その一点 \((A,B)\) の固定群
+  \[
+    \{h\in H\mid h(A,B)=(A,B)\}
+  \]
+  の複素多様体としての次元を求めよ。
+\end{enumerate}
+
+\section*{B 第4問}
+\(p\) を \(3\) 以上の素数とする。単位元をもつ可換環 \(A\) の可逆元のなす群 \(A^\times\) は，
+位数 \(p^2\) の巡回群にはならないことを証明せよ。
+
+\end{document}

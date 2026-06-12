@@ -21,6 +21,7 @@
             <button class="tab-button" onclick="switchTab('schedule')">活動予定</button>
             <button class="tab-button" onclick="switchTab('goals')">目標と実績</button>
             <button class="tab-button" onclick="switchTab('diary')">活動日記</button>
+            <button class="tab-button" onclick="switchTab('exam-answers')">過去問解答</button>
         </nav>
 
         <main>
@@ -130,6 +131,16 @@
                     </div>
                 </section>
             </div>
+
+            <!-- タブ4: 過去問解答 -->
+            <div id="exam-answers" class="tab-content">
+                <section>
+                    <h2>過去問解答</h2>
+                    <div id="exam-answer-list" class="exam-answer-list">
+                        <p class="loading">読み込み中...</p>
+                    </div>
+                </section>
+            </div>
         </main>
 
         <footer>
@@ -177,26 +188,28 @@
 
         async function loadData() {
             try {
-                const [membersRes, goalsRes, diaryRes, scheduleRes, recurringScheduleRes, trainingsRes] = await Promise.all([
+                const [membersRes, goalsRes, diaryRes, scheduleRes, recurringScheduleRes, trainingsRes, examAnswersRes] = await Promise.all([
                     fetch('members.json'),
                     fetch('goals.json'),
                     fetch('diary.json'),
                     fetch('schedule.json'),
                     fetch('recurring-schedule.json'),
-                    fetch('trainings.json')
+                    fetch('trainings.json'),
+                    fetch('exam-answers.json')
                 ]);
 
-                if (!membersRes.ok || !goalsRes.ok || !diaryRes.ok || !scheduleRes.ok || !recurringScheduleRes.ok || !trainingsRes.ok) {
+                if (!membersRes.ok || !goalsRes.ok || !diaryRes.ok || !scheduleRes.ok || !recurringScheduleRes.ok || !trainingsRes.ok || !examAnswersRes.ok) {
                     throw new Error('データの読み込みに失敗しました');
                 }
 
-                const [members, goals, diary, scheduleData, recurringScheduleData, trainings] = await Promise.all([
+                const [members, goals, diary, scheduleData, recurringScheduleData, trainings, examAnswers] = await Promise.all([
                     membersRes.json(),
                     goalsRes.json(),
                     diaryRes.json(),
                     scheduleRes.json(),
                     recurringScheduleRes.json(),
-                    trainingsRes.json()
+                    trainingsRes.json(),
+                    examAnswersRes.json()
                 ]);
 
                 schedules = scheduleData;
@@ -208,6 +221,7 @@
                 renderMonthlyGoals(goals.monthlyGoals);
                 renderAchievements(goals.achievements);
                 renderDiary(diary);
+                renderExamAnswers(examAnswers);
                 renderCalendar(currentYear, currentMonth);
 
             } catch (error) {
@@ -434,6 +448,59 @@
             });
         }
 
+        function renderExamAnswers(answers) {
+            const container = document.getElementById('exam-answer-list');
+            if (!container) return;
+
+            container.innerHTML = '';
+            if (!answers || answers.length === 0) {
+                container.innerHTML = '<p class="no-data">登録されている過去問解答はありません。</p>';
+                return;
+            }
+
+            answers.forEach(answer => {
+                const article = document.createElement('article');
+                article.className = 'exam-answer-card';
+
+                const references = Array.isArray(answer.references) ? answer.references : [];
+                const yearLabel = answer.era
+                    ? `${escapeHTML(answer.era)}（${escapeHTML(answer.year)}年度）`
+                    : `${escapeHTML(answer.year)}年度`;
+                const referencesHTML = references.length > 0
+                    ? `<div class="exam-reference-list">${references.map(ref => `<a href="${escapeAttribute(ref.href || '#')}">${escapeHTML(ref.label || '関連リンク')}</a>`).join('')}</div>`
+                    : '<p class="no-data">関連する問題はまだ登録されていません。</p>';
+
+                article.innerHTML = `
+                    <div class="exam-answer-header">
+                        <div>
+                            <div class="exam-answer-kicker">${yearLabel} ${escapeHTML(answer.problemGroup)}問題 第${escapeHTML(answer.problemNumber)}問</div>
+                            <h3 class="exam-answer-title">${escapeHTML(answer.title || '無題の解答')}</h3>
+                        </div>
+                        <span class="badge badge-pending">${answer.status === 'sample' ? 'サンプル' : escapeHTML(answer.status || '下書き')}</span>
+                    </div>
+                    ${answer.summary ? `<p class="exam-answer-summary">${escapeHTML(answer.summary)}</p>` : ''}
+                    <div class="exam-link-row">
+                        <a href="${escapeAttribute(answer.texPath)}" target="_blank">TeXを開く</a>
+                        <a href="${escapeAttribute(answer.pdfPath)}" target="_blank">PDFを別タブで開く</a>
+                    </div>
+                    <div class="exam-pdf-frame">
+                        <object data="${escapeAttribute(answer.pdfPath)}" type="application/pdf" class="exam-pdf-object">
+                            <p>PDFを表示できませんでした。<a href="${escapeAttribute(answer.pdfPath)}" target="_blank">PDFを開く</a></p>
+                        </object>
+                    </div>
+                    <details class="exam-tex-details">
+                        <summary>TeXコードの置き場所</summary>
+                        <code>${escapeHTML(answer.texPath)}</code>
+                    </details>
+                    <div class="exam-reference-block">
+                        <h4>参照</h4>
+                        ${referencesHTML}
+                    </div>
+                `;
+                container.appendChild(article);
+            });
+        }
+
         function renderCalendar(year, month) {
             const calendarDays = document.getElementById('calendar-days');
             const calendarTitle = document.getElementById('calendar-title');
@@ -635,6 +702,10 @@
                 .replace(/'/g, '&#039;');
         }
 
+        function escapeAttribute(str) {
+            return escapeHTML(str).replace(/`/g, '&#096;');
+        }
+
         function showErrorMessages() {
             const listIds = ['yearly-goals-list', 'current-goals-list', 'achievements-list'];
             listIds.forEach(id => {
@@ -646,6 +717,11 @@
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '<p class="error">データの読み込みに失敗しました。</p>';
             });
+
+            const examAnswerList = document.getElementById('exam-answer-list');
+            if (examAnswerList) {
+                examAnswerList.innerHTML = '<p class="error">データの読み込みに失敗しました。</p>';
+            }
 
             const dailyTrainingCard = document.getElementById('daily-training-card');
             if (dailyTrainingCard) {

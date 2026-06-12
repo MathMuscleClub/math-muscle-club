@@ -422,6 +422,130 @@ td a {
 }
 
 /* ==========================================
+   Exam Answers
+   ========================================== */
+.exam-answer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.exam-answer-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background-color: var(--surface);
+    padding: 22px;
+    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
+}
+
+.exam-answer-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--line-soft);
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+}
+
+.exam-answer-kicker {
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.exam-answer-title {
+    color: var(--text);
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.exam-answer-summary {
+    color: #444444;
+    font-size: 0.94rem;
+    margin: 0 0 16px 0;
+}
+
+.exam-link-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.exam-link-row a,
+.exam-reference-list a {
+    background-color: var(--accent-soft);
+    border: 1px solid #cce2d5;
+    border-radius: 6px;
+    color: var(--accent);
+    display: inline-flex;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 7px 10px;
+    text-decoration: none;
+}
+
+.exam-link-row a:hover,
+.exam-reference-list a:hover {
+    background-color: #ffffff;
+    color: #111111;
+    border-color: var(--line);
+}
+
+.exam-pdf-frame {
+    background-color: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    height: 460px;
+    margin-bottom: 14px;
+    overflow: hidden;
+}
+
+.exam-pdf-object {
+    border: none;
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.exam-tex-details {
+    border-bottom: 1px solid var(--line-soft);
+    color: #444444;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+}
+
+.exam-tex-details summary {
+    cursor: pointer;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.exam-tex-details code {
+    background-color: var(--surface-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    display: inline-block;
+    padding: 4px 8px;
+}
+
+.exam-reference-block h4 {
+    color: var(--text);
+    font-size: 0.95rem;
+    margin: 0 0 10px 0;
+}
+
+.exam-reference-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* ==========================================
    States & Fallbacks
    ========================================== */
 .loading, .no-data {
@@ -655,8 +779,17 @@ footer p {
 
     .daily-training-card,
     .calendar-container,
-    .event-card {
+    .event-card,
+    .exam-answer-card {
         padding: 18px;
+    }
+
+    .exam-answer-header {
+        flex-direction: column;
+    }
+
+    .exam-pdf-frame {
+        height: 360px;
     }
 
     th,
