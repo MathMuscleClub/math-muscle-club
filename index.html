@@ -136,6 +136,11 @@
             <div id="exam-answers" class="tab-content">
                 <section>
                     <h2>過去問解答</h2>
+                    <div class="exam-answer-tools">
+                        <label class="exam-search-label" for="exam-search-input">検索</label>
+                        <input id="exam-search-input" class="exam-search-input" type="search" placeholder="年度・タグ・本文で検索">
+                        <div id="exam-tag-filter" class="exam-tag-filter"></div>
+                    </div>
                     <div id="exam-answer-list" class="exam-answer-list">
                         <p class="loading">読み込み中...</p>
                     </div>
@@ -149,6 +154,7 @@
     </div>
 
     <!-- タブ切り替え用のスクリプト -->
+    <script src="exam-macros.js"></script>
     <script>
         function switchTab(tabId) {
             // 全てのタブコンテンツからactiveを取り除く
@@ -176,6 +182,9 @@
 
         let schedules = [];
         let recurringSchedules = [];
+        let examAnswersState = [];
+        let activeExamTag = '';
+        let mathRendererLoading = false;
         let currentYear, currentMonth;
 
         // ページ読み込み時にデータをロード
@@ -221,7 +230,7 @@
                 renderMonthlyGoals(goals.monthlyGoals);
                 renderAchievements(goals.achievements);
                 renderDiary(diary);
-                renderExamAnswers(examAnswers);
+                await renderExamAnswers(examAnswers);
                 renderCalendar(currentYear, currentMonth);
 
             } catch (error) {
@@ -448,7 +457,7 @@
             });
         }
 
-        function renderExamAnswers(answers) {
+        async function renderExamAnswers(answers) {
             const container = document.getElementById('exam-answer-list');
             if (!container) return;
 
@@ -458,14 +467,114 @@
                 return;
             }
 
+            container.innerHTML = '<p class="loading">TeXを読み込み中...</p>';
+            examAnswersState = await Promise.all(answers.map(loadExamAnswer));
+            renderExamFilters(examAnswersState);
+            renderExamAnswerResults();
+        }
+
+        async function loadExamAnswer(answer) {
+            try {
+                const response = await fetch(answer.texPath);
+                if (!response.ok) throw new Error(`${answer.texPath} could not be loaded`);
+
+                const texSource = await response.text();
+                const parsed = window.ExamMacros.parse(texSource);
+                const tags = uniqueValues([...(answer.tags || []), ...parsed.tags]);
+                const references = [
+                    ...(Array.isArray(answer.references) ? answer.references : []),
+                    ...parsed.related.map(ref => ({
+                        label: ref.label || ref.id,
+                        href: ref.id ? `#${encodeURIComponent(ref.id)}` : '#'
+                    }))
+                ];
+
+                return {
+                    ...answer,
+                    tags,
+                    references,
+                    sourceHTML: parsed.html,
+                    searchText: [
+                        answer.id,
+                        answer.year,
+                        answer.era,
+                        answer.problemGroup,
+                        answer.problemNumber,
+                        answer.title,
+                        answer.summary,
+                        tags.join(' '),
+                        parsed.plainText,
+                        texSource
+                    ].join(' ').toLowerCase()
+                };
+            } catch (error) {
+                console.error(error);
+                return {
+                    ...answer,
+                    tags: answer.tags || [],
+                    references: Array.isArray(answer.references) ? answer.references : [],
+                    sourceHTML: '<p class="error">TeXの読み込みに失敗しました。</p>',
+                    searchText: [answer.id, answer.title, answer.summary].join(' ').toLowerCase()
+                };
+            }
+        }
+
+        function renderExamFilters(answers) {
+            const tagFilter = document.getElementById('exam-tag-filter');
+            const searchInput = document.getElementById('exam-search-input');
+            if (!tagFilter || !searchInput) return;
+
+            const tags = uniqueValues(answers.flatMap(answer => answer.tags || []));
+            tagFilter.innerHTML = [
+                `<button class="exam-tag-button ${activeExamTag === '' ? 'active' : ''}" data-tag="">すべて</button>`,
+                ...tags.map(tag => `<button class="exam-tag-button ${activeExamTag === tag ? 'active' : ''}" data-tag="${escapeAttribute(tag)}">${escapeHTML(tag)}</button>`)
+            ].join('');
+
+            tagFilter.querySelectorAll('.exam-tag-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    activeExamTag = button.dataset.tag || '';
+                    renderExamFilters(examAnswersState);
+                    renderExamAnswerResults();
+                });
+            });
+
+            if (!searchInput.dataset.ready) {
+                searchInput.addEventListener('input', renderExamAnswerResults);
+                searchInput.dataset.ready = 'true';
+            }
+        }
+
+        function renderExamAnswerResults() {
+            const container = document.getElementById('exam-answer-list');
+            const searchInput = document.getElementById('exam-search-input');
+            if (!container) return;
+
+            const query = (searchInput?.value || '').trim().toLowerCase();
+            const answers = examAnswersState.filter(answer => {
+                const matchesTag = !activeExamTag || (answer.tags || []).includes(activeExamTag);
+                const matchesQuery = !query || answer.searchText.includes(query);
+                return matchesTag && matchesQuery;
+            });
+
+            container.innerHTML = '';
+            if (answers.length === 0) {
+                container.innerHTML = '<p class="no-data">条件に合う過去問解答はありません。</p>';
+                return;
+            }
+
             answers.forEach(answer => {
                 const article = document.createElement('article');
                 article.className = 'exam-answer-card';
+                article.id = answer.id;
 
                 const references = Array.isArray(answer.references) ? answer.references : [];
+                const tags = Array.isArray(answer.tags) ? answer.tags : [];
                 const yearLabel = answer.era
                     ? `${escapeHTML(answer.era)}（${escapeHTML(answer.year)}年度）`
                     : `${escapeHTML(answer.year)}年度`;
+                const tagsHTML = tags.length > 0
+                    ? `<div class="exam-tag-list">${tags.map(tag => `<button type="button" class="exam-tag-chip" data-tag="${escapeAttribute(tag)}">${escapeHTML(tag)}</button>`).join('')}</div>`
+                    : '';
                 const referencesHTML = references.length > 0
                     ? `<div class="exam-reference-list">${references.map(ref => `<a href="${escapeAttribute(ref.href || '#')}">${escapeHTML(ref.label || '関連リンク')}</a>`).join('')}</div>`
                     : '<p class="no-data">関連する問題はまだ登録されていません。</p>';
@@ -479,15 +588,25 @@
                         <span class="badge badge-pending">${answer.status === 'sample' ? 'サンプル' : escapeHTML(answer.status || '下書き')}</span>
                     </div>
                     ${answer.summary ? `<p class="exam-answer-summary">${escapeHTML(answer.summary)}</p>` : ''}
+                    ${tagsHTML}
                     <div class="exam-link-row">
                         <a href="${escapeAttribute(answer.texPath)}" target="_blank">TeXを開く</a>
+                        <a href="${escapeAttribute(answer.texPath)}" download>TeXをダウンロード</a>
                         <a href="${escapeAttribute(answer.pdfPath)}" target="_blank">PDFを別タブで開く</a>
+                        <a href="${escapeAttribute(answer.pdfPath)}" download>PDFをダウンロード</a>
                     </div>
-                    <div class="exam-pdf-frame">
-                        <object data="${escapeAttribute(answer.pdfPath)}" type="application/pdf" class="exam-pdf-object">
-                            <p>PDFを表示できませんでした。<a href="${escapeAttribute(answer.pdfPath)}" target="_blank">PDFを開く</a></p>
-                        </object>
+                    <div class="exam-html-view">
+                        <div class="exam-html-label">HTML表示</div>
+                        ${answer.sourceHTML}
                     </div>
+                    <details class="exam-pdf-details">
+                        <summary>PDFプレビュー</summary>
+                        <div class="exam-pdf-frame">
+                            <object data="${escapeAttribute(answer.pdfPath)}" type="application/pdf" class="exam-pdf-object">
+                                <p>PDFを表示できませんでした。<a href="${escapeAttribute(answer.pdfPath)}" target="_blank">PDFを開く</a></p>
+                            </object>
+                        </div>
+                    </details>
                     <details class="exam-tex-details">
                         <summary>TeXコードの置き場所</summary>
                         <code>${escapeHTML(answer.texPath)}</code>
@@ -499,6 +618,56 @@
                 `;
                 container.appendChild(article);
             });
+
+            container.querySelectorAll('.exam-tag-chip').forEach(button => {
+                button.addEventListener('click', () => {
+                    activeExamTag = button.dataset.tag || '';
+                    renderExamFilters(examAnswersState);
+                    renderExamAnswerResults();
+                });
+            });
+
+            typesetMath(container);
+        }
+
+        function typesetMath(root) {
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([root]).catch(error => console.error(error));
+                return;
+            }
+
+            loadMathRenderer();
+        }
+
+        function loadMathRenderer() {
+            if (mathRendererLoading || (window.MathJax && window.MathJax.typesetPromise)) return;
+            mathRendererLoading = true;
+
+            window.MathJax = {
+                tex: {
+                    inlineMath: [['\\(', '\\)']],
+                    displayMath: [['\\[', '\\]']]
+                },
+                svg: {
+                    fontCache: 'global'
+                },
+                startup: {
+                    pageReady: () => window.MathJax.startup.defaultPageReady()
+                        .then(() => typesetMath(document.getElementById('exam-answer-list') || document.body))
+                }
+            };
+
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js';
+            script.async = true;
+            script.onerror = () => {
+                mathRendererLoading = false;
+            };
+            document.head.appendChild(script);
+        }
+
+        function uniqueValues(values) {
+            return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))];
         }
 
         function renderCalendar(year, month) {

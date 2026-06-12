@@ -430,6 +430,71 @@ td a {
     gap: 24px;
 }
 
+.exam-answer-tools {
+    background-color: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 16px;
+}
+
+.exam-search-label {
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.exam-search-input {
+    appearance: none;
+    background-color: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text);
+    font: inherit;
+    min-height: 42px;
+    padding: 8px 12px;
+    width: 100%;
+}
+
+.exam-search-input:focus {
+    border-color: #b9d8c6;
+    box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.12);
+    outline: none;
+}
+
+.exam-tag-filter,
+.exam-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.exam-tag-list {
+    margin-bottom: 16px;
+}
+
+.exam-tag-button,
+.exam-tag-chip {
+    background-color: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 6px 9px;
+}
+
+.exam-tag-button:hover,
+.exam-tag-chip:hover,
+.exam-tag-button.active {
+    background-color: var(--accent-soft);
+    border-color: #b9d8c6;
+    color: var(--accent);
+}
+
 .exam-answer-card {
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -475,6 +540,116 @@ td a {
     margin-bottom: 16px;
 }
 
+.exam-html-view {
+    background-color: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 14px;
+    padding: 18px;
+}
+
+.exam-html-label {
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.exam-source-heading {
+    border-top: 1px solid var(--line-soft);
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 24px 0 12px 0;
+    padding-top: 18px;
+}
+
+.exam-source-heading:first-child {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.exam-source-subheading {
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin: 18px 0 10px 0;
+}
+
+.exam-html-view p {
+    color: #444444;
+    font-size: 0.93rem;
+    margin: 0 0 12px 0;
+}
+
+.exam-html-view p:last-child,
+.exam-fold-body p:last-child,
+.exam-callout-body p:last-child {
+    margin-bottom: 0;
+}
+
+.exam-source-list {
+    margin: 0 0 14px 0;
+    padding-left: 22px;
+}
+
+ol.exam-source-list {
+    list-style: decimal;
+}
+
+ul.exam-source-list {
+    list-style: disc;
+}
+
+.exam-source-list li {
+    color: #444444;
+    display: list-item;
+    font-size: 0.92rem;
+    margin-bottom: 8px;
+    padding-left: 2px;
+}
+
+.exam-source-list li::before {
+    content: none;
+}
+
+.exam-fold {
+    background-color: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin: 14px 0;
+    padding: 0;
+}
+
+.exam-fold summary {
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.93rem;
+    font-weight: 800;
+    padding: 12px 14px;
+}
+
+.exam-fold-body {
+    border-top: 1px solid var(--line-soft);
+    padding: 14px;
+}
+
+.exam-callout {
+    background-color: var(--accent-soft);
+    border: 1px solid #cce2d5;
+    border-radius: 8px;
+    margin: 14px 0;
+    padding: 12px 14px;
+}
+
+.exam-callout-label {
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
 .exam-link-row a,
 .exam-reference-list a {
     background-color: var(--accent-soft);
@@ -493,6 +668,17 @@ td a {
     background-color: #ffffff;
     color: #111111;
     border-color: var(--line);
+}
+
+.exam-pdf-details {
+    margin-bottom: 14px;
+}
+
+.exam-pdf-details summary {
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 800;
+    margin-bottom: 10px;
 }
 
 .exam-pdf-frame {

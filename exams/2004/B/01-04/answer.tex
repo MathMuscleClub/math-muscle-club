@@ -2,6 +2,21 @@
 \usepackage{amsmath,amssymb}
 \usepackage[margin=24mm]{geometry}
 
+\newcommand{\examtag}[1]{}
+\newcommand{\examrelated}[2]{}
+\newcommand{\fold}[2]{#1\par\smallskip\noindent\textbf{詳細. }#2\par\smallskip}
+\newcommand{\hint}[1]{\paragraph{ヒント}#1}
+\newcommand{\strategy}[1]{\paragraph{方針}#1}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\rank}{rank}
+
+\examtag{線形代数}
+\examtag{体論}
+\examtag{群作用}
+\examtag{可換環}
+\examrelated{2004-B-02}{平成16年 B 第2問}
+\examrelated{2004-B-03}{平成16年 B 第3問}
+
 \title{平成16年 B問題}
 \author{数学科筋トレ部}
 \date{}
@@ -13,8 +28,8 @@
 有限次元線形空間 \(A,B,C,D\) の次元をそれぞれ \(a,b,c,d\) とし，線形写像
 \(g:B \to C\) の階数を \(r\) とする。線形写像
 \[
-  F:\operatorname{Hom}(A,B)\otimes \operatorname{Hom}(C,D)
-    \longrightarrow \operatorname{Hom}(A,D)
+  F:\Hom(A,B)\otimes \Hom(C,D)
+    \longrightarrow \Hom(A,D)
 \]
 を
 \[
@@ -67,5 +82,35 @@
 \section*{B 第4問}
 \(p\) を \(3\) 以上の素数とする。単位元をもつ可換環 \(A\) の可逆元のなす群 \(A^\times\) は，
 位数 \(p^2\) の巡回群にはならないことを証明せよ。
+
+\section*{B 第1問 解答サンプル}
+\strategy{
+  \(g\) の像 \(G=\operatorname{Im}g\) を中間に置き，
+  \(A\to G\to D\) と分解できる写像の線形包を考える。
+}
+
+\hint{
+  \(r>0\) なら，\(G\) の中に \(0\) でないベクトルをひとつ取れる。
+  それを通る階数 \(1\) の写像を使うと，\(\Hom(A,D)\) の標準的な生成元を作れる。
+}
+
+\fold{
+  \(r=0\) なら \(\rank F=0\)，\(r>0\) なら \(\rank F=ad\) が成り立つ。
+}{
+  \(r=0\) のときは \(g=0\) なので，任意の \(f,h\) に対して \(hgf=0\) である。
+  よって \(F\) の像は \(0\) だけである。
+
+  \(r>0\) とする。\(G=\operatorname{Im}g\) とおくと，
+  \(g:B\to G\) は全射である。したがって任意の線形写像 \(u:A\to G\) は
+  ある \(f:A\to B\) によって \(u=gf\) と書ける。
+  また \(G\) から \(D\) への任意の線形写像 \(v:G\to D\) は，
+  \(C\) 上の線形写像 \(h:C\to D\) に延長できる。
+
+  よって \(v u=hgf\) は \(F\) の像に属する。特に \(G\) の \(0\) でないベクトルを
+  ひとつ固定すれば，\(A\) の双対ベクトルと \(D\) のベクトルから作る階数 \(1\) の写像を
+  すべて \(v u\) の形で得られる。階数 \(1\) の写像たちは \(\Hom(A,D)\) を張るので，
+  \(F\) の像は \(\Hom(A,D)\) 全体である。
+  したがって \(\rank F=\dim\Hom(A,D)=ad\) である。
+}
 
 \end{document}

@@ -5,8 +5,8 @@
     "era": "平成16年",
     "problemGroup": "B",
     "problemNumber": "1-4",
-    "title": "平成16年 B問題（問題文サンプル）",
-    "summary": "いただいた画像をもとに作成した、あとで削除できる表示確認用サンプルです。現時点では解答ではなく問題文のTeX/PDFです。",
+    "title": "平成16年 B問題（マクロ表示サンプル）",
+    "summary": "TeX内のマクロからタグ、関連問題、折りたたみ解答をHTML表示するサンプルです。PDFとTeXはそのままダウンロードできます。",
     "texPath": "exams/2004/B/01-04/answer.tex",
     "pdfPath": "exams/2004/B/01-04/answer.pdf",
     "references": [
