@@ -237,6 +237,7 @@
             elements.session.hidden = false;
             elements.sessionEmail.textContent = email;
             setAuthState(`${email} でログイン中です。`, 'ログイン中', 'success');
+            notifySessionChanged();
             return;
         }
 
@@ -245,6 +246,13 @@
         elements.session.hidden = true;
         elements.sessionEmail.textContent = '';
         setAuthState('メールアドレスでログインできます。', '未ログイン', 'muted');
+        notifySessionChanged();
+    }
+
+    function notifySessionChanged() {
+        window.dispatchEvent(new CustomEvent('site-auth-changed', {
+            detail: { session: currentSession }
+        }));
     }
 
     function setConfiguredWaiting() {

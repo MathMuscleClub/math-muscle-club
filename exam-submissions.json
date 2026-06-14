@@ -1,0 +1,21 @@
+[
+  {
+    "id": "2004-B-sample-math-muscle-club",
+    "year": 2004,
+    "era": "平成16年",
+    "problemGroup": "B",
+    "title": "平成16年 B問題（マクロ表示サンプル）",
+    "summary": "1つのTeXに問題文と解答が含まれる場合の分割表示サンプルです。",
+    "texPath": "exams/2004/B/01-04/answer.tex",
+    "uploadedByName": "数学科筋トレ部",
+    "uploadedByEmail": "",
+    "uploadedAt": "2026-06-12T00:00:00+09:00",
+    "tags": [
+      "線形代数",
+      "体論",
+      "群作用",
+      "可換環"
+    ],
+    "status": "sample"
+  }
+]

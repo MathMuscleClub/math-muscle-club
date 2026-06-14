@@ -5,7 +5,7 @@
             id: normalizeSpace(item.args[0]),
             label: normalizeSpace(item.args[1])
         }));
-        const body = getDocumentBody(source)
+        const body = applyDeclaredOperators(source, getDocumentBody(source))
             .replace(/\\maketitle/g, '')
             .trim();
 
@@ -14,6 +14,63 @@
             related,
             html: renderLatexFragment(body),
             plainText: latexToPlainText(body)
+        };
+    }
+
+    function splitSubmission(source, metadata = {}) {
+        const body = applyDeclaredOperators(source, getDocumentBody(source))
+            .replace(/\\maketitle/g, '')
+            .trim();
+        const headings = [
+            ...collectCommandArgs(body, 'section*', 1).map(match => ({ ...match, command: 'section*' })),
+            ...collectCommandArgs(body, 'section', 1).map(match => ({ ...match, command: 'section' }))
+        ]
+            .sort((a, b) => a.start - b.start);
+
+        if (headings.length === 0) {
+            const fallbackTitle = metadata.title || '提出された解答';
+            return [{
+                id: makeSectionId(metadata, fallbackTitle, 'answer'),
+                kind: 'answer',
+                title: fallbackTitle,
+                problemGroup: normalizeProblemGroup(metadata.problemGroup),
+                problemNumber: normalizeProblemNumber(metadata.problemNumber || '1'),
+                html: renderLatexFragment(body),
+                plainText: latexToPlainText(body)
+            }];
+        }
+
+        return headings.map((heading, index) => {
+            const next = headings[index + 1];
+            const title = normalizeSpace(heading.args[0]);
+            const parsed = parseExamSectionTitle(title, metadata);
+            const sectionBody = body.slice(heading.end, next ? next.start : body.length).trim();
+
+            return {
+                id: makeSectionId(metadata, title, parsed.kind),
+                kind: parsed.kind,
+                title,
+                problemGroup: parsed.problemGroup,
+                problemNumber: parsed.problemNumber,
+                html: renderLatexFragment(sectionBody),
+                plainText: latexToPlainText(sectionBody)
+            };
+        }).filter(section => section.html || section.plainText);
+    }
+
+    function parseExamSectionTitle(title, metadata = {}) {
+        const normalizedTitle = normalizeSpace(title);
+        const normalizedAscii = toHalfWidth(normalizedTitle);
+        const answerLike = /(解答|解説|答案|solution|answer)/i.test(normalizedAscii);
+        const groupMatch = normalizedAscii.match(/(?:^|\s)([A-Z])\s*(?:問題)?\s*第?\s*([0-9]+(?:\s*[-–ー〜~]\s*[0-9]+)?)\s*問?/i)
+            || normalizedAscii.match(/(?:^|\s)([A-Z])\s*問題/i);
+        const numberMatch = normalizedAscii.match(/第\s*([0-9]+(?:\s*[-–ー〜~]\s*[0-9]+)?)\s*問/)
+            || normalizedAscii.match(/(?:問|No\.?)\s*([0-9]+(?:\s*[-–ー〜~]\s*[0-9]+)?)/i);
+
+        return {
+            kind: answerLike ? 'answer' : 'problem',
+            problemGroup: normalizeProblemGroup(groupMatch?.[1] || metadata.problemGroup),
+            problemNumber: normalizeProblemNumber(numberMatch?.[1] || metadata.problemNumber || '1')
         };
     }
 
@@ -208,8 +265,55 @@
             .trim();
     }
 
+    function applyDeclaredOperators(source, body) {
+        const operators = collectCommandArgs(source, 'DeclareMathOperator', 2)
+            .map(item => ({
+                command: normalizeSpace(item.args[0]).replace(/^\\/, ''),
+                label: normalizeSpace(item.args[1])
+            }))
+            .filter(item => item.command && item.label);
+
+        return operators.reduce((output, operator) => {
+            const pattern = new RegExp(`\\\\${escapeRegExp(operator.command)}\\b`, 'g');
+            return output.replace(pattern, `\\operatorname{${operator.label}}`);
+        }, body);
+    }
+
+    function escapeRegExp(value) {
+        return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
     function normalizeSpace(value) {
         return String(value ?? '').replace(/\s+/g, ' ').trim();
+    }
+
+    function normalizeProblemGroup(value) {
+        const group = toHalfWidth(value || '').trim().toUpperCase();
+        return group || 'A';
+    }
+
+    function normalizeProblemNumber(value) {
+        return toHalfWidth(value || '')
+            .replace(/\s+/g, '')
+            .replace(/[–ー〜~]/g, '-')
+            .replace(/^第/, '')
+            .replace(/問$/, '')
+            .trim() || '1';
+    }
+
+    function makeSectionId(metadata, title, kind) {
+        return [
+            metadata.id || metadata.texPath || 'submission',
+            kind,
+            normalizeProblemGroup(metadata.problemGroup),
+            normalizeProblemNumber(metadata.problemNumber || title)
+        ].join('-').replace(/[^A-Za-z0-9_-]+/g, '-');
+    }
+
+    function toHalfWidth(value) {
+        return String(value ?? '').replace(/[Ａ-Ｚａ-ｚ０-９]/g, char => {
+            return String.fromCharCode(char.charCodeAt(0) - 0xFEE0);
+        });
     }
 
     function escapeHTML(value) {
@@ -223,6 +327,7 @@
 
     window.ExamMacros = {
         parse,
+        splitSubmission,
         renderLatexFragment
     };
 })();

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学科筋トレ部</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260614d">
 </head>
 
 <body>
@@ -142,6 +142,86 @@
                         <input id="exam-search-input" class="exam-search-input" type="search" placeholder="年度・タグ・本文で検索">
                         <div id="exam-tag-filter" class="exam-tag-filter"></div>
                     </div>
+                    <div class="exam-workspace-grid">
+                        <div class="exam-tool-panel" id="exam-upload-panel">
+                            <div class="exam-tool-panel-header">
+                                <h3>TeX提出</h3>
+                                <span id="exam-upload-auth-badge" class="auth-status-badge auth-status-muted">未ログイン</span>
+                            </div>
+                            <form id="exam-upload-form" class="exam-upload-form">
+                                <div class="exam-form-grid">
+                                    <div class="auth-field">
+                                        <label for="exam-upload-username">ユーザー名</label>
+                                        <input id="exam-upload-username" name="username" type="text" maxlength="40" autocomplete="nickname" required>
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-upload-year">年度</label>
+                                        <input id="exam-upload-year" name="year" type="number" min="1900" max="2100" required>
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-upload-era">元号表記</label>
+                                        <input id="exam-upload-era" name="era" type="text" placeholder="平成16年">
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-upload-group">問題区分</label>
+                                        <select id="exam-upload-group" name="problemGroup" required>
+                                            <option value="A">A問題</option>
+                                            <option value="B">B問題</option>
+                                            <option value="C">C問題</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="auth-field">
+                                    <label for="exam-upload-title">タイトル</label>
+                                    <input id="exam-upload-title" name="title" type="text" placeholder="平成16年 B問題 解答" required>
+                                </div>
+                                <div class="auth-field">
+                                    <label for="exam-upload-summary">概要</label>
+                                    <textarea id="exam-upload-summary" name="summary" rows="3" placeholder="扱った問題や方針を短く書けます。"></textarea>
+                                </div>
+                                <div class="auth-field">
+                                    <label for="exam-upload-file">LaTeXファイル</label>
+                                    <input id="exam-upload-file" name="texFile" type="file" accept=".tex,.latex,text/plain" required>
+                                </div>
+                                <div class="auth-actions">
+                                    <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
+                                </div>
+                                <p id="exam-upload-message" class="auth-message auth-message-muted" role="status"></p>
+                            </form>
+                        </div>
+
+                        <div class="exam-tool-panel" id="exam-pdf-panel">
+                            <div class="exam-tool-panel-header">
+                                <h3>PDF出力</h3>
+                                <span class="auth-status-badge auth-status-success">一時生成</span>
+                            </div>
+                            <form id="exam-pdf-form" class="exam-pdf-form">
+                                <div class="exam-form-grid">
+                                    <div class="auth-field">
+                                        <label for="exam-pdf-year">年度</label>
+                                        <select id="exam-pdf-year" name="year"></select>
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-pdf-group">問題区分</label>
+                                        <select id="exam-pdf-group" name="problemGroup"></select>
+                                    </div>
+                                </div>
+                                <div class="auth-field">
+                                    <label for="exam-pdf-mode">内容</label>
+                                    <select id="exam-pdf-mode" name="mode">
+                                        <option value="problems-and-answers">問題文と解答</option>
+                                        <option value="problems-only">問題文のみ</option>
+                                        <option value="answers-only">解答のみ</option>
+                                    </select>
+                                </div>
+                                <div id="exam-pdf-problem-list" class="exam-pdf-choice-list"></div>
+                                <div class="auth-actions">
+                                    <button id="exam-pdf-submit" class="auth-primary-button" type="submit">PDFを生成</button>
+                                </div>
+                                <p id="exam-pdf-message" class="auth-message auth-message-muted" role="status"></p>
+                            </form>
+                        </div>
+                    </div>
                     <div id="exam-answer-list" class="exam-answer-list">
                         <p class="loading">読み込み中...</p>
                     </div>
@@ -209,9 +289,9 @@
     </div>
 
     <!-- タブ切り替え用のスクリプト -->
-    <script src="exam-macros.js"></script>
+    <script src="exam-macros.js?v=20260614d"></script>
     <script src="supabase-config.js"></script>
-    <script src="auth.js"></script>
+    <script src="auth.js?v=20260614d"></script>
     <script>
         function switchTab(tabId) {
             // 全てのタブコンテンツからactiveを取り除く
@@ -240,7 +320,11 @@
         let schedules = [];
         let recurringSchedules = [];
         let examAnswersState = [];
+        let examProblemsState = [];
+        let examSubmissionsState = [];
         let activeExamTag = '';
+        let examUploadFormReady = false;
+        let examPdfFormReady = false;
         let mathRendererLoading = false;
         let currentYear, currentMonth;
 
@@ -254,14 +338,15 @@
 
         async function loadData() {
             try {
-                const [membersRes, goalsRes, diaryRes, scheduleRes, recurringScheduleRes, trainingsRes, examAnswersRes] = await Promise.all([
+                const [membersRes, goalsRes, diaryRes, scheduleRes, recurringScheduleRes, trainingsRes, examAnswersRes, examSubmissions] = await Promise.all([
                     fetch('members.json'),
                     fetch('goals.json'),
                     fetch('diary.json'),
                     fetch('schedule.json'),
                     fetch('recurring-schedule.json'),
                     fetch('trainings.json'),
-                    fetch('exam-answers.json')
+                    fetch('exam-answers.json'),
+                    fetchOptionalJson('exam-submissions.json', [])
                 ]);
 
                 if (!membersRes.ok || !goalsRes.ok || !diaryRes.ok || !scheduleRes.ok || !recurringScheduleRes.ok || !trainingsRes.ok || !examAnswersRes.ok) {
@@ -287,12 +372,22 @@
                 renderMonthlyGoals(goals.monthlyGoals);
                 renderAchievements(goals.achievements);
                 renderDiary(diary);
-                await renderExamAnswers(examAnswers);
+                await renderExamAnswers(examAnswers, examSubmissions);
                 renderCalendar(currentYear, currentMonth);
 
             } catch (error) {
                 console.error(error);
                 showErrorMessages();
+            }
+        }
+
+        async function fetchOptionalJson(path, fallback) {
+            try {
+                const response = await fetch(path);
+                if (!response.ok) return fallback;
+                return await response.json();
+            } catch (_error) {
+                return fallback;
             }
         }
 
@@ -514,32 +609,52 @@
             });
         }
 
-        async function renderExamAnswers(answers) {
+        async function renderExamAnswers(answers, submissions = []) {
             const container = document.getElementById('exam-answer-list');
             if (!container) return;
 
             container.innerHTML = '';
-            if (!answers || answers.length === 0) {
+            const submissionSources = Array.isArray(submissions) && submissions.length > 0
+                ? submissions
+                : legacyAnswersToSubmissions(answers);
+
+            if (submissionSources.length === 0) {
                 container.innerHTML = '<p class="no-data">登録されている過去問解答はありません。</p>';
+                renderExamPdfControls();
+                setupExamUploadForm();
                 return;
             }
 
             container.innerHTML = '<p class="loading">TeXを読み込み中...</p>';
-            examAnswersState = await Promise.all(answers.map(loadExamAnswer));
-            renderExamFilters(examAnswersState);
+            examSubmissionsState = await Promise.all(submissionSources.map(loadExamSubmission));
+            examProblemsState = buildExamProblems(examSubmissionsState);
+            examAnswersState = examProblemsState;
+            renderExamFilters(examProblemsState);
+            renderExamPdfControls();
+            setupExamUploadForm();
             renderExamAnswerResults();
         }
 
-        async function loadExamAnswer(answer) {
+        function legacyAnswersToSubmissions(answers) {
+            return (Array.isArray(answers) ? answers : []).map(answer => ({
+                ...answer,
+                uploadedByName: answer.uploadedByName || answer.author || '数学科筋トレ部',
+                uploadedAt: answer.uploadedAt || '',
+                sourceType: 'legacy'
+            }));
+        }
+
+        async function loadExamSubmission(submission) {
             try {
-                const response = await fetch(answer.texPath);
-                if (!response.ok) throw new Error(`${answer.texPath} could not be loaded`);
+                const response = await fetch(submission.texPath);
+                if (!response.ok) throw new Error(`${submission.texPath} could not be loaded`);
 
                 const texSource = await response.text();
                 const parsed = window.ExamMacros.parse(texSource);
-                const tags = uniqueValues([...(answer.tags || []), ...parsed.tags]);
+                const sections = window.ExamMacros.splitSubmission(texSource, submission);
+                const tags = uniqueValues([...(submission.tags || []), ...parsed.tags]);
                 const references = [
-                    ...(Array.isArray(answer.references) ? answer.references : []),
+                    ...(Array.isArray(submission.references) ? submission.references : []),
                     ...parsed.related.map(ref => ({
                         label: ref.label || ref.id,
                         href: ref.id ? `#${encodeURIComponent(ref.id)}` : '#'
@@ -547,18 +662,20 @@
                 ];
 
                 return {
-                    ...answer,
+                    ...submission,
                     tags,
                     references,
-                    sourceHTML: parsed.html,
+                    sections,
+                    texSource,
                     searchText: [
-                        answer.id,
-                        answer.year,
-                        answer.era,
-                        answer.problemGroup,
-                        answer.problemNumber,
-                        answer.title,
-                        answer.summary,
+                        submission.id,
+                        submission.year,
+                        submission.era,
+                        submission.problemGroup,
+                        submission.problemNumber,
+                        submission.title,
+                        submission.summary,
+                        submission.uploadedByName,
                         tags.join(' '),
                         parsed.plainText,
                         texSource
@@ -567,21 +684,147 @@
             } catch (error) {
                 console.error(error);
                 return {
-                    ...answer,
-                    tags: answer.tags || [],
-                    references: Array.isArray(answer.references) ? answer.references : [],
-                    sourceHTML: '<p class="error">TeXの読み込みに失敗しました。</p>',
-                    searchText: [answer.id, answer.title, answer.summary].join(' ').toLowerCase()
+                    ...submission,
+                    tags: submission.tags || [],
+                    references: Array.isArray(submission.references) ? submission.references : [],
+                    sections: [{
+                        id: `${submission.id || submission.texPath}-error`,
+                        kind: 'answer',
+                        title: submission.title || '読み込みエラー',
+                        problemGroup: submission.problemGroup || 'A',
+                        problemNumber: submission.problemNumber || '1',
+                        html: '<p class="error">TeXの読み込みに失敗しました。</p>',
+                        plainText: ''
+                    }],
+                    searchText: [submission.id, submission.title, submission.summary].join(' ').toLowerCase()
                 };
             }
         }
 
-        function renderExamFilters(answers) {
+        function buildExamProblems(submissions) {
+            const problemMap = new Map();
+
+            submissions.forEach(submission => {
+                const sections = Array.isArray(submission.sections) ? submission.sections : [];
+                sections.forEach(section => {
+                    const problemGroup = section.problemGroup || submission.problemGroup || 'A';
+                    const problemNumber = section.problemNumber || submission.problemNumber || '1';
+                    const key = makeExamProblemKey(submission.year, problemGroup, problemNumber);
+                    const problem = ensureExamProblem(problemMap, key, submission, section, problemGroup, problemNumber);
+
+                    problem.tags = uniqueValues([...problem.tags, ...(submission.tags || [])]);
+                    problem.references = mergeReferences(problem.references, submission.references || []);
+
+                    if (section.kind === 'problem') {
+                        if (!problem.statementHTML) {
+                            problem.statementHTML = section.html;
+                            problem.statementTitle = section.title;
+                        }
+                        problem.statementPlainText = [problem.statementPlainText, section.plainText].join(' ');
+                        return;
+                    }
+
+                    problem.answers.push({
+                        id: section.id,
+                        title: section.title || submission.title || '解答',
+                        html: section.html,
+                        plainText: section.plainText,
+                        texPath: submission.texPath,
+                        uploadedByName: submission.uploadedByName || '匿名',
+                        uploadedByEmail: submission.uploadedByEmail || '',
+                        uploadedAt: submission.uploadedAt || '',
+                        status: submission.status || 'submitted',
+                        summary: submission.summary || '',
+                        submissionTitle: submission.title || '',
+                        sourceType: submission.sourceType || '',
+                        tags: submission.tags || []
+                    });
+                });
+            });
+
+            return [...problemMap.values()]
+                .map(problem => ({
+                    ...problem,
+                    answerCount: problem.answers.length,
+                    searchText: [
+                        problem.key,
+                        problem.year,
+                        problem.era,
+                        problem.problemGroup,
+                        problem.problemNumber,
+                        problem.title,
+                        problem.statementTitle,
+                        problem.statementPlainText,
+                        problem.tags.join(' '),
+                        problem.answers.map(answer => [
+                            answer.title,
+                            answer.summary,
+                            answer.uploadedByName,
+                            answer.plainText
+                        ].join(' ')).join(' ')
+                    ].join(' ').toLowerCase()
+                }))
+                .sort(sortExamProblems);
+        }
+
+        function ensureExamProblem(problemMap, key, submission, section, problemGroup, problemNumber) {
+            if (!problemMap.has(key)) {
+                const title = `${submission.era ? `${submission.era} ` : ''}${problemGroup}問題 第${problemNumber}問`;
+                problemMap.set(key, {
+                    key,
+                    year: submission.year,
+                    era: submission.era || '',
+                    problemGroup,
+                    problemNumber,
+                    title,
+                    statementHTML: '',
+                    statementTitle: '',
+                    statementPlainText: '',
+                    answers: [],
+                    tags: [],
+                    references: []
+                });
+            }
+
+            const problem = problemMap.get(key);
+            problem.year = problem.year || submission.year;
+            problem.era = problem.era || submission.era || '';
+            problem.problemGroup = problem.problemGroup || problemGroup;
+            problem.problemNumber = problem.problemNumber || problemNumber;
+            problem.title = problem.title || section.title || submission.title || key;
+            return problem;
+        }
+
+        function mergeReferences(current, incoming) {
+            const map = new Map();
+            [...current, ...incoming].forEach(ref => {
+                const href = ref.href || '#';
+                const label = ref.label || href;
+                map.set(`${label}:${href}`, { label, href });
+            });
+            return [...map.values()];
+        }
+
+        function sortExamProblems(a, b) {
+            const yearDiff = Number(b.year || 0) - Number(a.year || 0);
+            if (yearDiff !== 0) return yearDiff;
+            const groupDiff = String(a.problemGroup).localeCompare(String(b.problemGroup), 'ja');
+            if (groupDiff !== 0) return groupDiff;
+            return Number.parseInt(a.problemNumber, 10) - Number.parseInt(b.problemNumber, 10);
+        }
+
+        function makeExamProblemKey(year, problemGroup, problemNumber) {
+            return [year || 'unknown', problemGroup || 'A', problemNumber || '1']
+                .join('-')
+                .replace(/[^A-Za-z0-9_-]+/g, '-');
+        }
+
+        function renderExamFilters(problems) {
             const tagFilter = document.getElementById('exam-tag-filter');
             const searchInput = document.getElementById('exam-search-input');
             if (!tagFilter || !searchInput) return;
 
-            const tags = uniqueValues(answers.flatMap(answer => answer.tags || []));
+            const tags = uniqueValues(problems.flatMap(problem => problem.tags || []));
             tagFilter.innerHTML = [
                 `<button class="exam-tag-button ${activeExamTag === '' ? 'active' : ''}" data-tag="">すべて</button>`,
                 ...tags.map(tag => `<button class="exam-tag-button ${activeExamTag === tag ? 'active' : ''}" data-tag="${escapeAttribute(tag)}">${escapeHTML(tag)}</button>`)
@@ -590,7 +833,7 @@
             tagFilter.querySelectorAll('.exam-tag-button').forEach(button => {
                 button.addEventListener('click', () => {
                     activeExamTag = button.dataset.tag || '';
-                    renderExamFilters(examAnswersState);
+                    renderExamFilters(examProblemsState);
                     renderExamAnswerResults();
                 });
             });
@@ -607,67 +850,55 @@
             if (!container) return;
 
             const query = (searchInput?.value || '').trim().toLowerCase();
-            const answers = examAnswersState.filter(answer => {
-                const matchesTag = !activeExamTag || (answer.tags || []).includes(activeExamTag);
-                const matchesQuery = !query || answer.searchText.includes(query);
+            const problems = examProblemsState.filter(problem => {
+                const matchesTag = !activeExamTag || (problem.tags || []).includes(activeExamTag);
+                const matchesQuery = !query || problem.searchText.includes(query);
                 return matchesTag && matchesQuery;
             });
 
             container.innerHTML = '';
-            if (answers.length === 0) {
+            if (problems.length === 0) {
                 container.innerHTML = '<p class="no-data">条件に合う過去問解答はありません。</p>';
                 return;
             }
 
-            answers.forEach(answer => {
+            problems.forEach(problem => {
                 const article = document.createElement('article');
                 article.className = 'exam-answer-card';
-                article.id = answer.id;
+                article.id = problem.key;
 
-                const references = Array.isArray(answer.references) ? answer.references : [];
-                const tags = Array.isArray(answer.tags) ? answer.tags : [];
-                const yearLabel = answer.era
-                    ? `${escapeHTML(answer.era)}（${escapeHTML(answer.year)}年度）`
-                    : `${escapeHTML(answer.year)}年度`;
+                const references = Array.isArray(problem.references) ? problem.references : [];
+                const tags = Array.isArray(problem.tags) ? problem.tags : [];
+                const yearLabel = problem.era
+                    ? `${escapeHTML(problem.era)}（${escapeHTML(problem.year)}年度）`
+                    : `${escapeHTML(problem.year)}年度`;
                 const tagsHTML = tags.length > 0
                     ? `<div class="exam-tag-list">${tags.map(tag => `<button type="button" class="exam-tag-chip" data-tag="${escapeAttribute(tag)}">${escapeHTML(tag)}</button>`).join('')}</div>`
                     : '';
                 const referencesHTML = references.length > 0
                     ? `<div class="exam-reference-list">${references.map(ref => `<a href="${escapeAttribute(ref.href || '#')}">${escapeHTML(ref.label || '関連リンク')}</a>`).join('')}</div>`
                     : '<p class="no-data">関連する問題はまだ登録されていません。</p>';
+                const statementHTML = problem.statementHTML
+                    ? `<div class="exam-html-view"><div class="exam-html-label">問題文</div>${problem.statementHTML}</div>`
+                    : '<p class="no-data">問題文はまだ登録されていません。</p>';
+                const answersHTML = problem.answers.length > 0
+                    ? problem.answers.map((answer, index) => renderExamProblemAnswer(answer, index, problem.answers.length)).join('')
+                    : '<p class="no-data">この問題の解答はまだ登録されていません。</p>';
 
                 article.innerHTML = `
                     <div class="exam-answer-header">
                         <div>
-                            <div class="exam-answer-kicker">${yearLabel} ${escapeHTML(answer.problemGroup)}問題 第${escapeHTML(answer.problemNumber)}問</div>
-                            <h3 class="exam-answer-title">${escapeHTML(answer.title || '無題の解答')}</h3>
+                            <div class="exam-answer-kicker">${yearLabel} ${escapeHTML(problem.problemGroup)}問題 第${escapeHTML(problem.problemNumber)}問</div>
+                            <h3 class="exam-answer-title">${escapeHTML(problem.title)}</h3>
                         </div>
-                        <span class="badge badge-pending">${answer.status === 'sample' ? 'サンプル' : escapeHTML(answer.status || '下書き')}</span>
+                        <span class="badge badge-pending">解答 ${problem.answerCount}件</span>
                     </div>
-                    ${answer.summary ? `<p class="exam-answer-summary">${escapeHTML(answer.summary)}</p>` : ''}
                     ${tagsHTML}
-                    <div class="exam-link-row">
-                        <a href="${escapeAttribute(answer.texPath)}" target="_blank">TeXを開く</a>
-                        <a href="${escapeAttribute(answer.texPath)}" download>TeXをダウンロード</a>
-                        <a href="${escapeAttribute(answer.pdfPath)}" target="_blank">PDFを別タブで開く</a>
-                        <a href="${escapeAttribute(answer.pdfPath)}" download>PDFをダウンロード</a>
+                    ${statementHTML}
+                    <div class="exam-answer-group">
+                        <h4>解答</h4>
+                        ${answersHTML}
                     </div>
-                    <div class="exam-html-view">
-                        <div class="exam-html-label">HTML表示</div>
-                        ${answer.sourceHTML}
-                    </div>
-                    <details class="exam-pdf-details">
-                        <summary>PDFプレビュー</summary>
-                        <div class="exam-pdf-frame">
-                            <object data="${escapeAttribute(answer.pdfPath)}" type="application/pdf" class="exam-pdf-object">
-                                <p>PDFを表示できませんでした。<a href="${escapeAttribute(answer.pdfPath)}" target="_blank">PDFを開く</a></p>
-                            </object>
-                        </div>
-                    </details>
-                    <details class="exam-tex-details">
-                        <summary>TeXコードの置き場所</summary>
-                        <code>${escapeHTML(answer.texPath)}</code>
-                    </details>
                     <div class="exam-reference-block">
                         <h4>参照</h4>
                         ${referencesHTML}
@@ -679,12 +910,387 @@
             container.querySelectorAll('.exam-tag-chip').forEach(button => {
                 button.addEventListener('click', () => {
                     activeExamTag = button.dataset.tag || '';
-                    renderExamFilters(examAnswersState);
+                    renderExamFilters(examProblemsState);
                     renderExamAnswerResults();
                 });
             });
 
             typesetMath(container);
+        }
+
+        function renderExamProblemAnswer(answer, index, total) {
+            const uploadLabel = answer.uploadedAt ? formatDateTime(answer.uploadedAt) : '';
+            const summaryHTML = answer.summary ? `<p class="exam-answer-summary">${escapeHTML(answer.summary)}</p>` : '';
+            const statusLabel = answer.status === 'sample' ? 'サンプル' : '提出済み';
+            const openAttr = total === 1 ? 'open' : '';
+
+            return `
+                <details class="exam-submission-answer" ${openAttr}>
+                    <summary>
+                        <span>解答 ${index + 1}: ${escapeHTML(answer.uploadedByName || '匿名')}</span>
+                        <span class="exam-answer-meta">${escapeHTML(uploadLabel)}</span>
+                    </summary>
+                    <div class="exam-submission-answer-body">
+                        <div class="exam-answer-byline">
+                            <span>${escapeHTML(answer.submissionTitle || answer.title || '解答')}</span>
+                            <span class="badge badge-${answer.status === 'sample' ? 'pending' : 'achieved'}">${statusLabel}</span>
+                        </div>
+                        ${summaryHTML}
+                        <div class="exam-link-row">
+                            <a href="${escapeAttribute(answer.texPath)}" target="_blank">TeXを開く</a>
+                            <a href="${escapeAttribute(answer.texPath)}" download>TeXをダウンロード</a>
+                        </div>
+                        <div class="exam-html-view">
+                            <div class="exam-html-label">HTML表示</div>
+                            ${answer.html}
+                        </div>
+                    </div>
+                </details>
+            `;
+        }
+
+        function setupExamUploadForm() {
+            if (examUploadFormReady) {
+                updateExamUploadAuthState();
+                return;
+            }
+
+            const form = document.getElementById('exam-upload-form');
+            if (!form) return;
+
+            const usernameInput = document.getElementById('exam-upload-username');
+            if (usernameInput && localStorage.getItem('examUploadUsername')) {
+                usernameInput.value = localStorage.getItem('examUploadUsername');
+            }
+
+            form.addEventListener('submit', handleExamUpload);
+            window.addEventListener('site-auth-changed', updateExamUploadAuthState);
+            examUploadFormReady = true;
+            updateExamUploadAuthState();
+        }
+
+        function updateExamUploadAuthState() {
+            const form = document.getElementById('exam-upload-form');
+            const badge = document.getElementById('exam-upload-auth-badge');
+            const message = document.getElementById('exam-upload-message');
+            const session = window.SiteAuth?.getSession?.();
+            const isLoggedIn = Boolean(session?.user);
+
+            if (badge) {
+                badge.textContent = isLoggedIn ? 'ログイン中' : '未ログイン';
+                badge.className = `auth-status-badge auth-status-${isLoggedIn ? 'success' : 'muted'}`;
+            }
+
+            form?.querySelectorAll('input, textarea, select, button').forEach(control => {
+                control.disabled = !isLoggedIn;
+            });
+
+            if (message && !isLoggedIn) {
+                message.textContent = 'ログインするとTeXを提出できます。';
+                message.className = 'auth-message auth-message-muted';
+            } else if (message && !message.textContent) {
+                message.textContent = '';
+            }
+        }
+
+        async function handleExamUpload(event) {
+            event.preventDefault();
+            const session = window.SiteAuth?.requireSession?.();
+            if (!session) {
+                setExamUploadMessage('ログインしてからアップロードしてください。', 'error');
+                if (typeof switchTab === 'function') switchTab('auth');
+                return;
+            }
+
+            const form = event.currentTarget;
+            const formData = new FormData(form);
+            const username = String(formData.get('username') || '').trim();
+            const texFile = formData.get('texFile');
+            if (!username || !(texFile instanceof File) || texFile.size === 0) {
+                setExamUploadMessage('ユーザー名とLaTeXファイルを確認してください。', 'error');
+                return;
+            }
+
+            localStorage.setItem('examUploadUsername', username);
+            setExamUploadMessage('TeXを確認しています...', 'muted');
+
+            try {
+                const texSource = await texFile.text();
+                const sections = window.ExamMacros.splitSubmission(texSource, {
+                    year: formData.get('year'),
+                    problemGroup: formData.get('problemGroup'),
+                    title: formData.get('title')
+                });
+                formData.set('detectedSections', String(sections.length));
+                formData.set('uploadedByEmail', session.user?.email || '');
+
+                setExamUploadMessage('アップロードしています...', 'muted');
+                const response = await fetch(getFunctionUrl('upload-exam-tex'), {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`
+                    },
+                    body: formData
+                });
+
+                const payload = await readJsonResponse(response);
+                if (!response.ok) throw new Error(payload.message || 'アップロードに失敗しました。');
+
+                setExamUploadMessage('アップロードを受け付けました。GitHub Pagesへの反映を待っています。', 'success');
+                form.reset();
+                document.getElementById('exam-upload-username').value = username;
+            } catch (error) {
+                console.error(error);
+                setExamUploadMessage(`${error.message || 'アップロードに失敗しました。'} Edge Functionの設定も確認してください。`, 'error');
+            }
+        }
+
+        function setExamUploadMessage(text, kind) {
+            const message = document.getElementById('exam-upload-message');
+            if (!message) return;
+            message.textContent = text;
+            message.className = `auth-message auth-message-${kind}`;
+        }
+
+        function renderExamPdfControls() {
+            const yearSelect = document.getElementById('exam-pdf-year');
+            const groupSelect = document.getElementById('exam-pdf-group');
+            const submitButton = document.getElementById('exam-pdf-submit');
+            if (!yearSelect || !groupSelect || !submitButton) return;
+
+            const previousYear = yearSelect.value;
+            const years = uniqueValues(examProblemsState.map(problem => problem.year)).sort((a, b) => Number(b) - Number(a));
+            yearSelect.innerHTML = years.map(year => `<option value="${escapeAttribute(year)}">${escapeHTML(year)}年度</option>`).join('');
+            if (years.includes(previousYear)) yearSelect.value = previousYear;
+
+            updateExamPdfGroupOptions();
+            submitButton.disabled = examProblemsState.length === 0;
+
+            if (!examPdfFormReady) {
+                document.getElementById('exam-pdf-form')?.addEventListener('submit', handleExamPdfSubmit);
+                yearSelect.addEventListener('change', () => {
+                    updateExamPdfGroupOptions();
+                    updateExamPdfProblemChoices();
+                });
+                groupSelect.addEventListener('change', updateExamPdfProblemChoices);
+                document.getElementById('exam-pdf-mode')?.addEventListener('change', updateExamPdfProblemChoices);
+                examPdfFormReady = true;
+            }
+
+            updateExamPdfProblemChoices();
+        }
+
+        function updateExamPdfGroupOptions() {
+            const yearSelect = document.getElementById('exam-pdf-year');
+            const groupSelect = document.getElementById('exam-pdf-group');
+            if (!yearSelect || !groupSelect) return;
+
+            const selectedYear = yearSelect.value;
+            const previousGroup = groupSelect.value;
+            const groups = uniqueValues(examProblemsState
+                .filter(problem => String(problem.year) === String(selectedYear))
+                .map(problem => problem.problemGroup))
+                .sort();
+
+            groupSelect.innerHTML = groups.map(group => `<option value="${escapeAttribute(group)}">${escapeHTML(group)}問題</option>`).join('');
+            if (groups.includes(previousGroup)) groupSelect.value = previousGroup;
+        }
+
+        function updateExamPdfProblemChoices() {
+            const list = document.getElementById('exam-pdf-problem-list');
+            const year = document.getElementById('exam-pdf-year')?.value;
+            const group = document.getElementById('exam-pdf-group')?.value;
+            if (!list) return;
+
+            const problems = getProblemsForPdfSelection(year, group);
+            if (problems.length === 0) {
+                list.innerHTML = '<p class="no-data">出力できる問題がありません。</p>';
+                return;
+            }
+
+            list.innerHTML = problems.map(problem => `
+                <label class="exam-pdf-choice">
+                    <input type="checkbox" name="problemKey" value="${escapeAttribute(problem.key)}" checked>
+                    <span>${escapeHTML(problem.problemGroup)} 第${escapeHTML(problem.problemNumber)}問</span>
+                    <small>解答 ${problem.answerCount}件</small>
+                </label>
+            `).join('');
+        }
+
+        async function handleExamPdfSubmit(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const formData = new FormData(form);
+            const payload = {
+                year: formData.get('year'),
+                problemGroup: formData.get('problemGroup'),
+                mode: formData.get('mode'),
+                problemKeys: formData.getAll('problemKey')
+            };
+            const selectedProblems = examProblemsState.filter(problem => payload.problemKeys.includes(problem.key));
+
+            if (selectedProblems.length === 0) {
+                setExamPdfMessage('出力する問題を選んでください。', 'error');
+                return;
+            }
+
+            setExamPdfMessage('PDFを生成しています...', 'muted');
+
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = window.SiteAuth?.getSession?.()?.access_token;
+                if (token) headers.Authorization = `Bearer ${token}`;
+
+                const response = await fetch(getFunctionUrl('render-exam-pdf'), {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok && response.headers.get('content-type')?.includes('application/pdf')) {
+                    const blob = await response.blob();
+                    downloadBlob(blob, makePdfFileName(payload));
+                    setExamPdfMessage('PDFを生成しました。', 'success');
+                    return;
+                }
+
+                const data = await readJsonResponse(response);
+                throw new Error(data.message || 'PDF生成サービスが未設定です。');
+            } catch (error) {
+                console.warn(error);
+                const opened = openPrintableExamDocument(payload, selectedProblems);
+                setExamPdfMessage(
+                    opened
+                        ? 'PDF生成サービス未設定のため印刷画面を開きました。保存先でPDFを選べます。'
+                        : 'PDF生成サービスが未設定で、印刷画面も開けませんでした。',
+                    opened ? 'muted' : 'error'
+                );
+            }
+        }
+
+        function getProblemsForPdfSelection(year, group) {
+            return examProblemsState.filter(problem => {
+                return String(problem.year) === String(year) && String(problem.problemGroup) === String(group);
+            });
+        }
+
+        function openPrintableExamDocument(payload, problems) {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) return false;
+
+            const mode = payload.mode || 'problems-and-answers';
+            const body = problems.map(problem => {
+                const statement = mode !== 'answers-only'
+                    ? `<div class="print-block"><h3>問題文</h3>${problem.statementHTML || '<p>問題文は未登録です。</p>'}</div>`
+                    : '';
+                const answers = mode !== 'problems-only'
+                    ? problem.answers.map((answer, index) => `
+                        <div class="print-answer">
+                            <h3>解答 ${index + 1}: ${escapeHTML(answer.uploadedByName || '匿名')}</h3>
+                            ${answer.html}
+                        </div>
+                    `).join('')
+                    : '';
+                return `
+                    <section class="print-problem">
+                        <h2>${escapeHTML(problem.year)}年度 ${escapeHTML(problem.problemGroup)}問題 第${escapeHTML(problem.problemNumber)}問</h2>
+                        ${statement}
+                        ${answers}
+                    </section>
+                `;
+            }).join('');
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="ja">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${escapeHTML(makePdfFileName(payload))}</title>
+                    <style>
+                        body { color: #161616; font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; line-height: 1.7; margin: 24mm; }
+                        h1 { font-size: 18pt; margin: 0 0 18pt; }
+                        h2 { border-bottom: 1px solid #cccccc; font-size: 14pt; margin: 18pt 0 10pt; padding-bottom: 5pt; }
+                        h3 { font-size: 11pt; margin: 12pt 0 6pt; }
+                        p { margin: 0 0 8pt; }
+                        .print-problem { break-after: page; }
+                        .print-problem:last-child { break-after: auto; }
+                        .print-answer { border-top: 1px solid #dddddd; margin-top: 12pt; padding-top: 8pt; }
+                        @media print { body { margin: 18mm; } }
+                    </style>
+                    <script>
+                        window.MathJax = {
+                            tex: { inlineMath: [['\\\\(', '\\\\)']], displayMath: [['\\\\[', '\\\\]']] },
+                            svg: { fontCache: 'global' },
+                            startup: {
+                                pageReady: () => window.MathJax.startup.defaultPageReady().then(() => setTimeout(() => window.print(), 300))
+                            }
+                        };
+                    <\/script>
+                    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
+                </head>
+                <body>
+                    <h1>${escapeHTML(payload.year)}年度 ${escapeHTML(payload.problemGroup)}問題</h1>
+                    ${body}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            return true;
+        }
+
+        function setExamPdfMessage(text, kind) {
+            const message = document.getElementById('exam-pdf-message');
+            if (!message) return;
+            message.textContent = text;
+            message.className = `auth-message auth-message-${kind}`;
+        }
+
+        function getFunctionUrl(name) {
+            const config = window.SUPABASE_CONFIG || {};
+            const directUrls = {
+                'upload-exam-tex': config.examUploadFunctionUrl,
+                'render-exam-pdf': config.examPdfFunctionUrl
+            };
+            if (directUrls[name]) return directUrls[name];
+
+            const baseUrl = config.functionsBaseUrl
+                || config.edgeFunctionsBaseUrl
+                || (config.url ? `${String(config.url).replace(/\/$/, '')}/functions/v1` : '');
+            return `${baseUrl}/${name}`;
+        }
+
+        async function readJsonResponse(response) {
+            try {
+                return await response.json();
+            } catch (_error) {
+                return {};
+            }
+        }
+
+        function downloadBlob(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function makePdfFileName(payload) {
+            const mode = payload.mode === 'problems-only'
+                ? 'problems'
+                : payload.mode === 'answers-only'
+                    ? 'answers'
+                    : 'problems-and-answers';
+            return `${payload.year || 'exam'}-${payload.problemGroup || 'all'}-${mode}.pdf`;
+        }
+
+        function formatDateTime(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
         }
 
         function typesetMath(root) {

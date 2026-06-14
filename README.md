@@ -171,3 +171,60 @@ http://localhost:8010/
 ```
 
 単発予定を入れる `schedule.json` に同じ日付の予定がある場合は、そちらが優先して表示されます。
+
+---
+
+## 過去問TeX提出機能
+
+過去問解答タブでは、ログイン済みユーザーだけがLaTeXファイルを提出できます。
+ブラウザにはGitHubの書き込みトークンを置かず、Supabase Edge Functionがログイン確認をしてGitHubへ保存します。
+
+### 保存されるもの
+
+- `exam-submissions.json`: 提出一覧、提出者名、年度、A/B問題などのメタデータ
+- `exams/{年度}/{問題区分}/submissions/{提出ID}/answer.tex`: 提出されたTeX本体
+
+PDFはGitHubへ保存しません。サイト上で年度やA/B問題を選んで出力した時だけ、一時生成してダウンロードします。
+PDF生成サービスが未設定の場合は、ブラウザの印刷画面を開くフォールバックになります。
+
+### TeXの分割ルール
+
+1つのTeXに問題文と解答が入っていても、次のような見出しから自動で分けます。
+
+```tex
+\section*{B 第1問}
+問題文...
+
+\section*{B 第1問 解答}
+解答...
+```
+
+同じ年度・同じ問題区分・同じ問題番号に別の人が解答を提出した場合は、1つの問題カードの中に複数解答として並びます。
+
+### Edge Functionの環境変数
+
+`upload-exam-tex` に設定します。
+
+```text
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=Supabase service role key
+GITHUB_TOKEN=GitHub fine-grained token
+GITHUB_REPOSITORY=warabimochi23/math-muscle-club
+GITHUB_BRANCH=main
+ALLOWED_EMAIL_DOMAINS=g.ecc.u-tokyo.ac.jp
+ALLOWED_ORIGIN=https://warabimochi23.github.io
+```
+
+`GITHUB_TOKEN` は Contents の読み書きができる fine-grained token にします。service role key と GitHub token は絶対に `supabase-config.js` に入れないでください。
+
+`render-exam-pdf` に設定します。
+
+```text
+PDF_RENDERER_URL=https://your-pdf-renderer.example.com/render
+PDF_RENDERER_TOKEN=任意の共有トークン
+GITHUB_REPOSITORY=warabimochi23/math-muscle-club
+GITHUB_BRANCH=main
+ALLOWED_ORIGIN=https://warabimochi23.github.io
+```
+
+Supabase Edge Function単体ではLaTeXエンジンを実行できないため、完全なワンクリックPDF生成には `latexmk` や `tectonic` を実行できる小さなPDFレンダラーを別に置きます。未設定でもサイト側はHTML化済み内容から印刷用ページを一時生成できます。

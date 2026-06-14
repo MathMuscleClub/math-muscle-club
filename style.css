@@ -440,6 +440,49 @@ td a {
     padding: 16px;
 }
 
+.exam-workspace-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 24px;
+}
+
+.exam-tool-panel {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.exam-tool-panel-header {
+    align-items: center;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+}
+
+.exam-tool-panel-header h3 {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.exam-upload-form,
+.exam-pdf-form {
+    display: grid;
+    gap: 14px;
+}
+
+.exam-form-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .exam-search-label {
     color: var(--text);
     font-size: 0.84rem;
@@ -499,6 +542,7 @@ td a {
     border: 1px solid var(--line);
     border-radius: 8px;
     background-color: var(--surface);
+    overflow: hidden;
     padding: 22px;
     box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
 }
@@ -545,6 +589,8 @@ td a {
     border: 1px solid var(--line);
     border-radius: 8px;
     margin-bottom: 14px;
+    max-width: 100%;
+    overflow-x: auto;
     padding: 18px;
 }
 
@@ -581,6 +627,7 @@ td a {
     color: #444444;
     font-size: 0.93rem;
     margin: 0 0 12px 0;
+    overflow-wrap: anywhere;
 }
 
 .exam-html-view p:last-child,
@@ -619,6 +666,8 @@ ul.exam-source-list {
     border: 1px solid var(--line);
     border-radius: 8px;
     margin: 14px 0;
+    max-width: 100%;
+    overflow-x: auto;
     padding: 0;
 }
 
@@ -627,6 +676,7 @@ ul.exam-source-list {
     cursor: pointer;
     font-size: 0.93rem;
     font-weight: 800;
+    overflow-wrap: anywhere;
     padding: 12px 14px;
 }
 
@@ -729,6 +779,98 @@ ul.exam-source-list {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+.exam-answer-group {
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+}
+
+.exam-answer-group h4,
+.exam-reference-block h4 {
+    color: var(--text);
+    font-size: 0.95rem;
+    margin: 0 0 10px 0;
+}
+
+.exam-submission-answer {
+    background-color: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.exam-submission-answer summary {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.92rem;
+    font-weight: 800;
+    gap: 10px;
+    justify-content: space-between;
+    padding: 12px 14px;
+}
+
+.exam-answer-meta {
+    color: #777777;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.exam-submission-answer-body {
+    border-top: 1px solid var(--line-soft);
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 14px;
+}
+
+.exam-answer-byline {
+    align-items: center;
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    font-weight: 800;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.exam-pdf-choice-list {
+    display: grid;
+    gap: 8px;
+}
+
+.exam-pdf-choice {
+    align-items: center;
+    background-color: var(--surface-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    color: var(--text);
+    cursor: pointer;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: auto 1fr auto;
+    min-height: 42px;
+    padding: 8px 10px;
+}
+
+.exam-pdf-choice input {
+    accent-color: var(--accent);
+}
+
+.exam-pdf-choice span {
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.exam-pdf-choice small {
+    color: #777777;
+    font-size: 0.78rem;
+    font-weight: 700;
 }
 
 /* ==========================================
@@ -902,7 +1044,9 @@ ul.exam-source-list {
     font-weight: 800;
 }
 
-.auth-field input {
+.auth-field input,
+.auth-field select,
+.auth-field textarea {
     appearance: none;
     background-color: #ffffff;
     border: 1px solid var(--line);
@@ -914,13 +1058,27 @@ ul.exam-source-list {
     width: 100%;
 }
 
-.auth-field input:focus {
+.auth-field textarea {
+    line-height: 1.6;
+    min-height: 86px;
+    resize: vertical;
+}
+
+.auth-field input[type="file"] {
+    min-height: auto;
+}
+
+.auth-field input:focus,
+.auth-field select:focus,
+.auth-field textarea:focus {
     border-color: #b9d8c6;
     box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.12);
     outline: none;
 }
 
-.auth-field input:disabled {
+.auth-field input:disabled,
+.auth-field select:disabled,
+.auth-field textarea:disabled {
     background-color: #f6f6f3;
     color: #9a9a9a;
 }
@@ -1255,8 +1413,13 @@ footer p {
     .calendar-container,
     .event-card,
     .exam-answer-card,
+    .exam-tool-panel,
     .auth-panel {
         padding: 18px;
+    }
+
+    .exam-form-grid {
+        grid-template-columns: 1fr;
     }
 
     .exam-answer-header {
