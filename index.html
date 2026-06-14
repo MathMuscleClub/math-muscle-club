@@ -1253,6 +1253,7 @@
             }
 
             setExamPdfMessage('PDFを生成しています...', 'muted');
+            const printWindow = openPrintPreparationWindow(payload);
 
             try {
                 const headers = { 'Content-Type': 'application/json' };
@@ -1268,6 +1269,7 @@
                 if (response.ok && response.headers.get('content-type')?.includes('application/pdf')) {
                     const blob = await response.blob();
                     downloadBlob(blob, makePdfFileName(payload));
+                    closePrintWindow(printWindow);
                     setExamPdfMessage('PDFを生成しました。', 'success');
                     return;
                 }
@@ -1276,7 +1278,7 @@
                 throw new Error(data.message || 'PDF生成サービスが未設定です。');
             } catch (error) {
                 console.warn(error);
-                const opened = openPrintableExamDocument(payload, selectedProblems);
+                const opened = writePrintableExamDocument(printWindow, payload, selectedProblems);
                 setExamPdfMessage(
                     opened
                         ? 'PDF生成サービス未設定のため印刷画面を開きました。保存先でPDFを選べます。'
@@ -1292,9 +1294,31 @@
             });
         }
 
-        function openPrintableExamDocument(payload, problems) {
+        function openPrintPreparationWindow(payload) {
             const printWindow = window.open('', '_blank');
             if (!printWindow) return false;
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="ja">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${escapeHTML(makePdfFileName(payload))}</title>
+                    <style>
+                        body { color: #161616; font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; line-height: 1.7; margin: 24mm; }
+                    </style>
+                </head>
+                <body>
+                    <p>PDFを準備しています...</p>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            return printWindow;
+        }
+
+        function writePrintableExamDocument(printWindow, payload, problems) {
+            if (!printWindow || printWindow.closed) return false;
 
             const mode = payload.mode || 'problems-and-answers';
             const body = problems.map(problem => {
@@ -1354,6 +1378,16 @@
             `);
             printWindow.document.close();
             return true;
+        }
+
+        function closePrintWindow(printWindow) {
+            try {
+                if (printWindow && !printWindow.closed) {
+                    printWindow.close();
+                }
+            } catch (_error) {
+                // The browser may prevent closing a tab in some contexts.
+            }
         }
 
         function setExamPdfMessage(text, kind) {
