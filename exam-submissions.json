@@ -1,5 +1,28 @@
 [
   {
+    "id": "2012-B-15-problem",
+    "year": 2012,
+    "era": "平成24年",
+    "problemGroup": "B",
+    "problemNumber": "15",
+    "field": "代数",
+    "title": "平成24年 B 第15問",
+    "summary": "",
+    "problemTexPath": "exams/2012/B/15/problem.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-14T12:53:00.759Z",
+    "tags": [
+      "行列",
+      "Schur分解",
+      "ノルム",
+      "線形代数"
+    ],
+    "status": "problem"
+  },
+  {
     "id": "2012-B-1-problem",
     "year": 2012,
     "era": "平成24年",
@@ -85,29 +108,6 @@
       "不動点",
       "集合",
       "論理"
-    ],
-    "status": "problem"
-  },
-  {
-    "id": "2012-B-15-problem",
-    "year": 2012,
-    "era": "平成24年",
-    "problemGroup": "B",
-    "problemNumber": "15",
-    "field": "代数",
-    "title": "平成24年 B 第15問",
-    "summary": "",
-    "problemTexPath": "exams/2012/B/15/problem.tex",
-    "uploadedByName": "わらびもち",
-    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
-    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
-    "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
-    "tags": [
-      "行列",
-      "Schur分解",
-      "ノルム",
-      "線形代数"
     ],
     "status": "problem"
   },
