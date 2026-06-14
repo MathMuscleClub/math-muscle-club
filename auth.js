@@ -12,6 +12,7 @@
     let isConfigured = false;
     let isReady = false;
     let isRejectingSession = false;
+    let redirectNotice = null;
 
     const elements = {};
 
@@ -24,8 +25,16 @@
         bindEvents();
         exposeAuthHelpers();
 
+        redirectNotice = readAuthRedirectNotice();
+        if (redirectNotice) {
+            switchToAuthTab();
+            showAuthNotice(redirectNotice.title, redirectNotice.body, redirectNotice.kind);
+            clearAuthParamsFromUrl();
+        }
+
         const config = getConfig();
         isConfigured = hasSupabaseConfig(config);
+        renderDomainNote();
 
         if (!isConfigured) {
             setConfiguredWaiting();
@@ -78,6 +87,10 @@
         elements.sessionEmail = document.getElementById('auth-session-email');
         elements.stateText = document.getElementById('auth-state-text');
         elements.statusBadge = document.getElementById('auth-status-badge');
+        elements.notice = document.getElementById('auth-notice');
+        elements.noticeTitle = document.getElementById('auth-notice-title');
+        elements.noticeBody = document.getElementById('auth-notice-body');
+        elements.domainNote = document.getElementById('auth-domain-note');
         elements.message = document.getElementById('auth-message');
     }
 
@@ -92,6 +105,7 @@
         event.preventDefault();
         if (!ensureReady()) return;
 
+        hideAuthNotice();
         const credentials = getCredentials();
         if (!credentials) return;
 
@@ -107,6 +121,7 @@
     async function handleSignup() {
         if (!ensureReady()) return;
 
+        hideAuthNotice();
         const credentials = getCredentials();
         if (!credentials) return;
 
@@ -131,6 +146,7 @@
     async function handleGoogleSignIn() {
         if (!ensureReady()) return;
 
+        hideAuthNotice();
         await runAuthAction('Googleへ移動しています...', async () => {
             const options = {
                 redirectTo: getRedirectUrl()
@@ -325,6 +341,11 @@
         setControlsDisabled(true);
         setAuthState('許可ドメイン外です。', '拒否', 'error');
         setMessage(`${email} は許可されていないメールアドレスです。`, 'error');
+        showAuthNotice(
+            'ログインできませんでした',
+            `${email} は許可されているドメインではありません。g.ecc.u-tokyo.ac.jp のGoogleアカウントでログインしてください。`,
+            'error'
+        );
 
         try {
             await supabaseClient?.auth.signOut();
@@ -346,6 +367,110 @@
 
     function normalizeDomainRule(rule) {
         return String(rule || '').trim().toLowerCase().replace(/^@/, '');
+    }
+
+    function renderDomainNote() {
+        if (!elements.domainNote) return;
+
+        const rules = getAllowedEmailRules();
+        if (rules.length === 0) {
+            elements.domainNote.textContent = '';
+            elements.domainNote.hidden = true;
+            return;
+        }
+
+        const domainText = rules
+            .map(rule => normalizeDomainRule(rule))
+            .filter(Boolean)
+            .join(' / ');
+        elements.domainNote.textContent = `${domainText} のGoogleアカウントでログインできます。`;
+        elements.domainNote.hidden = false;
+    }
+
+    function showAuthNotice(title, body, kind = 'error') {
+        if (!elements.notice) return;
+
+        elements.notice.hidden = false;
+        elements.notice.className = `auth-notice auth-notice-${kind}`;
+        if (elements.noticeTitle) elements.noticeTitle.textContent = title || '';
+        if (elements.noticeBody) elements.noticeBody.textContent = body || '';
+    }
+
+    function hideAuthNotice() {
+        if (!elements.notice) return;
+
+        elements.notice.hidden = true;
+        if (elements.noticeTitle) elements.noticeTitle.textContent = '';
+        if (elements.noticeBody) elements.noticeBody.textContent = '';
+    }
+
+    function readAuthRedirectNotice() {
+        const params = new URLSearchParams(window.location.search);
+        const hashText = window.location.hash.replace(/^#/, '');
+        const hashParams = new URLSearchParams(hashText);
+
+        const errorCode = params.get('error_code') || hashParams.get('error_code') || '';
+        const error = params.get('error') || hashParams.get('error') || '';
+        const description = params.get('error_description') || hashParams.get('error_description') || '';
+        if (!errorCode && !error && !description) return null;
+
+        return {
+            kind: 'error',
+            title: 'ログインできませんでした',
+            body: toAuthRedirectMessage(errorCode, description || error)
+        };
+    }
+
+    function toAuthRedirectMessage(errorCode, description) {
+        const decodedDescription = decodeAuthText(description);
+
+        if (errorCode === 'signup_disabled') {
+            return 'Supabaseで新規登録がOFFになっています。初回ログインを通すときは、Supabaseの新規登録を一時的にONにしてください。';
+        }
+
+        if (decodedDescription.includes('このメールアドレスでは登録できません')) {
+            return 'このGoogleアカウントは許可されていません。g.ecc.u-tokyo.ac.jp のGoogleアカウントでログインしてください。';
+        }
+
+        if (decodedDescription.includes('missing OAuth secret')) {
+            return 'SupabaseのGoogle ProviderにClient Secretが入っていません。Supabase側のGoogle設定を保存してください。';
+        }
+
+        if (errorCode === 'access_denied') {
+            return decodedDescription || 'Googleログインが拒否されました。許可されたGoogleアカウントか確認してください。';
+        }
+
+        return decodedDescription || 'ログイン処理が完了しませんでした。もう一度試してください。';
+    }
+
+    function decodeAuthText(value) {
+        try {
+            return decodeURIComponent(String(value || '').replace(/\+/g, ' '));
+        } catch (_error) {
+            return String(value || '').replace(/\+/g, ' ');
+        }
+    }
+
+    function clearAuthParamsFromUrl() {
+        if (!window.history || !window.history.replaceState) return;
+
+        const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    function switchToAuthTab() {
+        if (typeof window.switchTab === 'function') {
+            window.switchTab('auth');
+            return;
+        }
+
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.toggle('active', content.id === 'auth');
+        });
+        document.querySelectorAll('.tab-button').forEach(button => {
+            const target = button.getAttribute('onclick') || '';
+            button.classList.toggle('active', target.includes('auth'));
+        });
     }
 
     function toUserMessage(error) {

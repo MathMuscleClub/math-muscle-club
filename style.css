@@ -737,9 +737,10 @@ ul.exam-source-list {
 .auth-panel {
     background-color: var(--surface);
     border: 1px solid var(--line);
+    border-top: 4px solid var(--accent);
     border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
-    padding: 22px;
+    box-shadow: 0 14px 34px rgba(17, 24, 39, 0.08);
+    padding: 24px;
 }
 
 .auth-status-row {
@@ -799,32 +800,72 @@ ul.exam-source-list {
     gap: 14px;
 }
 
-.auth-oauth {
+.auth-notice {
+    border-radius: 8px;
     margin-bottom: 16px;
+    padding: 12px 14px;
+}
+
+.auth-notice-error {
+    background-color: #fff5f5;
+    border: 1px solid #efb8b8;
+}
+
+.auth-notice-title {
+    color: #9f1c12;
+    font-size: 0.9rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.auth-notice-body {
+    color: #6f2a24;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.auth-domain-note {
+    background-color: var(--accent-soft);
+    border: 1px solid #cce2d5;
+    border-radius: 8px;
+    color: var(--accent);
+    font-size: 0.88rem;
+    font-weight: 800;
+    margin: 0 0 14px 0;
+    padding: 10px 12px;
+}
+
+.auth-domain-note:empty {
+    display: none;
+}
+
+.auth-oauth {
+    margin-bottom: 18px;
 }
 
 .auth-google-button {
     align-items: center;
-    background-color: #ffffff;
-    border: 1px solid var(--line);
+    background-color: var(--text);
+    border: 1px solid var(--text);
     border-radius: 6px;
-    color: var(--text);
+    color: #ffffff;
     cursor: pointer;
     display: inline-flex;
     font: inherit;
-    font-size: 0.9rem;
+    font-size: 0.96rem;
     font-weight: 800;
     justify-content: center;
-    min-height: 42px;
-    padding: 8px 12px;
+    min-height: 50px;
+    padding: 10px 14px;
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     width: 100%;
 }
 
 .auth-google-button:hover:not(:disabled) {
-    background-color: var(--accent-soft);
-    border-color: #b9d8c6;
-    color: var(--accent);
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
 }
 
 .auth-google-button:disabled {
