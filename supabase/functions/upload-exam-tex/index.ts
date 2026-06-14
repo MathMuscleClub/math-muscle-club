@@ -10,6 +10,17 @@ type GitHubFile = {
   sha: string;
 };
 
+type MacroCopyRule = {
+  name: string;
+  requiredArgs: number;
+  optionalArgs?: boolean;
+  maxOptionalArgs?: number;
+};
+
+type MacroAllowlist = {
+  copyCommands: MacroCopyRule[];
+};
+
 type TexPart = {
   source: string;
   kind: "problem" | "answer";
@@ -42,6 +53,17 @@ type ManifestItem = Record<string, unknown> & {
   updatedAt?: string;
   tags?: string[];
   status?: string;
+};
+
+const DEFAULT_MACRO_ALLOWLIST: MacroAllowlist = {
+  copyCommands: [
+    { name: "DeclareMathOperator", requiredArgs: 2 },
+    { name: "DeclareMathOperator*", requiredArgs: 2 },
+    { name: "newcommand", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
+    { name: "newcommand*", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
+    { name: "providecommand", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
+    { name: "providecommand*", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
+  ],
 };
 
 Deno.serve(async (request) => {
@@ -77,9 +99,13 @@ Deno.serve(async (request) => {
     if (!problemSource.trim() && !answerSource.trim()) {
       return errorResponse("問題文または解答のTeXを入力してください。");
     }
+    if (containsProblemOnlyMetadata(answerSource)) {
+      return errorResponse("解答TeXには \\examfield, \\examsubject, \\examtag を入れないでください。分野とタグは問題文TeXに入れてください。");
+    }
 
-    const problemParts = problemSource.trim() ? splitTexParts(problemSource, "problem") : [];
-    const answerParts = answerSource.trim() ? splitTexParts(answerSource, "answer") : [];
+    const macroAllowlist = await readMacroAllowlist();
+    const problemParts = problemSource.trim() ? splitTexParts(problemSource, "problem", macroAllowlist).filter((part) => part.kind === "problem") : [];
+    const answerParts = answerSource.trim() ? splitTexParts(answerSource, "answer", macroAllowlist).filter((part) => part.kind === "answer") : [];
     if (answerSource.trim() && answerParts.length === 0) {
       return errorResponse("解答LaTeXから提出対象を読み取れませんでした。");
     }
@@ -92,6 +118,13 @@ Deno.serve(async (request) => {
     });
     if (missingMetadata) {
       return errorResponse("\\examyear, \\examgroup, \\examnumber を各問題・解答ブロックに入れてください。");
+    }
+    const missingProblemField = problemParts.find((part) => !part.field);
+    if (missingProblemField) {
+      return errorResponse("問題文TeXには各問題ブロックに \\examfield を入れてください。");
+    }
+    if (findDuplicateTexPartKeys(problemParts).length > 0) {
+      return errorResponse("同じ年度・問題区分・問題番号の問題文が同じアップロード内に複数あります。");
     }
 
     const uploadedAt = new Date().toISOString();
@@ -244,7 +277,6 @@ async function createAnswerSubmission(
   const problemTexPath = problemPart
     ? sharedProblemTexPath(problemPart)
     : findExistingProblemTexPath(manifestItems, answerPart);
-  const field = answerPart.field || problemPart?.field || findExistingProblemField(manifestItems, answerPart);
 
   await putGitHubTextFile(
     answerTexPath,
@@ -258,7 +290,6 @@ async function createAnswerSubmission(
     era: answerPart.era || problemPart?.era || "",
     problemGroup: answerPart.problemGroup,
     problemNumber: answerPart.problemNumber,
-    field,
     title: answerPart.title || `${answerPart.year}年度 ${answerPart.problemGroup} 第${answerPart.problemNumber}問 解答`,
     summary: answerPart.summary || "",
     problemTexPath,
@@ -267,7 +298,6 @@ async function createAnswerSubmission(
     uploadedByEmail: email,
     uploadedByUserId: user.id || "",
     uploadedAt,
-    tags: uniqueValues([...(answerPart.tags || []), ...(problemPart?.tags || [])]),
     status: "submitted",
   };
 }
@@ -296,7 +326,6 @@ async function updateAnswerSubmission(
   const problemTexPath = problemPart
     ? sharedProblemTexPath(problemPart)
     : findExistingProblemTexPath(manifestItems, answerPart) || String(target.problemTexPath || "");
-  const field = answerPart.field || problemPart?.field || target.field || findExistingProblemField(manifestItems, answerPart);
 
   await putGitHubTextFile(
     answerTexPath,
@@ -310,7 +339,7 @@ async function updateAnswerSubmission(
     era: answerPart.era || target.era || problemPart?.era || "",
     problemGroup: answerPart.problemGroup,
     problemNumber: answerPart.problemNumber,
-    field,
+    field: undefined,
     title: answerPart.title || target.title || `${answerPart.year}年度 ${answerPart.problemGroup} 第${answerPart.problemNumber}問 解答`,
     summary: answerPart.summary || "",
     problemTexPath,
@@ -319,7 +348,7 @@ async function updateAnswerSubmission(
     uploadedByEmail: target.uploadedByEmail || email,
     uploadedByUserId: target.uploadedByUserId || user.id || "",
     updatedAt,
-    tags: uniqueValues([...(answerPart.tags || []), ...(problemPart?.tags || [])]),
+    tags: undefined,
     status: "submitted",
   };
 }
@@ -350,7 +379,6 @@ function attachSharedProblemPath(items: ManifestItem[], problemPart: TexPart, pr
     return {
       ...item,
       problemTexPath,
-      field: problemPart.field || item.field,
     };
   });
 }
@@ -366,13 +394,6 @@ function findExistingProblemTexPath(items: ManifestItem[], part: TexPart) {
     return matchesManifestProblem(candidate, part) && String(candidate.problemTexPath || "");
   });
   return item ? String(item.problemTexPath || "") : "";
-}
-
-function findExistingProblemField(items: ManifestItem[], part: TexPart) {
-  const item = items.find((candidate) => {
-    return matchesManifestProblem(candidate, part) && String(candidate.field || "");
-  });
-  return item ? String(item.field || "") : "";
 }
 
 function getAnswerTexPath(item: ManifestItem) {
@@ -391,21 +412,174 @@ function matchesManifestProblem(item: ManifestItem, part: TexPart) {
     && cleanProblemNumber(item.problemNumber) === cleanProblemNumber(part.problemNumber);
 }
 
-function splitTexParts(source: string, defaultKind: "problem" | "answer"): TexPart[] {
+function containsProblemOnlyMetadata(source: string) {
+  return ["examfield", "examsubject", "examtag"].some((command) => hasTexCommand(source, command));
+}
+
+function hasTexCommand(source: string, command: string) {
+  const needle = `\\${command}`;
+  let index = 0;
+  while ((index = source.indexOf(needle, index)) !== -1) {
+    const next = source[index + needle.length] || "";
+    if (!/[A-Za-z]/.test(next)) return true;
+    index += needle.length;
+  }
+  return false;
+}
+
+function findDuplicateTexPartKeys(parts: TexPart[]) {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const part of parts) {
+    const key = `${part.year}:${part.problemGroup}:${part.problemNumber}`;
+    if (seen.has(key)) duplicates.add(key);
+    seen.add(key);
+  }
+  return [...duplicates];
+}
+
+function splitTexParts(source: string, defaultKind: "problem" | "answer", macroAllowlist: MacroAllowlist): TexPart[] {
   const body = getDocumentBody(source).replace(/\\maketitle/g, "").trim();
   const starts = findMetadataBlockStarts(body);
+  const sharedMacros = extractSharedMacroPrefix(source, body, starts, macroAllowlist);
   const ranges = starts.length > 0
     ? starts.map((start, index) => ({ start, end: starts[index + 1] ?? body.length }))
     : [{ start: 0, end: body.length }];
 
   return ranges.map(({ start, end }) => {
-    const partSource = body.slice(start, end).trim();
+    const partSource = prependSharedMacros(body.slice(start, end).trim(), sharedMacros);
     const metadata = parseExamMetadata(partSource, defaultKind);
     return {
       ...metadata,
       source: partSource,
     };
   }).filter((part) => part.source);
+}
+
+function extractSharedMacroPrefix(
+  originalSource: string,
+  body: string,
+  starts: number[],
+  macroAllowlist: MacroAllowlist,
+) {
+  const candidates = [
+    getDocumentPreamble(originalSource),
+    starts.length > 0 ? body.slice(0, starts[0]) : "",
+  ].filter(Boolean);
+  const declarations = candidates.flatMap((candidate) => collectAllowedMacroDeclarations(candidate, macroAllowlist));
+  return uniqueMacroDeclarations(declarations).join("\n");
+}
+
+function prependSharedMacros(partSource: string, sharedMacros: string) {
+  const source = partSource.trim();
+  const macros = sharedMacros.trim();
+  if (!source || !macros) return source;
+  return `${macros}\n\n${source}`;
+}
+
+function collectAllowedMacroDeclarations(source: string, macroAllowlist: MacroAllowlist) {
+  const rules = macroAllowlist.copyCommands
+    .filter((rule) => rule.name && rule.requiredArgs > 0)
+    .sort((a, b) => b.name.length - a.name.length);
+  const declarations: Array<{ start: number; end: number; text: string }> = [];
+
+  for (const rule of rules) {
+    const needle = `\\${rule.name}`;
+    let index = 0;
+    while ((index = source.indexOf(needle, index)) !== -1) {
+      const next = source[index + needle.length] || "";
+      if (/[A-Za-z]/.test(next) || (!rule.name.endsWith("*") && next === "*")) {
+        index += needle.length;
+        continue;
+      }
+
+      const declaration = readAllowedMacroDeclaration(source, index, rule);
+      if (declaration) {
+        declarations.push({ start: index, end: index + declaration.length, text: declaration });
+        index += declaration.length;
+      } else {
+        index += needle.length;
+      }
+    }
+  }
+
+  return removeNestedMacroDeclarations(declarations.sort((a, b) => a.start - b.start))
+    .map((item) => item.text);
+}
+
+function removeNestedMacroDeclarations(declarations: Array<{ start: number; end: number; text: string }>) {
+  const selected: Array<{ start: number; end: number; text: string }> = [];
+  for (const declaration of declarations) {
+    const isNested = selected.some((item) => declaration.start >= item.start && declaration.end <= item.end);
+    if (!isNested) selected.push(declaration);
+  }
+  return selected;
+}
+
+function readAllowedMacroDeclaration(source: string, start: number, rule: MacroCopyRule) {
+  let cursor = start + rule.name.length + 1;
+  let requiredRead = 0;
+  let optionalRead = 0;
+  const maxOptionalArgs = Math.max(0, rule.maxOptionalArgs ?? 0);
+
+  while (cursor < source.length) {
+    cursor = skipInlineSpace(source, cursor);
+
+    if (rule.optionalArgs && optionalRead < maxOptionalArgs && source[cursor] === "[") {
+      const bracketed = readBracketed(source, cursor);
+      if (!bracketed) return "";
+      cursor = bracketed.end;
+      optionalRead++;
+      continue;
+    }
+
+    if (source[cursor] === "{") {
+      const braced = readBraced(source, cursor);
+      if (!braced) return "";
+      cursor = braced.end;
+      requiredRead++;
+      if (requiredRead >= rule.requiredArgs) break;
+      continue;
+    }
+
+    return "";
+  }
+
+  if (requiredRead < rule.requiredArgs) return "";
+  return source.slice(start, cursor).trim();
+}
+
+function skipInlineSpace(source: string, start: number) {
+  let cursor = start;
+  while (/[ \t\r\n]/.test(source[cursor] || "")) cursor++;
+  return cursor;
+}
+
+function readBracketed(source: string, start: number) {
+  let depth = 0;
+
+  for (let index = start; index < source.length; index++) {
+    const char = source[index];
+    const escaped = index > 0 && source[index - 1] === "\\";
+
+    if (char === "[" && !escaped) {
+      depth++;
+    } else if (char === "]" && !escaped) {
+      depth--;
+      if (depth === 0) {
+        return {
+          value: source.slice(start + 1, index),
+          end: index + 1,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+function uniqueMacroDeclarations(values: string[]) {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
 function findMetadataBlockStarts(source: string) {
@@ -433,18 +607,21 @@ function parseExamMetadata(source: string, defaultKind: "problem" | "answer"): O
     }
     return "";
   };
-  const kindText = read("examkind", "examtype");
+  const kind = defaultKind;
+  const isProblem = kind === "problem";
 
   return {
-    kind: normalizeKind(kindText, defaultKind),
+    kind,
     year: cleanYear(read("examyear")),
     era: cleanTextValue(read("examera"), 20),
-    field: cleanTextValue(read("examfield", "examsubject"), 40),
+    field: isProblem ? cleanTextValue(read("examfield", "examsubject"), 40) : "",
     problemGroup: cleanProblemGroup(read("examgroup", "examproblemgroup")),
     problemNumber: cleanProblemNumber(read("examnumber", "examproblemnumber")),
     title: cleanTextValue(read("examtitle"), 120),
     summary: cleanTextValue(read("examsummary"), 500),
-    tags: uniqueValues(collectCommandArgs(source, "examtag", 1).map((item) => cleanTextValue(item.args[0], 40))),
+    tags: isProblem
+      ? uniqueValues(collectCommandArgs(source, "examtag", 1).map((item) => cleanTextValue(item.args[0], 40)))
+      : [],
   };
 }
 
@@ -543,12 +720,51 @@ function getDocumentBody(source: string) {
   return source.slice(bodyStart + begin.length, bodyEnd);
 }
 
+function getDocumentPreamble(source: string) {
+  const begin = "\\begin{document}";
+  const bodyStart = source.indexOf(begin);
+  return bodyStart === -1 ? "" : source.slice(0, bodyStart);
+}
+
 function findMatchingProblemPart(problemParts: TexPart[], answerPart: TexPart) {
   return problemParts.find((problemPart) => {
     return problemPart.year === answerPart.year
       && problemPart.problemGroup === answerPart.problemGroup
       && problemPart.problemNumber === answerPart.problemNumber;
   });
+}
+
+async function readMacroAllowlist(): Promise<MacroAllowlist> {
+  const path = Deno.env.get("EXAM_MACRO_ALLOWLIST_PATH") || "exam-macro-allowlist.json";
+  const file = await maybeGetGitHubFile(path);
+  if (!file) return DEFAULT_MACRO_ALLOWLIST;
+
+  const parsed = JSON.parse(decodeBase64(file.content));
+  const copyCommands = Array.isArray(parsed?.copyCommands)
+    ? parsed.copyCommands.map(normalizeMacroCopyRule).filter((rule: MacroCopyRule | null): rule is MacroCopyRule => Boolean(rule))
+    : [];
+  if (copyCommands.length === 0) {
+    throw new Error(`${path} に copyCommands を1件以上設定してください。`);
+  }
+  return { copyCommands };
+}
+
+function normalizeMacroCopyRule(rule: unknown): MacroCopyRule | null {
+  if (!rule || typeof rule !== "object") return null;
+  const item = rule as Record<string, unknown>;
+  const name = String(item.name || "").replace(/^\\/, "").trim();
+  const requiredArgs = Number(item.requiredArgs);
+  if (!/^[A-Za-z]+\*?$/.test(name) || !Number.isInteger(requiredArgs) || requiredArgs <= 0 || requiredArgs > 9) {
+    return null;
+  }
+
+  const maxOptionalArgs = Number(item.maxOptionalArgs ?? 0);
+  return {
+    name,
+    requiredArgs,
+    optionalArgs: Boolean(item.optionalArgs),
+    maxOptionalArgs: Number.isInteger(maxOptionalArgs) && maxOptionalArgs > 0 ? Math.min(maxOptionalArgs, 9) : 0,
+  };
 }
 
 async function readManifest(): Promise<{ items: ManifestItem[]; sha?: string }> {
@@ -706,13 +922,6 @@ function cleanPathPart(value: unknown) {
     .replace(/[^0-9A-Za-z_-]/g, "-")
     .replace(/^-+|-+$/g, "")
     || "unknown";
-}
-
-function normalizeKind(value: string, fallback: "problem" | "answer"): "problem" | "answer" {
-  const text = cleanText(value, 30).toLowerCase();
-  if (/問題|problem|question/.test(text)) return "problem";
-  if (/解答|解説|答案|answer|solution/.test(text)) return "answer";
-  return fallback;
 }
 
 function uniqueValues(values: string[]) {

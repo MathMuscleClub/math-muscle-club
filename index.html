@@ -186,6 +186,7 @@
                             <details class="exam-tool-panel exam-collapsible-panel" id="exam-pdf-panel">
                                 <summary class="exam-tool-panel-header">
                                     <h3>PDF出力</h3>
+                                    <button id="exam-pdf-quick-submit" class="auth-secondary-button exam-summary-action" type="button">PDF生成</button>
                                     <span class="auth-status-badge auth-status-success">一時生成</span>
                                 </summary>
                                 <form id="exam-pdf-form" class="exam-pdf-form">
@@ -690,10 +691,35 @@
             }));
         }
 
+        function isProblemMetadataSubmission(submission) {
+            if (!submission) return false;
+            if (submission.status === 'problem' || submission.kind === 'problem') return true;
+            return Boolean(submission.status === 'sample' && !submission.answerTexPath);
+        }
+
+        function getProblemTagsFromSubmission(submission) {
+            return isProblemMetadataSubmission(submission) || submission.sourceType === 'legacy'
+                ? submission.tags || []
+                : [];
+        }
+
+        function getProblemFieldFromSubmission(submission, problemSections = [], problemParsed = []) {
+            const manifestField = isProblemMetadataSubmission(submission) || submission.sourceType === 'legacy'
+                ? submission.field || ''
+                : '';
+            return manifestField
+                || problemSections.find(section => section.field)?.field
+                || problemParsed.find(item => item.field)?.field
+                || '';
+        }
+
         async function loadExamSubmission(submission) {
             try {
                 const loaded = await loadSubmissionTexSources(submission);
-                const parsed = loaded.sources.map(item => window.ExamMacros.parse(item.source));
+                const parsed = loaded.sources.map(item => ({
+                    ...window.ExamMacros.parse(item.source),
+                    sourceKind: item.kind
+                }));
                 const sections = loaded.sources.flatMap(item => {
                     return window.ExamMacros.splitSubmission(item.source, submission, item.kind)
                         .filter(section => matchesSubmissionProblem(section, submission))
@@ -704,7 +730,16 @@
                         }));
                 });
 
-                const tags = uniqueValues([...(submission.tags || []), ...parsed.flatMap(item => item.tags || []), ...sections.flatMap(section => section.tags || [])]);
+                const problemSections = sections.filter(section => section.kind === 'problem');
+                const problemParsed = parsed.filter(item => item.sourceKind === 'problem');
+                const manifestTags = isProblemMetadataSubmission(submission) || submission.sourceType === 'legacy'
+                    ? submission.tags || []
+                    : [];
+                const tags = uniqueValues([
+                    ...manifestTags,
+                    ...problemParsed.flatMap(item => item.tags || []),
+                    ...problemSections.flatMap(section => section.tags || [])
+                ]);
                 const references = [
                     ...(Array.isArray(submission.references) ? submission.references : []),
                     ...parsed.flatMap(item => item.related || []).map(ref => ({
@@ -715,7 +750,7 @@
 
                 return {
                     ...submission,
-                    field: submission.field || sections.find(section => section.field)?.field || parsed.find(item => item.field)?.field || '',
+                    field: getProblemFieldFromSubmission(submission, problemSections, problemParsed),
                     tags,
                     references,
                     sections,
@@ -739,7 +774,7 @@
                 console.error(error);
                 return {
                     ...submission,
-                    tags: submission.tags || [],
+                    tags: isProblemMetadataSubmission(submission) || submission.sourceType === 'legacy' ? submission.tags || [] : [],
                     references: Array.isArray(submission.references) ? submission.references : [],
                     sections: [{
                         id: `${submission.id || submission.texPath}-error`,
@@ -795,7 +830,7 @@
                     const key = makeExamProblemKey(year, problemGroup, problemNumber);
                     const problem = ensureExamProblem(problemMap, key, submission, section, problemGroup, problemNumber);
 
-                    problem.tags = uniqueValues([...problem.tags, ...(submission.tags || [])]);
+                    problem.tags = uniqueValues([...problem.tags, ...getProblemTagsFromSubmission(submission)]);
                     problem.references = mergeReferences(problem.references, submission.references || []);
 
                     if (section.kind === 'problem') {
@@ -806,6 +841,7 @@
                             problem.statementSubmissionId = submission.id || '';
                         }
                         problem.field = problem.field || section.field || submission.field || '';
+                        problem.tags = uniqueValues([...problem.tags, ...(section.tags || [])]);
                         problem.statementPlainText = [problem.statementPlainText, section.plainText].join(' ');
                         return;
                     }
@@ -819,7 +855,6 @@
                         texPath: section.texPath || submission.answerTexPath || submission.texPath,
                         answerTexPath: submission.answerTexPath || section.texPath || submission.texPath,
                         problemTexPath: submission.problemTexPath || '',
-                        field: section.field || submission.field || '',
                         uploadedByName: submission.uploadedByName || '匿名',
                         uploadedByEmail: submission.uploadedByEmail || '',
                         uploadedByUserId: submission.uploadedByUserId || '',
@@ -829,7 +864,7 @@
                         summary: section.summary || submission.summary || '',
                         submissionTitle: section.title || submission.title || '',
                         sourceType: submission.sourceType || '',
-                        tags: submission.tags || []
+                        tags: []
                     });
                 });
             });
@@ -877,7 +912,7 @@
                     era: section.era || submission.era || '',
                     problemGroup,
                     problemNumber,
-                    field: section.field || submission.field || '',
+                    field: section.kind === 'problem' ? section.field || submission.field || '' : getProblemFieldFromSubmission(submission),
                     title,
                     statementHTML: '',
                     statementTitle: '',
@@ -893,7 +928,7 @@
             problem.era = problem.era || section.era || submission.era || '';
             problem.problemGroup = problem.problemGroup || problemGroup;
             problem.problemNumber = problem.problemNumber || problemNumber;
-            problem.field = problem.field || section.field || submission.field || '';
+            problem.field = problem.field || (section.kind === 'problem' ? section.field || submission.field || '' : getProblemFieldFromSubmission(submission));
             problem.title = problem.title || section.title || submission.title || key;
             return problem;
         }
@@ -1592,7 +1627,6 @@
                 `\\examfield{${getExamFieldLabel(problem.field) || '代数'}}`,
                 `\\examgroup{${problem.problemGroup || ''}}`,
                 `\\examnumber{${problem.problemNumber || ''}}`,
-                '\\examkind{problem}',
                 `\\examtitle{${problem.title || ''}}`,
                 '',
                 '% ここに問題文を入力'
@@ -1754,15 +1788,23 @@
         }
 
         function getDetectedUploadParts({ problemSource, answerSource }) {
+            const problemParts = problemSource ? window.ExamMacros.splitSubmission(problemSource, {}, 'problem') : [];
+            const answerParts = answerSource ? window.ExamMacros.splitSubmission(answerSource, {}, 'answer') : [];
             return {
-                problemParts: problemSource ? window.ExamMacros.splitSubmission(problemSource, {}, 'problem') : [],
-                answerParts: answerSource ? window.ExamMacros.splitSubmission(answerSource, {}, 'answer') : []
+                problemParts,
+                answerParts,
+                answerHasProblemOnlyMetadata: containsProblemOnlyExamMetadata(answerSource),
+                duplicateProblemKeys: findDuplicateDetectedPartKeys(problemParts)
             };
         }
 
         function validateDetectedUploadParts(detected, requireContent = true, isReplacing = false) {
             if (requireContent && detected.problemParts.length === 0 && detected.answerParts.length === 0) {
                 return { ok: false, message: '問題文または解答のTeXから提出対象を読み取れませんでした。' };
+            }
+
+            if (detected.answerHasProblemOnlyMetadata) {
+                return { ok: false, message: '解答TeXには \\examfield, \\examsubject, \\examtag を入れないでください。分野とタグは問題文TeXに入れてください。' };
             }
 
             if (isReplacing && detected.answerParts.length !== 1) {
@@ -1778,7 +1820,49 @@
                 };
             }
 
+            const missingField = detected.problemParts.find(part => !part.field);
+            if (missingField) {
+                return {
+                    ok: false,
+                    message: '問題文TeXには各問題ブロックに \\examfield を入れてください。'
+                };
+            }
+
+            if (detected.duplicateProblemKeys?.length > 0) {
+                return {
+                    ok: false,
+                    message: '同じ年度・問題区分・問題番号の問題文が同じアップロード内に複数あります。'
+                };
+            }
+
             return { ok: true, message: '' };
+        }
+
+        function containsProblemOnlyExamMetadata(source) {
+            return ['examfield', 'examsubject', 'examtag'].some(command => hasLatexCommand(source, command));
+        }
+
+        function hasLatexCommand(source, command) {
+            const text = String(source || '');
+            const needle = `\\${command}`;
+            let index = 0;
+            while ((index = text.indexOf(needle, index)) !== -1) {
+                const next = text[index + needle.length] || '';
+                if (!/[A-Za-z]/.test(next)) return true;
+                index += needle.length;
+            }
+            return false;
+        }
+
+        function findDuplicateDetectedPartKeys(parts) {
+            const seen = new Set();
+            const duplicates = new Set();
+            parts.forEach(part => {
+                const key = [part.year, part.problemGroup, part.problemNumber].join(':');
+                if (seen.has(key)) duplicates.add(key);
+                seen.add(key);
+            });
+            return [...duplicates];
         }
 
         function renderDetectedUploadParts(detected, warning = '') {
@@ -1797,12 +1881,17 @@
 
             list.innerHTML = `
                 ${warning ? `<p class="error">${escapeHTML(warning)}</p>` : ''}
-                ${rows.length > 0 ? rows.map(part => `
-                    <div class="exam-detected-chip">
-                        <span>${escapeHTML(part.label)}</span>
-                        <strong>${escapeHTML(part.year || '?')}年度 ${escapeHTML(part.problemGroup || '?')} ${escapeHTML(part.field ? getExamFieldLabel(part.field) : '分野未指定')} 第${escapeHTML(part.problemNumber || '?')}問</strong>
-                    </div>
-                `).join('') : ''}
+                ${rows.length > 0 ? rows.map(part => {
+                    const fieldLabel = part.label === '問題文'
+                        ? ` ${part.field ? getExamFieldLabel(part.field) : '分野未指定'}`
+                        : '';
+                    return `
+                        <div class="exam-detected-chip">
+                            <span>${escapeHTML(part.label)}</span>
+                            <strong>${escapeHTML(part.year || '?')}年度 ${escapeHTML(part.problemGroup || '?')}${escapeHTML(fieldLabel)} 第${escapeHTML(part.problemNumber || '?')}問</strong>
+                        </div>
+                    `;
+                }).join('') : ''}
             `;
         }
 
@@ -1817,6 +1906,7 @@
             const yearSelect = document.getElementById('exam-pdf-year');
             const groupSelect = document.getElementById('exam-pdf-group');
             const submitButton = document.getElementById('exam-pdf-submit');
+            const quickButton = document.getElementById('exam-pdf-quick-submit');
             if (!yearSelect || !groupSelect || !submitButton) return;
 
             const previousYear = yearSelect.value;
@@ -1826,9 +1916,11 @@
 
             updateExamPdfGroupOptions();
             submitButton.disabled = examProblemsState.length === 0;
+            if (quickButton) quickButton.disabled = examProblemsState.length === 0;
 
             if (!examPdfFormReady) {
                 document.getElementById('exam-pdf-form')?.addEventListener('submit', handleExamPdfSubmit);
+                quickButton?.addEventListener('click', handleExamPdfQuickSubmit);
                 yearSelect.addEventListener('change', () => {
                     updateExamPdfGroupOptions();
                     updateExamPdfProblemChoices();
@@ -1888,13 +1980,51 @@
                 mode: formData.get('mode'),
                 problemKeys: formData.getAll('problemKey')
             };
-            const selectedProblems = examProblemsState.filter(problem => payload.problemKeys.includes(problem.key));
+            const selectedProblems = getSelectedExamPdfProblems(payload);
+            await submitExamPdfPayload(payload, selectedProblems);
+        }
 
+        async function handleExamPdfQuickSubmit(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const payload = makeQuickExamPdfPayload();
+            const selectedProblems = getSelectedExamPdfProblems(payload);
+            await submitExamPdfPayload(payload, selectedProblems);
+        }
+
+        function makeQuickExamPdfPayload() {
+            let year = '';
+            let problemGroup = '';
+            if (activeExamMode === 'browse') {
+                ensureExamFolderSelection();
+                year = examFolderSelection.year || '';
+                problemGroup = examFolderSelection.group || '';
+            }
+
+            year = year || document.getElementById('exam-pdf-year')?.value || '';
+            problemGroup = problemGroup || document.getElementById('exam-pdf-group')?.value || '';
+            const mode = document.getElementById('exam-pdf-mode')?.value || 'problems-and-answers';
+            const problems = getProblemsForPdfSelection(year, problemGroup);
+            return {
+                year,
+                problemGroup,
+                mode,
+                problemKeys: problems.map(problem => problem.key)
+            };
+        }
+
+        function getSelectedExamPdfProblems(payload) {
+            const selectedKeys = new Set(payload.problemKeys || []);
+            return examProblemsState.filter(problem => selectedKeys.has(problem.key));
+        }
+
+        async function submitExamPdfPayload(payload, selectedProblems) {
             if (selectedProblems.length === 0) {
                 setExamPdfMessage('出力する問題を選んでください。', 'error');
                 return;
             }
 
+            setExamPdfGenerating(true);
             setExamPdfMessage('PDFを生成しています...', 'muted');
             const printWindow = openPrintPreparationWindow(payload);
 
@@ -1928,7 +2058,17 @@
                         : 'PDF生成サービスが未設定で、印刷画面も開けませんでした。',
                     opened ? 'muted' : 'error'
                 );
+            } finally {
+                setExamPdfGenerating(false);
             }
+        }
+
+        function setExamPdfGenerating(isGenerating) {
+            const submitButton = document.getElementById('exam-pdf-submit');
+            const quickButton = document.getElementById('exam-pdf-quick-submit');
+            const disabled = isGenerating || examProblemsState.length === 0;
+            if (submitButton) submitButton.disabled = disabled;
+            if (quickButton) quickButton.disabled = disabled;
         }
 
         function getProblemsForPdfSelection(year, group) {

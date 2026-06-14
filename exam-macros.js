@@ -36,17 +36,20 @@
 
         if (headings.length === 0) {
             const fallbackTitle = metadata.title || '提出された解答';
+            const kind = normalizeExamKind(defaultKind || metadata.kind || fallbackTitle);
+            const isProblem = kind === 'problem';
             return [{
-            id: makeSectionId(metadata, fallbackTitle, 'answer'),
-            kind: 'answer',
-            title: fallbackTitle,
-            year: normalizeYear(metadata.year),
-            era: normalizeSpace(metadata.era),
-            field: normalizeSpace(metadata.field),
-            problemGroup: normalizeProblemGroup(metadata.problemGroup),
-            problemNumber: normalizeProblemNumber(metadata.problemNumber || '1'),
-            summary: normalizeSpace(metadata.summary),
-            html: renderLatexFragment(body),
+                id: makeSectionId(metadata, fallbackTitle, kind),
+                kind,
+                title: fallbackTitle,
+                year: normalizeYear(metadata.year),
+                era: normalizeSpace(metadata.era),
+                field: isProblem ? normalizeSpace(metadata.field) : '',
+                problemGroup: normalizeProblemGroup(metadata.problemGroup),
+                problemNumber: normalizeProblemNumber(metadata.problemNumber || '1'),
+                summary: normalizeSpace(metadata.summary),
+                tags: isProblem && Array.isArray(metadata.tags) ? metadata.tags : [],
+                html: renderLatexFragment(body),
                 plainText: latexToPlainText(body),
                 source: body
             }];
@@ -56,18 +59,21 @@
             const next = headings[index + 1];
             const title = normalizeSpace(heading.args[0]);
             const parsed = parseExamSectionTitle(title, metadata);
+            const kind = normalizeExamKind(defaultKind || parsed.kind);
+            const isProblem = kind === 'problem';
             const sectionBody = body.slice(heading.end, next ? next.start : body.length).trim();
 
             return {
-                id: makeSectionId(metadata, title, parsed.kind),
-                kind: parsed.kind,
+                id: makeSectionId(metadata, title, kind),
+                kind,
                 title,
                 year: normalizeYear(metadata.year),
                 era: normalizeSpace(metadata.era),
-                field: normalizeSpace(metadata.field),
+                field: isProblem ? normalizeSpace(metadata.field) : '',
                 problemGroup: parsed.problemGroup,
                 problemNumber: parsed.problemNumber,
                 summary: normalizeSpace(metadata.summary),
+                tags: isProblem && Array.isArray(metadata.tags) ? metadata.tags : [],
                 html: renderLatexFragment(sectionBody),
                 plainText: latexToPlainText(sectionBody),
                 source: sectionBody
@@ -126,20 +132,24 @@
             }
             return '';
         };
-        const tags = uniqueValues([
-            ...(Array.isArray(defaults.tags) ? defaults.tags : []),
-            ...collectCommandArgs(source, 'examtag', 1).map(item => normalizeSpace(item.args[0]))
-        ]);
         const title = read('examtitle') || normalizeSpace(defaults.title);
         const kindText = read('examkind', 'examtype');
+        const kind = normalizeExamKind(defaultKind || defaults.kind || kindText || title);
+        const isProblem = kind === 'problem';
+        const tags = isProblem
+            ? uniqueValues([
+                ...(Array.isArray(defaults.tags) ? defaults.tags : []),
+                ...collectCommandArgs(source, 'examtag', 1).map(item => normalizeSpace(item.args[0]))
+            ])
+            : [];
 
         return {
             ...defaults,
-            kind: normalizeExamKind(kindText || defaultKind || defaults.kind || title),
+            kind,
             title,
             year: normalizeYear(read('examyear') || defaults.year),
             era: read('examera') || normalizeSpace(defaults.era),
-            field: read('examfield', 'examsubject') || normalizeSpace(defaults.field),
+            field: isProblem ? (read('examfield', 'examsubject') || normalizeSpace(defaults.field)) : '',
             problemGroup: normalizeProblemGroup(read('examgroup', 'examproblemgroup') || defaults.problemGroup),
             problemNumber: normalizeProblemNumber(read('examnumber', 'examproblemnumber') || defaults.problemNumber),
             summary: read('examsummary') || normalizeSpace(defaults.summary),

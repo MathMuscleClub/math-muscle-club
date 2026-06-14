@@ -670,6 +670,13 @@ details.exam-tool-panel form {
     margin-right: auto;
 }
 
+.exam-summary-action {
+    flex: 0 0 auto;
+    font-size: 0.82rem;
+    min-height: 32px;
+    padding: 5px 10px;
+}
+
 .exam-upload-form,
 .exam-pdf-form {
     display: grid;

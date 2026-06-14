@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "description": "複数問入りTeXを分割保存するとき、各 problem.tex / answer.tex の先頭へコピーしてよい共通マクロ宣言の一覧です。",
+  "copyCommands": [
+    {
+      "name": "DeclareMathOperator",
+      "requiredArgs": 2
+    },
+    {
+      "name": "DeclareMathOperator*",
+      "requiredArgs": 2
+    },
+    {
+      "name": "newcommand",
+      "requiredArgs": 2,
+      "optionalArgs": true,
+      "maxOptionalArgs": 2
+    },
+    {
+      "name": "newcommand*",
+      "requiredArgs": 2,
+      "optionalArgs": true,
+      "maxOptionalArgs": 2
+    },
+    {
+      "name": "providecommand",
+      "requiredArgs": 2,
+      "optionalArgs": true,
+      "maxOptionalArgs": 2
+    },
+    {
+      "name": "providecommand*",
+      "requiredArgs": 2,
+      "optionalArgs": true,
+      "maxOptionalArgs": 2
+    }
+  ],
+  "blockedExamples": [
+    "documentclass",
+    "usepackage",
+    "renewcommand",
+    "newenvironment",
+    "renewenvironment",
+    "input",
+    "include"
+  ]
+}
