@@ -7,6 +7,65 @@ https://warabimochi23.github.io/math-muscle-club/
 
 ---
 
+## 🔐 ログイン機能の設定
+
+ログインはSupabase Authを使います。サイトに置くのは公開してよい接続情報だけです。
+
+1. SupabaseのProject SettingsでProject URLとpublishable/anon keyを確認します。
+2. `supabase-config.js` を開き、次のように入れます。
+
+```js
+window.SUPABASE_CONFIG = {
+    url: "https://xxxx.supabase.co",
+    anonKey: "公開用のanonまたはpublishable key",
+    allowedEmailDomains: ["example.ac.jp"],
+    googleHostedDomain: "example.ac.jp"
+};
+```
+
+`allowedEmailDomains` は画面側の入力チェックです。`googleHostedDomain` はGoogleログイン画面へのヒントです。どちらもセキュリティ本体ではないので、下のAuth HookとRLSも必ず設定してください。
+
+### Googleログインを有効にする
+
+1. Supabaseで `Authentication` → `Providers` → `Google` を開きます。
+2. 表示されているCallback URLを控えます。通常は `https://xxxx.supabase.co/auth/v1/callback` です。
+3. Google Cloud ConsoleでOAuth Client IDを作成します。
+4. Application typeは `Web application` にします。
+5. Authorized JavaScript originsに以下を追加します。
+   - `https://warabimochi23.github.io`
+   - `http://localhost:8000`
+   - `http://localhost:8010`（8010番で確認する場合）
+6. Authorized redirect URIsに、SupabaseのGoogle provider画面に出ているCallback URLを追加します。
+7. 作成したClient IDとClient SecretをSupabaseのGoogle provider画面に入力して保存します。
+
+### Redirect URLを設定する
+
+Supabaseで `Authentication` → `URL Configuration` を開きます。
+
+Site URL:
+
+```text
+https://warabimochi23.github.io/math-muscle-club/
+```
+
+Redirect URLs:
+
+```text
+https://warabimochi23.github.io/math-muscle-club/
+http://localhost:8000/
+http://localhost:8010/
+```
+
+### ドメイン制限を有効にする
+
+`supabase/auth-domain-restriction.sql` の `example.ac.jp` を許可したいドメインに置き換え、SupabaseのSQL Editorで実行します。
+
+その後、Supabaseで `Authentication` → `Hooks` → `Before User Created` を開き、Postgres functionとして `public.hook_restrict_signup_by_email_domain` を選んで保存します。
+
+書き込みテーブルを作るときは、同じSQLファイル末尾のRLS例をテーブル名に合わせて使います。
+
+---
+
 ## ✍️ 部員向け：ホームページの更新マニュアル（データの追加方法）
 
 このホームページは、HTMLやCSSのコードを直接書き換えることなく、**GitHub上でJSONファイルを編集するだけ**で自動的に内容が更新されるようになっています。

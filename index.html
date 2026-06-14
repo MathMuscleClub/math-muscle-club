@@ -22,6 +22,7 @@
             <button class="tab-button" onclick="switchTab('goals')">目標と実績</button>
             <button class="tab-button" onclick="switchTab('diary')">活動日記</button>
             <button class="tab-button" onclick="switchTab('exam-answers')">過去問解答</button>
+            <button class="tab-button" onclick="switchTab('auth')">ログイン</button>
         </nav>
 
         <main>
@@ -146,6 +147,53 @@
                     </div>
                 </section>
             </div>
+
+            <!-- タブ5: ログイン -->
+            <div id="auth" class="tab-content">
+                <section>
+                    <h2>ログイン</h2>
+                    <div class="auth-panel" id="auth-panel">
+                        <div class="auth-status-row">
+                            <div>
+                                <div class="auth-kicker">Supabase Auth</div>
+                                <p id="auth-state-text" class="auth-state-text">接続確認中...</p>
+                            </div>
+                            <span id="auth-status-badge" class="auth-status-badge auth-status-muted">未接続</span>
+                        </div>
+
+                        <div class="auth-oauth">
+                            <button id="auth-google-button" class="auth-google-button" type="button">Googleで登録・ログイン</button>
+                        </div>
+
+                        <div class="auth-divider"><span>メールアドレスでログイン</span></div>
+
+                        <form id="auth-form" class="auth-form" autocomplete="on">
+                            <div class="auth-field">
+                                <label for="auth-email">メールアドレス</label>
+                                <input id="auth-email" name="email" type="email" autocomplete="email" required>
+                            </div>
+                            <div class="auth-field">
+                                <label for="auth-password">パスワード</label>
+                                <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="6" required>
+                            </div>
+                            <div class="auth-actions">
+                                <button id="auth-login-button" class="auth-primary-button" type="submit">ログイン</button>
+                                <button id="auth-signup-button" class="auth-secondary-button" type="button">アカウント作成</button>
+                            </div>
+                        </form>
+
+                        <div id="auth-session" class="auth-session" hidden>
+                            <div>
+                                <div class="auth-session-label">ログイン中</div>
+                                <div id="auth-session-email" class="auth-session-email"></div>
+                            </div>
+                            <button id="auth-logout-button" class="auth-secondary-button" type="button">ログアウト</button>
+                        </div>
+
+                        <p id="auth-message" class="auth-message" role="status"></p>
+                    </div>
+                </section>
+            </div>
         </main>
 
         <footer>
@@ -155,6 +203,8 @@
 
     <!-- タブ切り替え用のスクリプト -->
     <script src="exam-macros.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
     <script>
         function switchTab(tabId) {
             // 全てのタブコンテンツからactiveを取り除く
