@@ -1,0 +1,38 @@
+\examyear{2012}
+\examera{平成24年}
+\examfield{応用}
+\examgroup{B}
+\examnumber{16}
+\examtitle{平成24年 B 第16問}
+\examtag{遷移系}
+\examtag{不動点}
+\examtag{集合}
+\examtag{論理}
+
+遷移系 \((Q,R)\) とは，集合の組であって，\(R\subseteq Q\times Q\) を満たすものとする。
+ただし，各 \(q\in Q\) に対し，\((q,q')\in R\) を満たす \(q'\) の個数は \(1\) 以上で有限であるとする。
+また，\((q,q')\in R\) のかわりに \(q\to q'\) とも書く。
+\(q=q_0\) から始まる無限遷移列 \(\pi:q_0\to q_1\to\cdots\) の集合を \(\Pi(q)\) と書く。
+このとき，\(\pi(n)\) で \(q_n\) を表すことにする。\(Q\) の部分集合 \(X\) の関数
+\[
+  \AF(X)=\{q\in Q\mid \forall \pi\in\Pi(q)\ \exists n\ge0\ \pi(n)\in X\}
+\]
+を考える。
+
+\begin{enumerate}
+  \item 関数 \(F_X:2^Q\to 2^Q\) を
+  \[
+    F_X(Z)=X\cup \AX(Z)
+  \]
+  で定める。ただし
+  \[
+    \AX(Z)=\{q\in Q\mid \forall q'\ ((q,q')\in R\Rightarrow q'\in Z)\}
+  \]
+  とする。いま，集合の列 \(Z_n\) を，\(Z_0=X,\ Z_{n+1}=F_X(Z_n)\) で定義すれば，
+  \[
+    \AF(X)=\bigcup_{n=0}^{\infty}Z_n
+  \]
+  が成り立つことを示せ。
+  \item \(\AF(X)\) は \(F_X\) の不動点であることを示せ。また，\(F_X\) の不動点の中で，包含関係について最小のものであることを示せ。
+  ただし，\(F_X\) の不動点とは，\(F_X(Z)=Z\) を満たす集合 \(Z\) のことである。
+\end{enumerate}
