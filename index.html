@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学科筋トレ部</title>
-    <link rel="stylesheet" href="style.css?v=20260614e">
+    <link rel="stylesheet" href="style.css?v=20260614f">
 </head>
 
 <body>
@@ -137,69 +137,77 @@
             <div id="exam-answers" class="tab-content">
                 <section>
                     <h2>過去問解答</h2>
-                    <div class="exam-answer-tools">
-                        <label class="exam-search-label" for="exam-search-input">検索</label>
-                        <input id="exam-search-input" class="exam-search-input" type="search" placeholder="年度・タグ・本文で検索">
-                        <div id="exam-tag-filter" class="exam-tag-filter"></div>
-                    </div>
-                    <div class="exam-workspace-grid">
-                        <div class="exam-tool-panel" id="exam-upload-panel">
-                            <div class="exam-tool-panel-header">
-                                <h3>TeX提出</h3>
-                                <span id="exam-upload-auth-badge" class="auth-status-badge auth-status-muted">未ログイン</span>
+                    <div class="exam-dashboard">
+                        <aside class="exam-control-column" aria-label="過去問操作">
+                            <div class="exam-answer-tools">
+                                <label class="exam-search-label" for="exam-search-input">検索</label>
+                                <input id="exam-search-input" class="exam-search-input" type="search" placeholder="年度・タグ・本文で検索">
+                                <div id="exam-tag-filter" class="exam-tag-filter"></div>
                             </div>
-                            <form id="exam-upload-form" class="exam-upload-form">
-                                <p id="exam-upload-profile-note" class="exam-upload-profile-note">ログインタブで登録したユーザー名で提出されます。</p>
-                                <div class="auth-field">
-                                    <label for="exam-upload-problem-file">問題文LaTeXファイル</label>
-                                    <input id="exam-upload-problem-file" name="problemTexFile" type="file" accept=".tex,.latex,text/plain">
-                                </div>
-                                <div class="auth-field">
-                                    <label for="exam-upload-answer-file">解答LaTeXファイル</label>
-                                    <input id="exam-upload-answer-file" name="answerTexFile" type="file" accept=".tex,.latex,text/plain" required>
-                                </div>
-                                <div id="exam-upload-detected-list" class="exam-upload-detected-list"></div>
-                                <div class="auth-actions">
-                                    <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
-                                </div>
-                                <p id="exam-upload-message" class="auth-message auth-message-muted" role="status"></p>
-                            </form>
-                        </div>
+                            <details class="exam-tool-panel exam-collapsible-panel" id="exam-upload-panel">
+                                <summary class="exam-tool-panel-header">
+                                    <h3>TeX提出</h3>
+                                    <span id="exam-upload-auth-badge" class="auth-status-badge auth-status-muted">未ログイン</span>
+                                </summary>
+                                <form id="exam-upload-form" class="exam-upload-form">
+                                    <p id="exam-upload-profile-note" class="exam-upload-profile-note">ログインタブで登録したユーザー名で提出されます。</p>
+                                    <div class="auth-field">
+                                        <label for="exam-upload-problem-file">問題文LaTeXファイル</label>
+                                        <input id="exam-upload-problem-file" name="problemTexFile" type="file" accept=".tex,.latex,text/plain">
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-upload-answer-file">解答LaTeXファイル</label>
+                                        <input id="exam-upload-answer-file" name="answerTexFile" type="file" accept=".tex,.latex,text/plain" required>
+                                    </div>
+                                    <div id="exam-upload-detected-list" class="exam-upload-detected-list"></div>
+                                    <div class="auth-actions">
+                                        <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
+                                    </div>
+                                    <p id="exam-upload-message" class="auth-message auth-message-muted" role="status"></p>
+                                </form>
+                            </details>
 
-                        <div class="exam-tool-panel" id="exam-pdf-panel">
-                            <div class="exam-tool-panel-header">
-                                <h3>PDF出力</h3>
-                                <span class="auth-status-badge auth-status-success">一時生成</span>
+                            <details class="exam-tool-panel exam-collapsible-panel" id="exam-pdf-panel">
+                                <summary class="exam-tool-panel-header">
+                                    <h3>PDF出力</h3>
+                                    <span class="auth-status-badge auth-status-success">一時生成</span>
+                                </summary>
+                                <form id="exam-pdf-form" class="exam-pdf-form">
+                                    <div class="exam-form-grid">
+                                        <div class="auth-field">
+                                            <label for="exam-pdf-year">年度</label>
+                                            <select id="exam-pdf-year" name="year"></select>
+                                        </div>
+                                        <div class="auth-field">
+                                            <label for="exam-pdf-group">問題区分</label>
+                                            <select id="exam-pdf-group" name="problemGroup"></select>
+                                        </div>
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-pdf-mode">内容</label>
+                                        <select id="exam-pdf-mode" name="mode">
+                                            <option value="problems-and-answers">問題文と解答</option>
+                                            <option value="problems-only">問題文のみ</option>
+                                            <option value="answers-only">解答のみ</option>
+                                        </select>
+                                    </div>
+                                    <div id="exam-pdf-problem-list" class="exam-pdf-choice-list"></div>
+                                    <div class="auth-actions">
+                                        <button id="exam-pdf-submit" class="auth-primary-button" type="submit">PDFを生成</button>
+                                    </div>
+                                    <p id="exam-pdf-message" class="auth-message auth-message-muted" role="status"></p>
+                                </form>
+                            </details>
+                        </aside>
+                        <div class="exam-results-column">
+                            <div class="exam-results-bar">
+                                <span class="exam-results-label">問題一覧</span>
+                                <strong id="exam-results-count">読み込み中</strong>
                             </div>
-                            <form id="exam-pdf-form" class="exam-pdf-form">
-                                <div class="exam-form-grid">
-                                    <div class="auth-field">
-                                        <label for="exam-pdf-year">年度</label>
-                                        <select id="exam-pdf-year" name="year"></select>
-                                    </div>
-                                    <div class="auth-field">
-                                        <label for="exam-pdf-group">問題区分</label>
-                                        <select id="exam-pdf-group" name="problemGroup"></select>
-                                    </div>
-                                </div>
-                                <div class="auth-field">
-                                    <label for="exam-pdf-mode">内容</label>
-                                    <select id="exam-pdf-mode" name="mode">
-                                        <option value="problems-and-answers">問題文と解答</option>
-                                        <option value="problems-only">問題文のみ</option>
-                                        <option value="answers-only">解答のみ</option>
-                                    </select>
-                                </div>
-                                <div id="exam-pdf-problem-list" class="exam-pdf-choice-list"></div>
-                                <div class="auth-actions">
-                                    <button id="exam-pdf-submit" class="auth-primary-button" type="submit">PDFを生成</button>
-                                </div>
-                                <p id="exam-pdf-message" class="auth-message auth-message-muted" role="status"></p>
-                            </form>
+                            <div id="exam-answer-list" class="exam-answer-list">
+                                <p class="loading">読み込み中...</p>
+                            </div>
                         </div>
-                    </div>
-                    <div id="exam-answer-list" class="exam-answer-list">
-                        <p class="loading">読み込み中...</p>
                     </div>
                 </section>
             </div>
@@ -284,9 +292,9 @@
     </div>
 
     <!-- タブ切り替え用のスクリプト -->
-    <script src="exam-macros.js?v=20260614e"></script>
+    <script src="exam-macros.js?v=20260614f"></script>
     <script src="supabase-config.js"></script>
-    <script src="auth.js?v=20260614e"></script>
+    <script src="auth.js?v=20260614f"></script>
     <script>
         function switchTab(tabId) {
             // 全てのタブコンテンツからactiveを取り除く
@@ -304,6 +312,7 @@
             // 対象のタブコンテンツとボタンをactiveにする
             const targetContent = document.getElementById(tabId);
             targetContent.classList.add('active');
+            document.body.classList.toggle('is-exam-tab', tabId === 'exam-answers');
 
             // クリックされたボタンを特定してactiveにする
             const clickedButton = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
@@ -877,6 +886,7 @@
         function renderExamAnswerResults() {
             const container = document.getElementById('exam-answer-list');
             const searchInput = document.getElementById('exam-search-input');
+            const resultCount = document.getElementById('exam-results-count');
             if (!container) return;
 
             const query = (searchInput?.value || '').trim().toLowerCase();
@@ -885,6 +895,10 @@
                 const matchesQuery = !query || problem.searchText.includes(query);
                 return matchesTag && matchesQuery;
             });
+            const answerTotal = problems.reduce((sum, problem) => sum + Number(problem.answerCount || 0), 0);
+            if (resultCount) {
+                resultCount.textContent = `${problems.length}問 / 解答${answerTotal}件`;
+            }
 
             container.innerHTML = '';
             if (problems.length === 0) {
@@ -912,7 +926,7 @@
                     ? `<div class="exam-html-view"><div class="exam-html-label">問題文</div>${problem.statementHTML}</div>`
                     : '<p class="no-data">問題文はまだ登録されていません。</p>';
                 const answersHTML = problem.answers.length > 0
-                    ? problem.answers.map((answer, index) => renderExamProblemAnswer(answer, index, problem.answers.length)).join('')
+                    ? renderExamAnswerTabs(problem)
                     : '<p class="no-data">この問題の解答はまだ登録されていません。</p>';
 
                 article.innerHTML = `
@@ -924,10 +938,14 @@
                         <span class="badge badge-pending">解答 ${problem.answerCount}件</span>
                     </div>
                     ${tagsHTML}
-                    ${statementHTML}
-                    <div class="exam-answer-group">
-                        <h4>解答</h4>
-                        ${answersHTML}
+                    <div class="exam-card-layout">
+                        <div class="exam-statement-column">
+                            ${statementHTML}
+                        </div>
+                        <div class="exam-answer-group">
+                            <h4>解答</h4>
+                            ${answersHTML}
+                        </div>
                     </div>
                     <div class="exam-reference-block">
                         <h4>参照</h4>
@@ -945,38 +963,78 @@
                 });
             });
 
+            container.querySelectorAll('.exam-answer-tab').forEach(button => {
+                button.addEventListener('click', () => switchExamAnswerTab(button));
+            });
+
             typesetMath(container);
         }
 
-        function renderExamProblemAnswer(answer, index, total) {
+        function renderExamAnswerTabs(problem) {
+            const tabsHTML = problem.answers.map((answer, index) => {
+                const uploadLabel = answer.uploadedAt ? formatDateTime(answer.uploadedAt) : '';
+                const activeClass = index === 0 ? ' active' : '';
+                const selected = index === 0 ? 'true' : 'false';
+                return `
+                    <button type="button" class="exam-answer-tab${activeClass}" data-answer-index="${index}" aria-selected="${selected}">
+                        <span class="exam-answer-tab-number">解答 ${index + 1}</span>
+                        <span class="exam-answer-tab-name">${escapeHTML(answer.uploadedByName || '匿名')}</span>
+                        ${uploadLabel ? `<span class="exam-answer-tab-date">${escapeHTML(uploadLabel)}</span>` : ''}
+                    </button>
+                `;
+            }).join('');
+            const panelsHTML = problem.answers
+                .map((answer, index) => renderExamProblemAnswer(answer, index))
+                .join('');
+
+            return `
+                <div class="exam-answer-switcher">
+                    <div class="exam-answer-tabs" role="tablist">${tabsHTML}</div>
+                    <div class="exam-answer-pane-list">${panelsHTML}</div>
+                </div>
+            `;
+        }
+
+        function renderExamProblemAnswer(answer, index) {
             const uploadLabel = answer.uploadedAt ? formatDateTime(answer.uploadedAt) : '';
             const summaryHTML = answer.summary ? `<p class="exam-answer-summary">${escapeHTML(answer.summary)}</p>` : '';
             const statusLabel = answer.status === 'sample' ? 'サンプル' : '提出済み';
-            const openAttr = total === 1 ? 'open' : '';
+            const activeClass = index === 0 ? ' active' : '';
 
             return `
-                <details class="exam-submission-answer" ${openAttr}>
-                    <summary>
-                        <span>解答 ${index + 1}: ${escapeHTML(answer.uploadedByName || '匿名')}</span>
-                        <span class="exam-answer-meta">${escapeHTML(uploadLabel)}</span>
-                    </summary>
-                    <div class="exam-submission-answer-body">
-                        <div class="exam-answer-byline">
-                            <span>${escapeHTML(answer.submissionTitle || answer.title || '解答')}</span>
-                            <span class="badge badge-${answer.status === 'sample' ? 'pending' : 'achieved'}">${statusLabel}</span>
-                        </div>
-                        ${summaryHTML}
-                        <div class="exam-link-row">
-                            <a href="${escapeAttribute(answer.texPath)}" target="_blank">TeXを開く</a>
-                            <a href="${escapeAttribute(answer.texPath)}" download>TeXをダウンロード</a>
-                        </div>
-                        <div class="exam-html-view">
-                            <div class="exam-html-label">HTML表示</div>
-                            ${answer.html}
-                        </div>
+                <section class="exam-answer-pane${activeClass}" data-answer-panel="${index}">
+                    <div class="exam-answer-byline">
+                        <span>${escapeHTML(answer.submissionTitle || answer.title || '解答')}</span>
+                        <span class="badge badge-${answer.status === 'sample' ? 'pending' : 'achieved'}">${statusLabel}</span>
+                        ${uploadLabel ? `<span class="exam-answer-meta">${escapeHTML(uploadLabel)}</span>` : ''}
                     </div>
-                </details>
+                    ${summaryHTML}
+                    <div class="exam-link-row">
+                        <a href="${escapeAttribute(answer.texPath)}" target="_blank">TeXを開く</a>
+                        <a href="${escapeAttribute(answer.texPath)}" download>TeXをダウンロード</a>
+                    </div>
+                    <div class="exam-html-view">
+                        <div class="exam-html-label">HTML表示</div>
+                        ${answer.html}
+                    </div>
+                </section>
             `;
+        }
+
+        function switchExamAnswerTab(button) {
+            const card = button.closest('.exam-answer-card');
+            if (!card) return;
+            const index = button.dataset.answerIndex || '0';
+            card.querySelectorAll('.exam-answer-tab').forEach(tab => {
+                const isActive = tab.dataset.answerIndex === index;
+                tab.classList.toggle('active', isActive);
+                tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+            card.querySelectorAll('.exam-answer-pane').forEach(panel => {
+                panel.classList.toggle('active', panel.dataset.answerPanel === index);
+            });
+            const activePanel = card.querySelector(`.exam-answer-pane[data-answer-panel="${index}"]`);
+            if (activePanel) typesetMath(activePanel);
         }
 
         function setupExamUploadForm() {
