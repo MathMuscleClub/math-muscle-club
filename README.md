@@ -238,7 +238,6 @@ supabase functions deploy render-exam-pdf
 
 ```text
 SUPABASE_URL=https://xxxx.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=Supabase service role key
 GITHUB_TOKEN=GitHub fine-grained token
 GITHUB_REPOSITORY=MathMuscleClub/math-muscle-club
 GITHUB_BRANCH=main
@@ -246,7 +245,9 @@ ALLOWED_EMAIL_DOMAINS=g.ecc.u-tokyo.ac.jp
 ALLOWED_ORIGIN=https://mathmuscleclub.github.io
 ```
 
-`GITHUB_TOKEN` は Contents の読み書きができる fine-grained token にします。service role key と GitHub token は絶対に `supabase-config.js` に入れないでください。
+`GITHUB_TOKEN` は Contents の読み書きができる fine-grained token にします。GitHub token は絶対に `supabase-config.js` に入れないでください。
+
+Supabaseの新しいAPI keys環境では、Edge Functionsに `SUPABASE_SECRET_KEYS` が自動で渡されます。`upload-exam-tex` はその `default` secret key を使ってログインユーザーを確認します。古いプロジェクトでは互換用に `SUPABASE_SERVICE_ROLE_KEY` も読めますが、新しく設定する必要はありません。
 
 `render-exam-pdf` に設定します。
 

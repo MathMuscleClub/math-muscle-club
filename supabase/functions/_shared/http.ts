@@ -32,18 +32,32 @@ export async function readAuthenticatedUser(request: Request) {
   if (!token) throw new Error("ログイン情報がありません。");
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!supabaseUrl || !serviceRoleKey) {
+  const adminKey = getSupabaseAdminKey();
+  if (!supabaseUrl || !adminKey) {
     throw new Error("Supabaseのサーバー設定が不足しています。");
   }
 
   const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
     headers: {
       Authorization: `Bearer ${token}`,
-      apikey: serviceRoleKey,
+      apikey: adminKey,
     },
   });
 
   if (!response.ok) throw new Error("ログイン情報を確認できませんでした。");
   return response.json();
+}
+
+function getSupabaseAdminKey() {
+  const secretKeysJson = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeysJson) {
+    try {
+      const secretKeys = JSON.parse(secretKeysJson);
+      if (secretKeys?.default) return String(secretKeys.default);
+    } catch (_error) {
+      // Fall back to the legacy key below.
+    }
+  }
+
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 }
