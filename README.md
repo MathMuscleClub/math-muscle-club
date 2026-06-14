@@ -3,7 +3,7 @@
 数学を愛し、筋肉を愛する「数学科筋トレ部」の公式ホームページです。
 
 ## 🌐 公開URL
-https://warabimochi23.github.io/math-muscle-club/
+https://mathmuscleclub.github.io/math-muscle-club/
 
 ---
 
