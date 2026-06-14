@@ -17,9 +17,31 @@ type TexPart = {
   era: string;
   problemGroup: string;
   problemNumber: string;
+  field: string;
   title: string;
   summary: string;
   tags: string[];
+};
+
+type ManifestItem = Record<string, unknown> & {
+  id?: string;
+  year?: string | number;
+  era?: string;
+  problemGroup?: string;
+  problemNumber?: string;
+  field?: string;
+  title?: string;
+  summary?: string;
+  problemTexPath?: string;
+  answerTexPath?: string;
+  texPath?: string;
+  uploadedByName?: string;
+  uploadedByEmail?: string;
+  uploadedByUserId?: string;
+  uploadedAt?: string;
+  updatedAt?: string;
+  tags?: string[];
+  status?: string;
 };
 
 Deno.serve(async (request) => {
@@ -38,28 +60,31 @@ Deno.serve(async (request) => {
     }
 
     const formData = await request.formData();
-    const problemTexFile = formData.get("problemTexFile");
-    const answerTexFile = formData.get("answerTexFile");
-    if (!(answerTexFile instanceof File)) {
-      return errorResponse("解答LaTeXファイルが見つかりません。");
-    }
-
     const username = cleanText(formData.get("username") || user.user_metadata?.username, 40);
 
     if (!username) {
       return errorResponse("ユーザー名を登録してください。");
     }
 
-    const problemSource = problemTexFile instanceof File ? await problemTexFile.text() : "";
-    const answerSource = await answerTexFile.text();
-    if (!answerSource.trim()) {
-      return errorResponse("解答LaTeXファイルが空です。");
+    const action = cleanText(formData.get("action"), 20);
+    if (action === "delete") {
+      return await deleteSubmission(formData, user, email, username);
+    }
+
+    const problemSource = await readTexInput(formData.get("problemTexFile"), formData.get("problemTexSource"));
+    const answerSource = await readTexInput(formData.get("answerTexFile"), formData.get("answerTexSource"));
+    const replaceSubmissionId = cleanText(formData.get("replaceSubmissionId"), 160);
+    if (!problemSource.trim() && !answerSource.trim()) {
+      return errorResponse("問題文または解答のTeXを入力してください。");
     }
 
     const problemParts = problemSource.trim() ? splitTexParts(problemSource, "problem") : [];
-    const answerParts = splitTexParts(answerSource, "answer");
-    if (answerParts.length === 0) {
+    const answerParts = answerSource.trim() ? splitTexParts(answerSource, "answer") : [];
+    if (answerSource.trim() && answerParts.length === 0) {
       return errorResponse("解答LaTeXから提出対象を読み取れませんでした。");
+    }
+    if (replaceSubmissionId && answerParts.length !== 1) {
+      return errorResponse("解答の編集では、解答TeXを1件だけ入力してください。");
     }
 
     const missingMetadata = [...problemParts, ...answerParts].find((part) => {
@@ -70,60 +95,301 @@ Deno.serve(async (request) => {
     }
 
     const uploadedAt = new Date().toISOString();
-    const entries = [];
+    const changedEntries: ManifestItem[] = [];
+    const manifest = await readManifest();
+    let nextManifest = manifest.items;
 
-    for (const answerPart of answerParts) {
-      const problemPart = findMatchingProblemPart(problemParts, answerPart);
-      const safeNumber = cleanPathPart(answerPart.problemNumber);
-      const safeGroup = cleanPathPart(answerPart.problemGroup);
-      const id = `${answerPart.year}-${safeGroup}-${safeNumber}-${dateSlug(uploadedAt)}-${slugify(username)}-${crypto.randomUUID().slice(0, 8)}`;
-      const basePath = `exams/${answerPart.year}/${safeGroup}/${safeNumber}/submissions/${id}`;
-      const answerTexPath = `${basePath}/answer.tex`;
-      const problemTexPath = problemPart ? `${basePath}/problem.tex` : "";
-
-      if (problemPart) {
-        await putGitHubFile(problemTexPath, problemPart.source, `Add ${answerPart.year} ${safeGroup} ${safeNumber} problem TeX`);
-      }
-      await putGitHubFile(answerTexPath, answerPart.source, `Add ${answerPart.year} ${safeGroup} ${safeNumber} answer TeX by ${username}`);
-
-      entries.push({
-        id,
-        year: Number(answerPart.year),
-        era: answerPart.era || problemPart?.era || "",
-        problemGroup: answerPart.problemGroup,
-        problemNumber: answerPart.problemNumber,
-        title: answerPart.title || `${answerPart.year}年度 ${answerPart.problemGroup} 第${answerPart.problemNumber}問 解答`,
-        summary: answerPart.summary || "",
-        problemTexPath,
-        answerTexPath,
-        uploadedByName: username,
-        uploadedByEmail: email,
-        uploadedByUserId: user.id || "",
-        uploadedAt,
-        tags: uniqueValues([...(answerPart.tags || []), ...(problemPart?.tags || [])]),
-        status: "submitted",
-      });
+    for (const problemPart of problemParts) {
+      const problemEntry = await saveSharedProblemPart(problemPart, nextManifest, user, email, username, uploadedAt);
+      nextManifest = attachSharedProblemPath(nextManifest, problemPart, problemEntry.problemTexPath || "");
+      nextManifest = upsertManifestItem(nextManifest, problemEntry);
+      changedEntries.push(problemEntry);
     }
 
-    const manifest = await readManifest();
-    const nextManifest = [
-      ...entries,
-      ...manifest.items.filter((item) => !entries.some((entry) => entry.id === item.id)),
-    ];
+    if (replaceSubmissionId) {
+      const replacementAnswer = answerParts[0];
+      if (!replacementAnswer) {
+        return errorResponse("編集する解答TeXが見つかりません。");
+      }
+      const updatedEntry = await updateAnswerSubmission(
+        replaceSubmissionId,
+        replacementAnswer,
+        problemParts,
+        nextManifest,
+        user,
+        email,
+        username,
+        uploadedAt,
+      );
+      nextManifest = upsertManifestItem(nextManifest, updatedEntry);
+      changedEntries.push(updatedEntry);
+    } else {
+      for (const answerPart of answerParts) {
+        const entry = await createAnswerSubmission(answerPart, problemParts, nextManifest, user, email, username, uploadedAt);
+        nextManifest = upsertManifestItem(nextManifest, entry);
+        changedEntries.push(entry);
+      }
+    }
+
+    if (changedEntries.length === 0) {
+      return errorResponse("更新する内容がありません。");
+    }
 
     await putGitHubFile(
       "exam-submissions.json",
       `${JSON.stringify(nextManifest, null, 2)}\n`,
-      `Register exam submissions by ${username}`,
+      replaceSubmissionId ? `Update exam submission by ${username}` : `Register exam submissions by ${username}`,
       manifest.sha,
     );
 
-    return jsonResponse({ entries });
+    return jsonResponse({ entries: changedEntries });
   } catch (error) {
     console.error(error);
     return errorResponse(error instanceof Error ? error.message : "提出に失敗しました。", 500);
   }
 });
+
+async function readTexInput(fileValue: FormDataEntryValue | null, textValue: FormDataEntryValue | null) {
+  if (fileValue instanceof File && fileValue.size > 0) {
+    return await fileValue.text();
+  }
+  return String(textValue || "");
+}
+
+async function deleteSubmission(
+  formData: FormData,
+  user: { id?: string },
+  email: string,
+  username: string,
+) {
+  const submissionId = cleanText(formData.get("submissionId"), 160);
+  if (!submissionId) return errorResponse("削除する解答が指定されていません。");
+
+  const manifest = await readManifest();
+  const target = manifest.items.find((item) => String(item.id || "") === submissionId);
+  if (!target) return errorResponse("削除する解答が見つかりません。", 404);
+  if (!canManageManifestItem(target, user, email)) {
+    return errorResponse("この解答は投稿者本人だけ削除できます。", 403);
+  }
+
+  const answerTexPath = getAnswerTexPath(target);
+  if (!answerTexPath) {
+    return errorResponse("問題文は削除ではなく編集で更新してください。");
+  }
+
+  await deleteGitHubFileIfExists(answerTexPath, `Delete exam answer by ${username}`);
+
+  const nextManifest = manifest.items.filter((item) => String(item.id || "") !== submissionId);
+  await putGitHubFile(
+    "exam-submissions.json",
+    `${JSON.stringify(nextManifest, null, 2)}\n`,
+    `Remove exam submission by ${username}`,
+    manifest.sha,
+  );
+
+  return jsonResponse({ deletedId: submissionId });
+}
+
+async function saveSharedProblemPart(
+  problemPart: TexPart,
+  manifestItems: ManifestItem[],
+  user: { id?: string },
+  email: string,
+  username: string,
+  uploadedAt: string,
+): Promise<ManifestItem> {
+  const problemTexPath = sharedProblemTexPath(problemPart);
+  await putGitHubTextFile(
+    problemTexPath,
+    problemPart.source,
+    `Update ${problemPart.year} ${problemPart.problemGroup} ${problemPart.problemNumber} problem TeX`,
+  );
+
+  const existing = findProblemManifestEntry(manifestItems, problemPart);
+  return {
+    ...(existing || {}),
+    id: sharedProblemEntryId(problemPart),
+    year: Number(problemPart.year),
+    era: problemPart.era || existing?.era || "",
+    problemGroup: problemPart.problemGroup,
+    problemNumber: problemPart.problemNumber,
+    field: problemPart.field || existing?.field || "",
+    title: problemPart.title || existing?.title || `${problemPart.year}年度 ${problemPart.problemGroup} 第${problemPart.problemNumber}問 問題文`,
+    summary: problemPart.summary || existing?.summary || "",
+    problemTexPath,
+    uploadedByName: username,
+    uploadedByEmail: email,
+    uploadedByUserId: user.id || "",
+    uploadedAt: existing?.uploadedAt || uploadedAt,
+    updatedAt: uploadedAt,
+    tags: uniqueValues([...(existing?.tags || []), ...(problemPart.tags || [])]),
+    status: "problem",
+  };
+}
+
+async function createAnswerSubmission(
+  answerPart: TexPart,
+  problemParts: TexPart[],
+  manifestItems: ManifestItem[],
+  user: { id?: string },
+  email: string,
+  username: string,
+  uploadedAt: string,
+): Promise<ManifestItem> {
+  const problemPart = findMatchingProblemPart(problemParts, answerPart);
+  const safeNumber = cleanPathPart(answerPart.problemNumber);
+  const safeGroup = cleanPathPart(answerPart.problemGroup);
+  const id = `${answerPart.year}-${safeGroup}-${safeNumber}-${dateSlug(uploadedAt)}-${slugify(username)}-${crypto.randomUUID().slice(0, 8)}`;
+  const answerTexPath = defaultAnswerTexPath(answerPart, id);
+  const problemTexPath = problemPart
+    ? sharedProblemTexPath(problemPart)
+    : findExistingProblemTexPath(manifestItems, answerPart);
+  const field = answerPart.field || problemPart?.field || findExistingProblemField(manifestItems, answerPart);
+
+  await putGitHubTextFile(
+    answerTexPath,
+    answerPart.source,
+    `Add ${answerPart.year} ${safeGroup} ${safeNumber} answer TeX by ${username}`,
+  );
+
+  return {
+    id,
+    year: Number(answerPart.year),
+    era: answerPart.era || problemPart?.era || "",
+    problemGroup: answerPart.problemGroup,
+    problemNumber: answerPart.problemNumber,
+    field,
+    title: answerPart.title || `${answerPart.year}年度 ${answerPart.problemGroup} 第${answerPart.problemNumber}問 解答`,
+    summary: answerPart.summary || "",
+    problemTexPath,
+    answerTexPath,
+    uploadedByName: username,
+    uploadedByEmail: email,
+    uploadedByUserId: user.id || "",
+    uploadedAt,
+    tags: uniqueValues([...(answerPart.tags || []), ...(problemPart?.tags || [])]),
+    status: "submitted",
+  };
+}
+
+async function updateAnswerSubmission(
+  submissionId: string,
+  answerPart: TexPart,
+  problemParts: TexPart[],
+  manifestItems: ManifestItem[],
+  user: { id?: string },
+  email: string,
+  username: string,
+  updatedAt: string,
+): Promise<ManifestItem> {
+  const target = manifestItems.find((item) => String(item.id || "") === submissionId);
+  if (!target) throw new Error("編集する解答が見つかりません。");
+  if (!canManageManifestItem(target, user, email)) {
+    throw new Error("この解答は投稿者本人だけ編集できます。");
+  }
+  if (!matchesManifestProblem(target, answerPart)) {
+    throw new Error("解答の編集では年度・問題区分・問題番号を変更できません。");
+  }
+
+  const answerTexPath = getAnswerTexPath(target) || defaultAnswerTexPath(answerPart, submissionId);
+  const problemPart = findMatchingProblemPart(problemParts, answerPart);
+  const problemTexPath = problemPart
+    ? sharedProblemTexPath(problemPart)
+    : findExistingProblemTexPath(manifestItems, answerPart) || String(target.problemTexPath || "");
+  const field = answerPart.field || problemPart?.field || target.field || findExistingProblemField(manifestItems, answerPart);
+
+  await putGitHubTextFile(
+    answerTexPath,
+    answerPart.source,
+    `Update ${answerPart.year} ${answerPart.problemGroup} ${answerPart.problemNumber} answer TeX by ${username}`,
+  );
+
+  return {
+    ...target,
+    year: Number(answerPart.year),
+    era: answerPart.era || target.era || problemPart?.era || "",
+    problemGroup: answerPart.problemGroup,
+    problemNumber: answerPart.problemNumber,
+    field,
+    title: answerPart.title || target.title || `${answerPart.year}年度 ${answerPart.problemGroup} 第${answerPart.problemNumber}問 解答`,
+    summary: answerPart.summary || "",
+    problemTexPath,
+    answerTexPath,
+    uploadedByName: target.uploadedByName || username,
+    uploadedByEmail: target.uploadedByEmail || email,
+    uploadedByUserId: target.uploadedByUserId || user.id || "",
+    updatedAt,
+    tags: uniqueValues([...(answerPart.tags || []), ...(problemPart?.tags || [])]),
+    status: "submitted",
+  };
+}
+
+function sharedProblemEntryId(problemPart: TexPart) {
+  return `${problemPart.year}-${cleanPathPart(problemPart.problemGroup)}-${cleanPathPart(problemPart.problemNumber)}-problem`;
+}
+
+function sharedProblemTexPath(problemPart: TexPart) {
+  return `exams/${problemPart.year}/${cleanPathPart(problemPart.problemGroup)}/${cleanPathPart(problemPart.problemNumber)}/problem.tex`;
+}
+
+function defaultAnswerTexPath(answerPart: TexPart, id: string) {
+  return `exams/${answerPart.year}/${cleanPathPart(answerPart.problemGroup)}/${cleanPathPart(answerPart.problemNumber)}/submissions/${id}/answer.tex`;
+}
+
+function upsertManifestItem(items: ManifestItem[], entry: ManifestItem) {
+  return [
+    entry,
+    ...items.filter((item) => String(item.id || "") !== String(entry.id || "")),
+  ];
+}
+
+function attachSharedProblemPath(items: ManifestItem[], problemPart: TexPart, problemTexPath: string) {
+  if (!problemTexPath) return items;
+  return items.map((item) => {
+    if (!matchesManifestProblem(item, problemPart)) return item;
+    return {
+      ...item,
+      problemTexPath,
+      field: problemPart.field || item.field,
+    };
+  });
+}
+
+function findProblemManifestEntry(items: ManifestItem[], problemPart: TexPart) {
+  const problemId = sharedProblemEntryId(problemPart);
+  return items.find((item) => String(item.id || "") === problemId)
+    || items.find((item) => item.status === "problem" && matchesManifestProblem(item, problemPart));
+}
+
+function findExistingProblemTexPath(items: ManifestItem[], part: TexPart) {
+  const item = items.find((candidate) => {
+    return matchesManifestProblem(candidate, part) && String(candidate.problemTexPath || "");
+  });
+  return item ? String(item.problemTexPath || "") : "";
+}
+
+function findExistingProblemField(items: ManifestItem[], part: TexPart) {
+  const item = items.find((candidate) => {
+    return matchesManifestProblem(candidate, part) && String(candidate.field || "");
+  });
+  return item ? String(item.field || "") : "";
+}
+
+function getAnswerTexPath(item: ManifestItem) {
+  return String(item.answerTexPath || item.texPath || "");
+}
+
+function canManageManifestItem(item: ManifestItem, user: { id?: string }, email: string) {
+  const ownerId = String(item.uploadedByUserId || "");
+  const ownerEmail = String(item.uploadedByEmail || "").toLowerCase();
+  return Boolean((ownerId && ownerId === String(user.id || "")) || (ownerEmail && ownerEmail === email));
+}
+
+function matchesManifestProblem(item: ManifestItem, part: TexPart) {
+  return String(item.year || "") === String(part.year || "")
+    && cleanProblemGroup(item.problemGroup) === cleanProblemGroup(part.problemGroup)
+    && cleanProblemNumber(item.problemNumber) === cleanProblemNumber(part.problemNumber);
+}
 
 function splitTexParts(source: string, defaultKind: "problem" | "answer"): TexPart[] {
   const body = getDocumentBody(source).replace(/\\maketitle/g, "").trim();
@@ -173,6 +439,7 @@ function parseExamMetadata(source: string, defaultKind: "problem" | "answer"): O
     kind: normalizeKind(kindText, defaultKind),
     year: cleanYear(read("examyear")),
     era: cleanTextValue(read("examera"), 20),
+    field: cleanTextValue(read("examfield", "examsubject"), 40),
     problemGroup: cleanProblemGroup(read("examgroup", "examproblemgroup")),
     problemNumber: cleanProblemNumber(read("examnumber", "examproblemnumber")),
     title: cleanTextValue(read("examtitle"), 120),
@@ -185,6 +452,8 @@ function collectMetadataCommandMatches(source: string) {
   return [
     "examyear",
     "examera",
+    "examfield",
+    "examsubject",
     "examgroup",
     "examproblemgroup",
     "examnumber",
@@ -282,7 +551,7 @@ function findMatchingProblemPart(problemParts: TexPart[], answerPart: TexPart) {
   });
 }
 
-async function readManifest(): Promise<{ items: Record<string, unknown>[]; sha?: string }> {
+async function readManifest(): Promise<{ items: ManifestItem[]; sha?: string }> {
   try {
     const file = await getGitHubFile("exam-submissions.json");
     const text = decodeBase64(file.content);
@@ -306,6 +575,22 @@ async function getGitHubFile(path: string): Promise<GitHubFile> {
   return response.json();
 }
 
+async function maybeGetGitHubFile(path: string): Promise<GitHubFile | null> {
+  const response = await fetch(gitHubContentsUrl(path, true), {
+    headers: gitHubHeaders(),
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`${path} をGitHubから取得できませんでした。`);
+  }
+  return response.json();
+}
+
+async function putGitHubTextFile(path: string, content: string, message: string) {
+  const existing = await maybeGetGitHubFile(path);
+  await putGitHubFile(path, content, message, existing?.sha);
+}
+
 async function putGitHubFile(path: string, content: string, message: string, sha?: string) {
   const response = await fetch(gitHubContentsUrl(path, false), {
     method: "PUT",
@@ -324,6 +609,29 @@ async function putGitHubFile(path: string, content: string, message: string, sha
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`GitHubへの保存に失敗しました。${body}`);
+  }
+}
+
+async function deleteGitHubFileIfExists(path: string, message: string) {
+  const existing = await maybeGetGitHubFile(path);
+  if (!existing) return;
+
+  const response = await fetch(gitHubContentsUrl(path, false), {
+    method: "DELETE",
+    headers: {
+      ...gitHubHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message,
+      sha: existing.sha,
+      branch: gitHubBranch(),
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`GitHubからの削除に失敗しました。${body}`);
   }
 }
 

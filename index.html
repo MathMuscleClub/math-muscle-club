@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学科筋トレ部</title>
-    <link rel="stylesheet" href="style.css?v=20260614f">
+    <link rel="stylesheet" href="style.css?v=20260614g">
 </head>
 
 <body>
@@ -138,11 +138,17 @@
                 <section>
                     <h2>過去問解答</h2>
                     <div class="exam-dashboard">
-                        <aside class="exam-control-column" aria-label="過去問操作">
+                        <div class="exam-control-column" aria-label="過去問操作">
                             <div class="exam-answer-tools">
-                                <label class="exam-search-label" for="exam-search-input">検索</label>
-                                <input id="exam-search-input" class="exam-search-input" type="search" placeholder="年度・タグ・本文で検索">
-                                <div id="exam-tag-filter" class="exam-tag-filter"></div>
+                                <div class="exam-mode-switch" aria-label="過去問の表示モード">
+                                    <button id="exam-browse-mode-button" class="exam-mode-button active" type="button" data-exam-mode="browse">通常</button>
+                                    <button id="exam-search-mode-button" class="exam-mode-button" type="button" data-exam-mode="search">検索・フィルタ</button>
+                                </div>
+                                <div id="exam-search-controls" class="exam-search-controls" hidden>
+                                    <label class="exam-search-label" for="exam-search-input">検索</label>
+                                    <input id="exam-search-input" class="exam-search-input" type="search" placeholder="年度・タグ・本文で検索">
+                                    <div id="exam-tag-filter" class="exam-tag-filter"></div>
+                                </div>
                             </div>
                             <details class="exam-tool-panel exam-collapsible-panel" id="exam-upload-panel">
                                 <summary class="exam-tool-panel-header">
@@ -150,18 +156,28 @@
                                     <span id="exam-upload-auth-badge" class="auth-status-badge auth-status-muted">未ログイン</span>
                                 </summary>
                                 <form id="exam-upload-form" class="exam-upload-form">
+                                    <input id="exam-upload-replace-id" name="replaceSubmissionId" type="hidden">
                                     <p id="exam-upload-profile-note" class="exam-upload-profile-note">ログインタブで登録したユーザー名で提出されます。</p>
                                     <div class="auth-field">
                                         <label for="exam-upload-problem-file">問題文LaTeXファイル</label>
                                         <input id="exam-upload-problem-file" name="problemTexFile" type="file" accept=".tex,.latex,text/plain">
                                     </div>
                                     <div class="auth-field">
+                                        <label for="exam-upload-problem-source">問題文TeXを直接編集</label>
+                                        <textarea id="exam-upload-problem-source" name="problemTexSource" rows="8" spellcheck="false"></textarea>
+                                    </div>
+                                    <div class="auth-field">
                                         <label for="exam-upload-answer-file">解答LaTeXファイル</label>
-                                        <input id="exam-upload-answer-file" name="answerTexFile" type="file" accept=".tex,.latex,text/plain" required>
+                                        <input id="exam-upload-answer-file" name="answerTexFile" type="file" accept=".tex,.latex,text/plain">
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-upload-answer-source">解答TeXを直接編集</label>
+                                        <textarea id="exam-upload-answer-source" name="answerTexSource" rows="10" spellcheck="false"></textarea>
                                     </div>
                                     <div id="exam-upload-detected-list" class="exam-upload-detected-list"></div>
                                     <div class="auth-actions">
                                         <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
+                                        <button id="exam-upload-cancel-edit" class="auth-secondary-button" type="button" hidden>編集をやめる</button>
                                     </div>
                                     <p id="exam-upload-message" class="auth-message auth-message-muted" role="status"></p>
                                 </form>
@@ -198,8 +214,9 @@
                                     <p id="exam-pdf-message" class="auth-message auth-message-muted" role="status"></p>
                                 </form>
                             </details>
-                        </aside>
+                        </div>
                         <div class="exam-results-column">
+                            <div id="exam-folder-browser" class="exam-folder-browser"></div>
                             <div class="exam-results-bar">
                                 <span class="exam-results-label">問題一覧</span>
                                 <strong id="exam-results-count">読み込み中</strong>
@@ -292,7 +309,7 @@
     </div>
 
     <!-- タブ切り替え用のスクリプト -->
-    <script src="exam-macros.js?v=20260614f"></script>
+    <script src="exam-macros.js?v=20260614g"></script>
     <script src="supabase-config.js"></script>
     <script src="auth.js?v=20260614f"></script>
     <script>
@@ -327,10 +344,34 @@
         let examProblemsState = [];
         let examSubmissionsState = [];
         let activeExamTag = '';
+        let activeExamMode = 'browse';
+        let examFolderSelection = { year: '', group: '', field: '' };
         let examUploadFormReady = false;
         let examPdfFormReady = false;
         let mathRendererLoading = false;
         let currentYear, currentMonth;
+        const EXAM_FIELDS = [
+            {
+                id: 'algebra',
+                label: '代数',
+                keywords: ['代数', '線形', '群', '環', '体', '加群', '表現', '行列', '固有', '可換', 'ガロア', '準同型', 'ベクトル', 'hom']
+            },
+            {
+                id: 'geometry',
+                label: '幾何',
+                keywords: ['幾何', '位相', '多様体', '曲線', '曲面', '接ベクトル', 'ホモロジー', 'コホモロジー', '基本群', '空間', '連結', 'コンパクト']
+            },
+            {
+                id: 'analysis',
+                label: '解析',
+                keywords: ['解析', '微分', '積分', '収束', '極限', '級数', '測度', 'ルベーグ', '関数解析', 'フーリエ', '偏微分', '常微分']
+            },
+            {
+                id: 'applied',
+                label: '応用数理',
+                keywords: ['応用', '確率', '統計', '数値', '最適化', '情報', '計算', 'モデル', '数理物理', '微分方程式']
+            }
+        ];
 
         // ページ読み込み時にデータをロード
         document.addEventListener("DOMContentLoaded", () => {
@@ -633,6 +674,7 @@
             examSubmissionsState = await Promise.all(submissionSources.map(loadExamSubmission));
             examProblemsState = buildExamProblems(examSubmissionsState);
             examAnswersState = examProblemsState;
+            ensureExamFolderSelection();
             renderExamFilters(examProblemsState);
             renderExamPdfControls();
             setupExamUploadForm();
@@ -673,6 +715,7 @@
 
                 return {
                     ...submission,
+                    field: submission.field || sections.find(section => section.field)?.field || parsed.find(item => item.field)?.field || '',
                     tags,
                     references,
                     sections,
@@ -683,6 +726,7 @@
                         submission.era,
                         submission.problemGroup,
                         submission.problemNumber,
+                        submission.field,
                         submission.title,
                         submission.summary,
                         submission.uploadedByName,
@@ -758,20 +802,29 @@
                         if (!problem.statementHTML) {
                             problem.statementHTML = section.html;
                             problem.statementTitle = section.title;
+                            problem.statementTexPath = section.texPath || submission.problemTexPath || submission.texPath || '';
+                            problem.statementSubmissionId = submission.id || '';
                         }
+                        problem.field = problem.field || section.field || submission.field || '';
                         problem.statementPlainText = [problem.statementPlainText, section.plainText].join(' ');
                         return;
                     }
 
                     problem.answers.push({
                         id: section.id,
+                        submissionId: submission.id || section.id,
                         title: section.title || submission.title || '解答',
                         html: section.html,
                         plainText: section.plainText,
                         texPath: section.texPath || submission.answerTexPath || submission.texPath,
+                        answerTexPath: submission.answerTexPath || section.texPath || submission.texPath,
+                        problemTexPath: submission.problemTexPath || '',
+                        field: section.field || submission.field || '',
                         uploadedByName: submission.uploadedByName || '匿名',
                         uploadedByEmail: submission.uploadedByEmail || '',
+                        uploadedByUserId: submission.uploadedByUserId || '',
                         uploadedAt: submission.uploadedAt || '',
+                        updatedAt: submission.updatedAt || '',
                         status: submission.status || 'submitted',
                         summary: section.summary || submission.summary || '',
                         submissionTitle: section.title || submission.title || '',
@@ -782,15 +835,15 @@
             });
 
             return [...problemMap.values()]
-                .map(problem => ({
-                    ...problem,
-                    answerCount: problem.answers.length,
-                    searchText: [
+                .map(problem => {
+                    const searchText = [
                         problem.key,
                         problem.year,
                         problem.era,
                         problem.problemGroup,
                         problem.problemNumber,
+                        problem.field,
+                        getExamFieldLabel(problem.field),
                         problem.title,
                         problem.statementTitle,
                         problem.statementPlainText,
@@ -801,8 +854,17 @@
                             answer.uploadedByName,
                             answer.plainText
                         ].join(' ')).join(' ')
-                    ].join(' ').toLowerCase()
-                }))
+                    ].join(' ').toLowerCase();
+                    const enrichedProblem = {
+                        ...problem,
+                        answerCount: problem.answers.length,
+                        searchText
+                    };
+                    return {
+                        ...enrichedProblem,
+                        field: inferExamField(enrichedProblem)
+                    };
+                })
                 .sort(sortExamProblems);
         }
 
@@ -815,6 +877,7 @@
                     era: section.era || submission.era || '',
                     problemGroup,
                     problemNumber,
+                    field: section.field || submission.field || '',
                     title,
                     statementHTML: '',
                     statementTitle: '',
@@ -830,6 +893,7 @@
             problem.era = problem.era || section.era || submission.era || '';
             problem.problemGroup = problem.problemGroup || problemGroup;
             problem.problemNumber = problem.problemNumber || problemNumber;
+            problem.field = problem.field || section.field || submission.field || '';
             problem.title = problem.title || section.title || submission.title || key;
             return problem;
         }
@@ -858,10 +922,200 @@
                 .replace(/[^A-Za-z0-9_-]+/g, '-');
         }
 
+        function normalizeExamFieldId(value) {
+            const raw = String(value || '').trim();
+            const text = raw.toLowerCase();
+            if (!raw) return '';
+
+            if (text === 'algebra' || /代数|線形|群|環|体/.test(raw)) return 'algebra';
+            if (text === 'geometry' || /幾何|位相|多様体/.test(raw)) return 'geometry';
+            if (text === 'analysis' || /解析|微分|積分/.test(raw)) return 'analysis';
+            if (text === 'applied' || /応用|確率|統計|数値|最適化|情報/.test(raw)) return 'applied';
+
+            const matched = EXAM_FIELDS.find(field => field.id === text || field.label === raw);
+            return matched ? matched.id : 'other';
+        }
+
+        function getExamFieldDefinition(fieldId) {
+            const normalized = normalizeExamFieldId(fieldId);
+            return EXAM_FIELDS.find(field => field.id === normalized) || { id: 'other', label: 'その他', keywords: [] };
+        }
+
+        function getExamFieldLabel(fieldId) {
+            return getExamFieldDefinition(fieldId).label;
+        }
+
+        function inferExamField(problem) {
+            const explicit = normalizeExamFieldId(problem.field);
+            if (explicit) return explicit;
+
+            const text = [
+                problem.searchText,
+                problem.title,
+                problem.statementPlainText,
+                ...(problem.tags || [])
+            ].join(' ').toLowerCase();
+
+            const inferred = EXAM_FIELDS.find(field => {
+                return field.keywords.some(keyword => text.includes(String(keyword).toLowerCase()));
+            });
+            return inferred?.id || 'other';
+        }
+
+        function ensureExamFolderSelection() {
+            if (examProblemsState.length === 0) {
+                examFolderSelection = { year: '', group: '', field: '' };
+                return;
+            }
+
+            const years = uniqueValues(examProblemsState.map(problem => problem.year)).sort((a, b) => Number(b) - Number(a));
+            if (!years.includes(String(examFolderSelection.year || ''))) {
+                examFolderSelection.year = years[0] || '';
+            }
+
+            const groups = uniqueValues(examProblemsState
+                .filter(problem => String(problem.year || '') === String(examFolderSelection.year || ''))
+                .map(problem => problem.problemGroup))
+                .sort((a, b) => String(a).localeCompare(String(b), 'ja'));
+            if (!groups.includes(String(examFolderSelection.group || ''))) {
+                examFolderSelection.group = groups[0] || '';
+            }
+
+            const fields = uniqueValues(examProblemsState
+                .filter(problem => {
+                    return String(problem.year || '') === String(examFolderSelection.year || '')
+                        && String(problem.problemGroup || '') === String(examFolderSelection.group || '');
+                })
+                .map(problem => normalizeExamFieldId(problem.field) || inferExamField(problem)));
+            if (!fields.includes(String(examFolderSelection.field || ''))) {
+                examFolderSelection.field = fields[0] || '';
+            }
+        }
+
+        function countExamProblems(selection) {
+            return examProblemsState.filter(problem => {
+                const year = selection.year ? String(problem.year || '') === String(selection.year) : true;
+                const group = selection.group ? String(problem.problemGroup || '') === String(selection.group) : true;
+                const field = selection.field ? String(problem.field || '') === String(selection.field) : true;
+                return year && group && field;
+            }).length;
+        }
+
+        function getExamBrowseProblems() {
+            ensureExamFolderSelection();
+            return examProblemsState.filter(problem => {
+                return String(problem.year || '') === String(examFolderSelection.year || '')
+                    && String(problem.problemGroup || '') === String(examFolderSelection.group || '')
+                    && String(problem.field || '') === String(examFolderSelection.field || '');
+            });
+        }
+
+        function getExamFieldOptionsForSelection() {
+            const baseProblems = examProblemsState.filter(problem => {
+                return String(problem.year || '') === String(examFolderSelection.year || '')
+                    && String(problem.problemGroup || '') === String(examFolderSelection.group || '');
+            });
+            const hasOther = baseProblems.some(problem => String(problem.field || '') === 'other');
+            return [
+                ...EXAM_FIELDS,
+                ...(hasOther ? [{ id: 'other', label: 'その他', keywords: [] }] : [])
+            ];
+        }
+
+        function renderExamFolderBrowser() {
+            const folder = document.getElementById('exam-folder-browser');
+            if (!folder) return;
+
+            if (activeExamMode !== 'browse') {
+                folder.hidden = true;
+                folder.innerHTML = '';
+                return;
+            }
+
+            ensureExamFolderSelection();
+            folder.hidden = false;
+
+            const years = uniqueValues(examProblemsState.map(problem => problem.year)).sort((a, b) => Number(b) - Number(a));
+            const groups = uniqueValues(examProblemsState
+                .filter(problem => String(problem.year || '') === String(examFolderSelection.year || ''))
+                .map(problem => problem.problemGroup))
+                .sort((a, b) => String(a).localeCompare(String(b), 'ja'));
+            const fields = getExamFieldOptionsForSelection();
+
+            folder.innerHTML = `
+                <div class="exam-folder-step">
+                    <div class="exam-folder-heading">年度</div>
+                    <div class="exam-folder-list">
+                        ${years.map(year => renderExamFolderButton('year', year, `${year}年度`, countExamProblems({ year }), String(examFolderSelection.year) === String(year))).join('')}
+                    </div>
+                </div>
+                <div class="exam-folder-step">
+                    <div class="exam-folder-heading">問題区分</div>
+                    <div class="exam-folder-list">
+                        ${groups.map(group => renderExamFolderButton('group', group, `${group}問題`, countExamProblems({ year: examFolderSelection.year, group }), String(examFolderSelection.group) === String(group))).join('')}
+                    </div>
+                </div>
+                <div class="exam-folder-step">
+                    <div class="exam-folder-heading">分野</div>
+                    <div class="exam-folder-list">
+                        ${fields.map(field => {
+                            const count = countExamProblems({ year: examFolderSelection.year, group: examFolderSelection.group, field: field.id });
+                            return renderExamFolderButton('field', field.id, field.label, count, String(examFolderSelection.field) === field.id, count === 0);
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+
+            folder.querySelectorAll('.exam-folder-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.disabled) return;
+                    const level = button.dataset.folderLevel;
+                    const value = button.dataset.folderValue || '';
+                    if (level === 'year') {
+                        examFolderSelection.year = value;
+                        examFolderSelection.group = '';
+                        examFolderSelection.field = '';
+                    } else if (level === 'group') {
+                        examFolderSelection.group = value;
+                        examFolderSelection.field = '';
+                    } else if (level === 'field') {
+                        examFolderSelection.field = value;
+                    }
+                    ensureExamFolderSelection();
+                    renderExamAnswerResults();
+                });
+            });
+        }
+
+        function renderExamFolderButton(level, value, label, count, isActive, isDisabled = false) {
+            return `
+                <button type="button" class="exam-folder-button ${isActive ? 'active' : ''}" data-folder-level="${escapeAttribute(level)}" data-folder-value="${escapeAttribute(value)}" ${isDisabled ? 'disabled' : ''}>
+                    <span>${escapeHTML(label)}</span>
+                    <small>${count}問</small>
+                </button>
+            `;
+        }
+
         function renderExamFilters(problems) {
+            const searchControls = document.getElementById('exam-search-controls');
             const tagFilter = document.getElementById('exam-tag-filter');
             const searchInput = document.getElementById('exam-search-input');
-            if (!tagFilter || !searchInput) return;
+            const modeButtons = document.querySelectorAll('.exam-mode-button');
+            if (!tagFilter || !searchInput || !searchControls) return;
+
+            searchControls.hidden = activeExamMode !== 'search';
+            modeButtons.forEach(button => {
+                const isActive = button.dataset.examMode === activeExamMode;
+                button.classList.toggle('active', isActive);
+                if (!button.dataset.ready) {
+                    button.addEventListener('click', () => {
+                        activeExamMode = button.dataset.examMode || 'browse';
+                        renderExamFilters(examProblemsState);
+                        renderExamAnswerResults();
+                    });
+                    button.dataset.ready = 'true';
+                }
+            });
 
             const tags = uniqueValues(problems.flatMap(problem => problem.tags || []));
             tagFilter.innerHTML = [
@@ -872,29 +1126,76 @@
             tagFilter.querySelectorAll('.exam-tag-button').forEach(button => {
                 button.addEventListener('click', () => {
                     activeExamTag = button.dataset.tag || '';
+                    activeExamMode = 'search';
                     renderExamFilters(examProblemsState);
                     renderExamAnswerResults();
                 });
             });
 
             if (!searchInput.dataset.ready) {
-                searchInput.addEventListener('input', renderExamAnswerResults);
+                searchInput.addEventListener('input', () => {
+                    activeExamMode = 'search';
+                    renderExamFilters(examProblemsState);
+                    renderExamAnswerResults();
+                });
                 searchInput.dataset.ready = 'true';
             }
         }
 
-        function renderExamAnswerResults() {
-            const container = document.getElementById('exam-answer-list');
+        function getExamSearchMatches() {
             const searchInput = document.getElementById('exam-search-input');
-            const resultCount = document.getElementById('exam-results-count');
-            if (!container) return;
-
             const query = (searchInput?.value || '').trim().toLowerCase();
-            const problems = examProblemsState.filter(problem => {
+            const hasCondition = Boolean(query || activeExamTag);
+            if (!hasCondition) return { query, matches: [], hasCondition };
+
+            const matches = examProblemsState.filter(problem => {
                 const matchesTag = !activeExamTag || (problem.tags || []).includes(activeExamTag);
                 const matchesQuery = !query || problem.searchText.includes(query);
                 return matchesTag && matchesQuery;
             });
+            return { query, matches, hasCondition };
+        }
+
+        function renderExamAnswerResults() {
+            const container = document.getElementById('exam-answer-list');
+            const resultCount = document.getElementById('exam-results-count');
+            const resultLabel = document.querySelector('.exam-results-label');
+            if (!container) return;
+
+            renderExamFolderBrowser();
+
+            if (activeExamMode === 'search') {
+                const { matches, hasCondition } = getExamSearchMatches();
+                const limited = matches.slice(0, 8);
+                const searchAnswerTotal = matches.reduce((sum, problem) => sum + Number(problem.answerCount || 0), 0);
+                if (resultLabel) resultLabel.textContent = '検索候補';
+                if (resultCount) resultCount.textContent = hasCondition ? `${matches.length}問 / 解答${searchAnswerTotal}件` : '条件を入力';
+
+                if (!hasCondition) {
+                    container.innerHTML = '<p class="no-data">検索語を入力するか、タグを選ぶと候補が表示されます。</p>';
+                    return;
+                }
+
+                if (matches.length === 0) {
+                    container.innerHTML = '<p class="no-data">条件に合う過去問解答はありません。</p>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="exam-search-result-list">
+                        ${limited.map(problem => renderExamSearchResult(problem)).join('')}
+                    </div>
+                    ${matches.length > limited.length ? `<p class="exam-search-more">ほか ${matches.length - limited.length}件あります。検索語を足すと絞れます。</p>` : ''}
+                `;
+
+                container.querySelectorAll('.exam-search-result-card').forEach(button => {
+                    button.addEventListener('click', () => jumpToExamProblem(button.dataset.problemKey || ''));
+                });
+                return;
+            }
+
+            if (resultLabel) resultLabel.textContent = '問題一覧';
+            const problems = getExamBrowseProblems();
             const answerTotal = problems.reduce((sum, problem) => sum + Number(problem.answerCount || 0), 0);
             if (resultCount) {
                 resultCount.textContent = `${problems.length}問 / 解答${answerTotal}件`;
@@ -916,15 +1217,24 @@
                 const yearLabel = problem.era
                     ? `${escapeHTML(problem.era)}（${escapeHTML(problem.year)}年度）`
                     : `${escapeHTML(problem.year)}年度`;
+                const fieldLabel = getExamFieldLabel(problem.field);
                 const tagsHTML = tags.length > 0
                     ? `<div class="exam-tag-list">${tags.map(tag => `<button type="button" class="exam-tag-chip" data-tag="${escapeAttribute(tag)}">${escapeHTML(tag)}</button>`).join('')}</div>`
                     : '';
                 const referencesHTML = references.length > 0
                     ? `<div class="exam-reference-list">${references.map(ref => `<a href="${escapeAttribute(ref.href || '#')}">${escapeHTML(ref.label || '関連リンク')}</a>`).join('')}</div>`
                     : '<p class="no-data">関連する問題はまだ登録されていません。</p>';
+                const canEditProblemStatement = Boolean(window.SiteAuth?.getSession?.()?.user);
+                const statementActionsHTML = canEditProblemStatement
+                    ? `<div class="exam-statement-actions">
+                        <button type="button" class="exam-inline-button exam-problem-edit-button" data-problem-key="${escapeAttribute(problem.key)}">
+                            ${problem.statementTexPath ? '問題文を編集' : '問題文を登録'}
+                        </button>
+                    </div>`
+                    : '';
                 const statementHTML = problem.statementHTML
-                    ? `<div class="exam-html-view"><div class="exam-html-label">問題文</div>${problem.statementHTML}</div>`
-                    : '<p class="no-data">問題文はまだ登録されていません。</p>';
+                    ? `<div class="exam-html-view"><div class="exam-html-label">問題文</div>${problem.statementHTML}${statementActionsHTML}</div>`
+                    : `<div class="exam-html-view"><p class="no-data">問題文はまだ登録されていません。</p>${statementActionsHTML}</div>`;
                 const answersHTML = problem.answers.length > 0
                     ? renderExamAnswerTabs(problem)
                     : '<p class="no-data">この問題の解答はまだ登録されていません。</p>';
@@ -932,7 +1242,7 @@
                 article.innerHTML = `
                     <div class="exam-answer-header">
                         <div>
-                            <div class="exam-answer-kicker">${yearLabel} ${escapeHTML(problem.problemGroup)}問題 第${escapeHTML(problem.problemNumber)}問</div>
+                            <div class="exam-answer-kicker">${yearLabel} ${escapeHTML(problem.problemGroup)}問題 ${escapeHTML(fieldLabel)} 第${escapeHTML(problem.problemNumber)}問</div>
                             <h3 class="exam-answer-title">${escapeHTML(problem.title)}</h3>
                         </div>
                         <span class="badge badge-pending">解答 ${problem.answerCount}件</span>
@@ -958,8 +1268,10 @@
             container.querySelectorAll('.exam-tag-chip').forEach(button => {
                 button.addEventListener('click', () => {
                     activeExamTag = button.dataset.tag || '';
+                    activeExamMode = 'search';
                     renderExamFilters(examProblemsState);
                     renderExamAnswerResults();
+                    document.getElementById('exam-answer-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
             });
 
@@ -967,7 +1279,60 @@
                 button.addEventListener('click', () => switchExamAnswerTab(button));
             });
 
+            container.querySelectorAll('.exam-problem-edit-button').forEach(button => {
+                button.addEventListener('click', () => startProblemStatementEdit(button));
+            });
+
+            container.querySelectorAll('.exam-answer-edit-button').forEach(button => {
+                button.addEventListener('click', () => startAnswerEdit(button));
+            });
+
+            container.querySelectorAll('.exam-answer-delete-button').forEach(button => {
+                button.addEventListener('click', () => handleExamAnswerDelete(button));
+            });
+
             typesetMath(container);
+        }
+
+        function renderExamSearchResult(problem) {
+            const yearLabel = problem.era
+                ? `${problem.era}（${problem.year}年度）`
+                : `${problem.year}年度`;
+            const tags = Array.isArray(problem.tags) ? problem.tags.slice(0, 3) : [];
+            const snippetSource = problem.statementPlainText || problem.answers[0]?.plainText || problem.title || '';
+            const snippet = snippetSource.replace(/\s+/g, ' ').trim().slice(0, 96);
+            return `
+                <button type="button" class="exam-search-result-card" data-problem-key="${escapeAttribute(problem.key)}">
+                    <span class="exam-search-result-kicker">${escapeHTML(yearLabel)} ${escapeHTML(problem.problemGroup)}問題 ${escapeHTML(getExamFieldLabel(problem.field))}</span>
+                    <strong>${escapeHTML(problem.title)}</strong>
+                    ${snippet ? `<span class="exam-search-result-snippet">${escapeHTML(snippet)}${snippetSource.length > 96 ? '...' : ''}</span>` : ''}
+                    <span class="exam-search-result-meta">
+                        <span>解答 ${problem.answerCount}件</span>
+                        ${tags.map(tag => `<span>${escapeHTML(tag)}</span>`).join('')}
+                    </span>
+                </button>
+            `;
+        }
+
+        function jumpToExamProblem(problemKey) {
+            const problem = findExamProblem(problemKey);
+            if (!problem) return;
+            activeExamMode = 'browse';
+            examFolderSelection = {
+                year: String(problem.year || ''),
+                group: String(problem.problemGroup || ''),
+                field: String(problem.field || inferExamField(problem))
+            };
+            renderExamFilters(examProblemsState);
+            renderExamAnswerResults();
+            requestAnimationFrame(() => {
+                const card = document.getElementById(problem.key);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    card.classList.add('exam-jump-target');
+                    window.setTimeout(() => card.classList.remove('exam-jump-target'), 1200);
+                }
+            });
         }
 
         function renderExamAnswerTabs(problem) {
@@ -997,9 +1362,17 @@
 
         function renderExamProblemAnswer(answer, index) {
             const uploadLabel = answer.uploadedAt ? formatDateTime(answer.uploadedAt) : '';
+            const updateLabel = answer.updatedAt ? `更新 ${formatDateTime(answer.updatedAt)}` : '';
             const summaryHTML = answer.summary ? `<p class="exam-answer-summary">${escapeHTML(answer.summary)}</p>` : '';
             const statusLabel = answer.status === 'sample' ? 'サンプル' : '提出済み';
             const activeClass = index === 0 ? ' active' : '';
+            const canManage = canManageExamSubmission(answer);
+            const actionsHTML = canManage
+                ? `<div class="exam-answer-actions">
+                    <button type="button" class="exam-inline-button exam-answer-edit-button" data-submission-id="${escapeAttribute(answer.submissionId)}">解答を編集</button>
+                    <button type="button" class="exam-inline-button exam-danger-button exam-answer-delete-button" data-submission-id="${escapeAttribute(answer.submissionId)}">解答を削除</button>
+                </div>`
+                : '';
 
             return `
                 <section class="exam-answer-pane${activeClass}" data-answer-panel="${index}">
@@ -1007,8 +1380,10 @@
                         <span>${escapeHTML(answer.submissionTitle || answer.title || '解答')}</span>
                         <span class="badge badge-${answer.status === 'sample' ? 'pending' : 'achieved'}">${statusLabel}</span>
                         ${uploadLabel ? `<span class="exam-answer-meta">${escapeHTML(uploadLabel)}</span>` : ''}
+                        ${updateLabel ? `<span class="exam-answer-meta">${escapeHTML(updateLabel)}</span>` : ''}
                     </div>
                     ${summaryHTML}
+                    ${actionsHTML}
                     <div class="exam-link-row">
                         <a href="${escapeAttribute(answer.texPath)}" target="_blank">TeXを開く</a>
                         <a href="${escapeAttribute(answer.texPath)}" download>TeXをダウンロード</a>
@@ -1037,6 +1412,193 @@
             if (activePanel) typesetMath(activePanel);
         }
 
+        function canManageExamSubmission(item) {
+            const session = window.SiteAuth?.getSession?.();
+            const user = session?.user;
+            if (!user) return false;
+
+            const userId = String(user.id || '');
+            const email = String(user.email || '').toLowerCase();
+            const ownerId = String(item.uploadedByUserId || '');
+            const ownerEmail = String(item.uploadedByEmail || '').toLowerCase();
+
+            return Boolean((ownerId && ownerId === userId) || (ownerEmail && ownerEmail === email));
+        }
+
+        function findExamSubmission(submissionId) {
+            return examSubmissionsState.find(submission => String(submission.id || '') === String(submissionId || ''));
+        }
+
+        function findExamProblem(problemKey) {
+            return examProblemsState.find(problem => String(problem.key || '') === String(problemKey || ''));
+        }
+
+        function requireExamEditor() {
+            const session = window.SiteAuth?.requireSession?.();
+            if (!session) {
+                setExamUploadMessage('ログインしてから編集してください。', 'error');
+                if (typeof switchTab === 'function') switchTab('auth');
+                return null;
+            }
+
+            const username = window.SiteAuth?.requireUsername?.();
+            if (!username) {
+                setExamUploadMessage('ログインタブでユーザー名を保存してください。', 'error');
+                if (typeof switchTab === 'function') switchTab('auth');
+                return null;
+            }
+
+            return { session, username };
+        }
+
+        async function startProblemStatementEdit(button) {
+            const editor = requireExamEditor();
+            if (!editor) return;
+
+            const problem = findExamProblem(button.dataset.problemKey);
+            if (!problem) {
+                setExamUploadMessage('編集する問題文が見つかりませんでした。', 'error');
+                return;
+            }
+
+            try {
+                prepareExamUploadEditor();
+                resetExamUploadFormFields();
+                const problemSource = problem.statementTexPath
+                    ? await fetchTexSource(problem.statementTexPath)
+                    : makeProblemStatementTemplate(problem);
+                document.getElementById('exam-upload-problem-source').value = problemSource;
+                setExamUploadMode(problem.statementTexPath ? '問題文を更新' : '問題文を登録', true);
+                setExamUploadMessage(`${problem.problemGroup}問題 第${problem.problemNumber}問の問題文を編集しています。`, 'muted');
+                previewExamUploadFiles();
+            } catch (error) {
+                console.error(error);
+                setExamUploadMessage(error.message || '問題文TeXを読み込めませんでした。', 'error');
+            }
+        }
+
+        async function startAnswerEdit(button) {
+            const editor = requireExamEditor();
+            if (!editor) return;
+
+            const submission = findExamSubmission(button.dataset.submissionId);
+            if (!submission || !canManageExamSubmission(submission)) {
+                setExamUploadMessage('この解答は投稿者本人だけ編集できます。', 'error');
+                return;
+            }
+
+            const answerPath = submission.answerTexPath || submission.texPath;
+            if (!answerPath) {
+                setExamUploadMessage('編集する解答TeXが見つかりませんでした。', 'error');
+                return;
+            }
+
+            try {
+                prepareExamUploadEditor();
+                resetExamUploadFormFields();
+                document.getElementById('exam-upload-replace-id').value = submission.id || '';
+                document.getElementById('exam-upload-answer-source').value = await fetchTexSource(answerPath);
+                setExamUploadMode('解答を更新', true);
+                setExamUploadMessage('自分の解答を編集しています。', 'muted');
+                previewExamUploadFiles();
+            } catch (error) {
+                console.error(error);
+                setExamUploadMessage(error.message || '解答TeXを読み込めませんでした。', 'error');
+            }
+        }
+
+        async function handleExamAnswerDelete(button) {
+            const editor = requireExamEditor();
+            if (!editor) return;
+
+            const submission = findExamSubmission(button.dataset.submissionId);
+            if (!submission || !canManageExamSubmission(submission)) {
+                setExamUploadMessage('この解答は投稿者本人だけ削除できます。', 'error');
+                return;
+            }
+
+            if (!window.confirm('この解答を削除しますか？')) return;
+
+            const formData = new FormData();
+            formData.set('action', 'delete');
+            formData.set('submissionId', submission.id || '');
+            formData.set('username', editor.username);
+
+            try {
+                setExamUploadMessage('解答を削除しています...', 'muted');
+                const response = await fetch(getFunctionUrl('upload-exam-tex'), {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${editor.session.access_token}`
+                    },
+                    body: formData
+                });
+
+                const payload = await readJsonResponse(response);
+                if (!response.ok) throw new Error(payload.message || '削除に失敗しました。');
+
+                examSubmissionsState = examSubmissionsState.filter(item => item.id !== submission.id);
+                examProblemsState = buildExamProblems(examSubmissionsState);
+                examAnswersState = examProblemsState;
+                renderExamFilters(examProblemsState);
+                renderExamPdfControls();
+                renderExamAnswerResults();
+                setExamUploadMessage('解答を削除しました。GitHub Pagesへの反映を待っています。', 'success');
+            } catch (error) {
+                console.error(error);
+                setExamUploadMessage(`${error.message || '削除に失敗しました。'} Edge Functionの設定も確認してください。`, 'error');
+            }
+        }
+
+        function prepareExamUploadEditor() {
+            const panel = document.getElementById('exam-upload-panel');
+            if (panel) {
+                panel.open = true;
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function resetExamUploadFormFields() {
+            const form = document.getElementById('exam-upload-form');
+            if (!form) return;
+            form.reset();
+            document.getElementById('exam-upload-replace-id').value = '';
+            document.getElementById('exam-upload-problem-file').value = '';
+            document.getElementById('exam-upload-answer-file').value = '';
+            renderDetectedUploadParts({ problemParts: [], answerParts: [] });
+        }
+
+        function resetExamUploadEditState() {
+            resetExamUploadFormFields();
+            setExamUploadMode('アップロード', false);
+        }
+
+        function setExamUploadMode(submitLabel, isEditing) {
+            const submitButton = document.getElementById('exam-upload-submit');
+            const cancelButton = document.getElementById('exam-upload-cancel-edit');
+            if (submitButton) submitButton.textContent = submitLabel || 'アップロード';
+            if (cancelButton) cancelButton.hidden = !isEditing;
+        }
+
+        async function fetchTexSource(path) {
+            const response = await fetch(path, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`${path} を読み込めませんでした。`);
+            return response.text();
+        }
+
+        function makeProblemStatementTemplate(problem) {
+            return [
+                `\\examyear{${problem.year || ''}}`,
+                `\\examfield{${getExamFieldLabel(problem.field) || '代数'}}`,
+                `\\examgroup{${problem.problemGroup || ''}}`,
+                `\\examnumber{${problem.problemNumber || ''}}`,
+                '\\examkind{problem}',
+                `\\examtitle{${problem.title || ''}}`,
+                '',
+                '% ここに問題文を入力'
+            ].join('\n');
+        }
+
         function setupExamUploadForm() {
             if (examUploadFormReady) {
                 updateExamUploadAuthState();
@@ -1049,6 +1611,12 @@
             form.addEventListener('submit', handleExamUpload);
             document.getElementById('exam-upload-problem-file')?.addEventListener('change', previewExamUploadFiles);
             document.getElementById('exam-upload-answer-file')?.addEventListener('change', previewExamUploadFiles);
+            document.getElementById('exam-upload-problem-source')?.addEventListener('input', previewExamUploadFiles);
+            document.getElementById('exam-upload-answer-source')?.addEventListener('input', previewExamUploadFiles);
+            document.getElementById('exam-upload-cancel-edit')?.addEventListener('click', () => {
+                resetExamUploadEditState();
+                setExamUploadMessage('', 'muted');
+            });
             window.addEventListener('site-auth-changed', updateExamUploadAuthState);
             examUploadFormReady = true;
             updateExamUploadAuthState();
@@ -1090,6 +1658,10 @@
             } else if (message && !message.textContent) {
                 message.textContent = '';
             }
+
+            if (examProblemsState.length > 0) {
+                renderExamAnswerResults();
+            }
         }
 
         async function handleExamUpload(event) {
@@ -1109,18 +1681,18 @@
 
             const form = event.currentTarget;
             const formData = new FormData(form);
-            const problemFile = formData.get('problemTexFile');
-            const answerFile = formData.get('answerTexFile');
-            if (!(answerFile instanceof File) || answerFile.size === 0) {
-                setExamUploadMessage('解答LaTeXファイルを選んでください。', 'error');
+            const isReplacing = Boolean(String(formData.get('replaceSubmissionId') || '').trim());
+            const sources = await readExamUploadSources(formData);
+            if (!sources.problemSource.trim() && !sources.answerSource.trim()) {
+                setExamUploadMessage('問題文または解答のTeXを入力してください。', 'error');
                 return;
             }
 
             setExamUploadMessage('TeXを確認しています...', 'muted');
 
             try {
-                const detected = await getDetectedUploadParts(problemFile, answerFile);
-                const validation = validateDetectedUploadParts(detected);
+                const detected = getDetectedUploadParts(sources);
+                const validation = validateDetectedUploadParts(detected, true, isReplacing);
                 if (!validation.ok) {
                     setExamUploadMessage(validation.message, 'error');
                     renderDetectedUploadParts(detected, validation.message);
@@ -1128,11 +1700,13 @@
                 }
 
                 formData.set('username', username);
+                formData.set('problemTexSource', sources.problemSource);
+                formData.set('answerTexSource', sources.answerSource);
                 formData.set('detectedProblems', String(detected.problemParts.length));
                 formData.set('detectedAnswers', String(detected.answerParts.length));
                 formData.set('uploadedByEmail', session.user?.email || '');
 
-                setExamUploadMessage('アップロードしています...', 'muted');
+                setExamUploadMessage(isReplacing ? '更新しています...' : 'アップロードしています...', 'muted');
                 const response = await fetch(getFunctionUrl('upload-exam-tex'), {
                     method: 'POST',
                     headers: {
@@ -1144,9 +1718,8 @@
                 const payload = await readJsonResponse(response);
                 if (!response.ok) throw new Error(payload.message || 'アップロードに失敗しました。');
 
-                setExamUploadMessage('アップロードを受け付けました。GitHub Pagesへの反映を待っています。', 'success');
-                form.reset();
-                renderDetectedUploadParts({ problemParts: [], answerParts: [] });
+                setExamUploadMessage(isReplacing ? '更新を受け付けました。GitHub Pagesへの反映を待っています。' : 'アップロードを受け付けました。GitHub Pagesへの反映を待っています。', 'success');
+                resetExamUploadEditState();
             } catch (error) {
                 console.error(error);
                 setExamUploadMessage(`${error.message || 'アップロードに失敗しました。'} Edge Functionの設定も確認してください。`, 'error');
@@ -1157,31 +1730,43 @@
             const form = document.getElementById('exam-upload-form');
             if (!form) return;
             const formData = new FormData(form);
-            const problemFile = formData.get('problemTexFile');
-            const answerFile = formData.get('answerTexFile');
 
             try {
-                const detected = await getDetectedUploadParts(problemFile, answerFile);
-                const validation = validateDetectedUploadParts(detected, false);
+                const sources = await readExamUploadSources(formData);
+                const detected = getDetectedUploadParts(sources);
+                const validation = validateDetectedUploadParts(detected, false, Boolean(String(formData.get('replaceSubmissionId') || '').trim()));
                 renderDetectedUploadParts(detected, validation.ok ? '' : validation.message);
             } catch (error) {
                 renderDetectedUploadParts({ problemParts: [], answerParts: [] }, error.message || 'TeXの確認に失敗しました。');
             }
         }
 
-        async function getDetectedUploadParts(problemFile, answerFile) {
-            const problemSource = problemFile instanceof File && problemFile.size > 0 ? await problemFile.text() : '';
-            const answerSource = answerFile instanceof File && answerFile.size > 0 ? await answerFile.text() : '';
+        async function readExamUploadSources(formData) {
+            const problemFile = formData.get('problemTexFile');
+            const answerFile = formData.get('answerTexFile');
+            const problemText = String(formData.get('problemTexSource') || '');
+            const answerText = String(formData.get('answerTexSource') || '');
 
+            return {
+                problemSource: problemFile instanceof File && problemFile.size > 0 ? await problemFile.text() : problemText,
+                answerSource: answerFile instanceof File && answerFile.size > 0 ? await answerFile.text() : answerText
+            };
+        }
+
+        function getDetectedUploadParts({ problemSource, answerSource }) {
             return {
                 problemParts: problemSource ? window.ExamMacros.splitSubmission(problemSource, {}, 'problem') : [],
                 answerParts: answerSource ? window.ExamMacros.splitSubmission(answerSource, {}, 'answer') : []
             };
         }
 
-        function validateDetectedUploadParts(detected, requireAnswer = true) {
-            if (requireAnswer && detected.answerParts.length === 0) {
-                return { ok: false, message: '解答LaTeXから提出対象を読み取れませんでした。' };
+        function validateDetectedUploadParts(detected, requireContent = true, isReplacing = false) {
+            if (requireContent && detected.problemParts.length === 0 && detected.answerParts.length === 0) {
+                return { ok: false, message: '問題文または解答のTeXから提出対象を読み取れませんでした。' };
+            }
+
+            if (isReplacing && detected.answerParts.length !== 1) {
+                return { ok: false, message: '解答の編集では、解答TeXを1件だけ入力してください。' };
             }
 
             const allParts = [...detected.problemParts, ...detected.answerParts];
@@ -1215,7 +1800,7 @@
                 ${rows.length > 0 ? rows.map(part => `
                     <div class="exam-detected-chip">
                         <span>${escapeHTML(part.label)}</span>
-                        <strong>${escapeHTML(part.year || '?')}年度 ${escapeHTML(part.problemGroup || '?')} 第${escapeHTML(part.problemNumber || '?')}問</strong>
+                        <strong>${escapeHTML(part.year || '?')}年度 ${escapeHTML(part.problemGroup || '?')} ${escapeHTML(part.field ? getExamFieldLabel(part.field) : '分野未指定')} 第${escapeHTML(part.problemNumber || '?')}問</strong>
                     </div>
                 `).join('') : ''}
             `;

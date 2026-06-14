@@ -1,6 +1,9 @@
 (function () {
     function parse(source) {
         const tags = collectCommandArgs(source, 'examtag', 1).map(item => normalizeSpace(item.args[0]));
+        const field = collectCommandArgs(source, 'examfield', 1)[0]?.args?.[0]
+            || collectCommandArgs(source, 'examsubject', 1)[0]?.args?.[0]
+            || '';
         const related = collectCommandArgs(source, 'examrelated', 2).map(item => ({
             id: normalizeSpace(item.args[0]),
             label: normalizeSpace(item.args[1])
@@ -10,6 +13,7 @@
             .trim();
 
         return {
+            field: normalizeSpace(field),
             tags,
             related,
             html: renderLatexFragment(body),
@@ -33,15 +37,16 @@
         if (headings.length === 0) {
             const fallbackTitle = metadata.title || '提出された解答';
             return [{
-                id: makeSectionId(metadata, fallbackTitle, 'answer'),
-                kind: 'answer',
-                title: fallbackTitle,
-                year: normalizeYear(metadata.year),
-                era: normalizeSpace(metadata.era),
-                problemGroup: normalizeProblemGroup(metadata.problemGroup),
-                problemNumber: normalizeProblemNumber(metadata.problemNumber || '1'),
-                summary: normalizeSpace(metadata.summary),
-                html: renderLatexFragment(body),
+            id: makeSectionId(metadata, fallbackTitle, 'answer'),
+            kind: 'answer',
+            title: fallbackTitle,
+            year: normalizeYear(metadata.year),
+            era: normalizeSpace(metadata.era),
+            field: normalizeSpace(metadata.field),
+            problemGroup: normalizeProblemGroup(metadata.problemGroup),
+            problemNumber: normalizeProblemNumber(metadata.problemNumber || '1'),
+            summary: normalizeSpace(metadata.summary),
+            html: renderLatexFragment(body),
                 plainText: latexToPlainText(body),
                 source: body
             }];
@@ -59,6 +64,7 @@
                 title,
                 year: normalizeYear(metadata.year),
                 era: normalizeSpace(metadata.era),
+                field: normalizeSpace(metadata.field),
                 problemGroup: parsed.problemGroup,
                 problemNumber: parsed.problemNumber,
                 summary: normalizeSpace(metadata.summary),
@@ -85,6 +91,7 @@
                 title: parsed.title || makeDefaultSectionTitle(parsed),
                 year: parsed.year,
                 era: parsed.era,
+                field: parsed.field,
                 problemGroup: parsed.problemGroup,
                 problemNumber: parsed.problemNumber,
                 summary: parsed.summary,
@@ -132,6 +139,7 @@
             title,
             year: normalizeYear(read('examyear') || defaults.year),
             era: read('examera') || normalizeSpace(defaults.era),
+            field: read('examfield', 'examsubject') || normalizeSpace(defaults.field),
             problemGroup: normalizeProblemGroup(read('examgroup', 'examproblemgroup') || defaults.problemGroup),
             problemNumber: normalizeProblemNumber(read('examnumber', 'examproblemnumber') || defaults.problemNumber),
             summary: read('examsummary') || normalizeSpace(defaults.summary),
@@ -143,6 +151,8 @@
         return [
             'examyear',
             'examera',
+            'examfield',
+            'examsubject',
             'examgroup',
             'examproblemgroup',
             'examnumber',
@@ -161,6 +171,8 @@
         return [
             'examyear',
             'examera',
+            'examfield',
+            'examsubject',
             'examgroup',
             'examproblemgroup',
             'examnumber',
