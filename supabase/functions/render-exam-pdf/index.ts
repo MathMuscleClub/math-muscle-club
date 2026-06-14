@@ -32,7 +32,7 @@ Deno.serve(async (request) => {
       },
       body: JSON.stringify({
         ...payload,
-        repository: Deno.env.get("GITHUB_REPOSITORY") || "warabimochi23/math-muscle-club",
+        repository: Deno.env.get("GITHUB_REPOSITORY") || "MathMuscleClub/math-muscle-club",
         branch: Deno.env.get("GITHUB_BRANCH") || "main",
         manifestPath: "exam-submissions.json",
       }),

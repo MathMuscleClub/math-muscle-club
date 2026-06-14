@@ -17,10 +17,13 @@
         };
     }
 
-    function splitSubmission(source, metadata = {}) {
+    function splitSubmission(source, metadata = {}, defaultKind = '') {
         const body = applyDeclaredOperators(source, getDocumentBody(source))
             .replace(/\\maketitle/g, '')
             .trim();
+        const metadataParts = splitByMetadataBlocks(body, metadata, defaultKind);
+        if (metadataParts.length > 0) return metadataParts;
+
         const headings = [
             ...collectCommandArgs(body, 'section*', 1).map(match => ({ ...match, command: 'section*' })),
             ...collectCommandArgs(body, 'section', 1).map(match => ({ ...match, command: 'section' }))
@@ -33,10 +36,14 @@
                 id: makeSectionId(metadata, fallbackTitle, 'answer'),
                 kind: 'answer',
                 title: fallbackTitle,
+                year: normalizeYear(metadata.year),
+                era: normalizeSpace(metadata.era),
                 problemGroup: normalizeProblemGroup(metadata.problemGroup),
                 problemNumber: normalizeProblemNumber(metadata.problemNumber || '1'),
+                summary: normalizeSpace(metadata.summary),
                 html: renderLatexFragment(body),
-                plainText: latexToPlainText(body)
+                plainText: latexToPlainText(body),
+                source: body
             }];
         }
 
@@ -50,12 +57,134 @@
                 id: makeSectionId(metadata, title, parsed.kind),
                 kind: parsed.kind,
                 title,
+                year: normalizeYear(metadata.year),
+                era: normalizeSpace(metadata.era),
                 problemGroup: parsed.problemGroup,
                 problemNumber: parsed.problemNumber,
+                summary: normalizeSpace(metadata.summary),
                 html: renderLatexFragment(sectionBody),
-                plainText: latexToPlainText(sectionBody)
+                plainText: latexToPlainText(sectionBody),
+                source: sectionBody
             };
         }).filter(section => section.html || section.plainText);
+    }
+
+    function splitByMetadataBlocks(body, metadata, defaultKind) {
+        const starts = findMetadataBlockStarts(body);
+        if (starts.length === 0) return [];
+
+        return starts.map((start, index) => {
+            const end = starts[index + 1] ?? body.length;
+            const source = body.slice(start, end).trim();
+            const parsed = parseExamMetadata(source, metadata, defaultKind);
+            const content = stripExamMetadataCommands(source).trim();
+
+            return {
+                id: makeSectionId(parsed, parsed.title || parsed.problemNumber || source, parsed.kind),
+                kind: parsed.kind,
+                title: parsed.title || makeDefaultSectionTitle(parsed),
+                year: parsed.year,
+                era: parsed.era,
+                problemGroup: parsed.problemGroup,
+                problemNumber: parsed.problemNumber,
+                summary: parsed.summary,
+                tags: parsed.tags,
+                html: renderLatexFragment(content),
+                plainText: latexToPlainText(content),
+                source
+            };
+        }).filter(part => part.html || part.plainText);
+    }
+
+    function findMetadataBlockStarts(source) {
+        const commands = collectMetadataCommandMatches(source);
+        if (commands.length === 0) return [];
+
+        const yearStarts = commands.filter(item => item.command === 'examyear').map(item => item.start);
+        if (yearStarts.length > 1) return uniqueSorted(yearStarts);
+
+        const numberStarts = commands.filter(item => item.command === 'examnumber' || item.command === 'examproblemnumber').map(item => item.start);
+        if (numberStarts.length > 1) {
+            return uniqueSorted([commands[0].start, ...numberStarts.slice(1)]);
+        }
+
+        return [commands[0].start];
+    }
+
+    function parseExamMetadata(source, defaults = {}, defaultKind = '') {
+        const read = (...names) => {
+            for (const name of names) {
+                const values = collectCommandArgs(source, name, 1);
+                if (values.length > 0) return normalizeSpace(values[0].args[0]);
+            }
+            return '';
+        };
+        const tags = uniqueValues([
+            ...(Array.isArray(defaults.tags) ? defaults.tags : []),
+            ...collectCommandArgs(source, 'examtag', 1).map(item => normalizeSpace(item.args[0]))
+        ]);
+        const title = read('examtitle') || normalizeSpace(defaults.title);
+        const kindText = read('examkind', 'examtype');
+
+        return {
+            ...defaults,
+            kind: normalizeExamKind(kindText || defaultKind || defaults.kind || title),
+            title,
+            year: normalizeYear(read('examyear') || defaults.year),
+            era: read('examera') || normalizeSpace(defaults.era),
+            problemGroup: normalizeProblemGroup(read('examgroup', 'examproblemgroup') || defaults.problemGroup),
+            problemNumber: normalizeProblemNumber(read('examnumber', 'examproblemnumber') || defaults.problemNumber),
+            summary: read('examsummary') || normalizeSpace(defaults.summary),
+            tags
+        };
+    }
+
+    function collectMetadataCommandMatches(source) {
+        return [
+            'examyear',
+            'examera',
+            'examgroup',
+            'examproblemgroup',
+            'examnumber',
+            'examproblemnumber',
+            'examtitle',
+            'examsummary',
+            'examkind',
+            'examtype'
+        ].flatMap(command => collectCommandArgs(source, command, 1).map(match => ({
+            ...match,
+            command
+        }))).sort((a, b) => a.start - b.start);
+    }
+
+    function stripExamMetadataCommands(source) {
+        return [
+            'examyear',
+            'examera',
+            'examgroup',
+            'examproblemgroup',
+            'examnumber',
+            'examproblemnumber',
+            'examtitle',
+            'examsummary',
+            'examkind',
+            'examtype',
+            'examtag'
+        ].reduce((output, command) => replaceCommand(output, command, 1, () => ''), source);
+    }
+
+    function makeDefaultSectionTitle(metadata) {
+        const year = metadata.era || (metadata.year ? `${metadata.year}年度` : '');
+        const group = metadata.problemGroup ? `${metadata.problemGroup}問題` : '';
+        const number = metadata.problemNumber ? `第${metadata.problemNumber}問` : '';
+        return [year, group, number].filter(Boolean).join(' ') || '提出されたTeX';
+    }
+
+    function normalizeExamKind(value) {
+        const text = normalizeSpace(value).toLowerCase();
+        if (/問題|problem|question/.test(text)) return 'problem';
+        if (/解答|解説|答案|answer|solution/.test(text)) return 'answer';
+        return 'answer';
     }
 
     function parseExamSectionTitle(title, metadata = {}) {
@@ -93,6 +222,7 @@
         text = replaceCommand(text, 'subsection*', 1, args => stash(`<h5 class="exam-source-subheading">${escapeHTML(normalizeSpace(args[0]))}</h5>`));
         text = replaceCommand(text, 'examtag', 1, () => '');
         text = replaceCommand(text, 'examrelated', 2, () => '');
+        text = stripExamMetadataCommands(text);
 
         let html = paragraphize(text);
         blocks.forEach((block, index) => {
@@ -287,9 +417,22 @@
         return String(value ?? '').replace(/\s+/g, ' ').trim();
     }
 
+    function uniqueValues(values) {
+        return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))];
+    }
+
+    function uniqueSorted(values) {
+        return [...new Set(values)].sort((a, b) => a - b);
+    }
+
+    function normalizeYear(value) {
+        const year = toHalfWidth(value || '').replace(/[^0-9]/g, '');
+        return year ? Number(year) : '';
+    }
+
     function normalizeProblemGroup(value) {
         const group = toHalfWidth(value || '').trim().toUpperCase();
-        return group || 'A';
+        return group;
     }
 
     function normalizeProblemNumber(value) {
@@ -298,7 +441,7 @@
             .replace(/[–ー〜~]/g, '-')
             .replace(/^第/, '')
             .replace(/問$/, '')
-            .trim() || '1';
+            .trim();
     }
 
     function makeSectionId(metadata, title, kind) {

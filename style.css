@@ -477,6 +477,17 @@ td a {
     gap: 14px;
 }
 
+.exam-upload-profile-note {
+    background-color: var(--accent-soft);
+    border: 1px solid #cce2d5;
+    border-radius: 8px;
+    color: var(--accent);
+    font-size: 0.88rem;
+    font-weight: 800;
+    margin: 0;
+    padding: 10px 12px;
+}
+
 .exam-form-grid {
     display: grid;
     gap: 12px;
@@ -873,6 +884,34 @@ ul.exam-source-list {
     font-weight: 700;
 }
 
+.exam-upload-detected-list {
+    display: grid;
+    gap: 8px;
+}
+
+.exam-detected-chip {
+    align-items: center;
+    background-color: var(--surface-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+    padding: 8px 10px;
+}
+
+.exam-detected-chip span {
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.exam-detected-chip strong {
+    color: var(--text);
+    font-size: 0.88rem;
+}
+
 /* ==========================================
    Auth
    ========================================== */
@@ -1143,6 +1182,34 @@ ul.exam-source-list {
     gap: 14px;
     justify-content: space-between;
     padding: 14px;
+}
+
+.auth-profile {
+    background-color: var(--surface-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    display: grid;
+    gap: 14px;
+    margin-top: 14px;
+    padding: 14px;
+}
+
+.auth-profile-header {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.auth-profile-status {
+    color: #444444;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.auth-username-form {
+    display: grid;
+    gap: 12px;
 }
 
 .auth-session-label {
@@ -1437,6 +1504,10 @@ footer p {
 
     .auth-session {
         align-items: stretch;
+        flex-direction: column;
+    }
+
+    .auth-profile-header {
         flex-direction: column;
     }
 

@@ -85,6 +85,12 @@
         elements.logoutButton = document.getElementById('auth-logout-button');
         elements.session = document.getElementById('auth-session');
         elements.sessionEmail = document.getElementById('auth-session-email');
+        elements.profile = document.getElementById('auth-profile');
+        elements.profileStatus = document.getElementById('auth-profile-status');
+        elements.usernameForm = document.getElementById('auth-username-form');
+        elements.username = document.getElementById('auth-username');
+        elements.usernameSaveButton = document.getElementById('auth-username-save-button');
+        elements.profileMessage = document.getElementById('auth-profile-message');
         elements.stateText = document.getElementById('auth-state-text');
         elements.statusBadge = document.getElementById('auth-status-badge');
         elements.notice = document.getElementById('auth-notice');
@@ -99,6 +105,7 @@
         elements.googleButton?.addEventListener('click', handleGoogleSignIn);
         elements.signupButton?.addEventListener('click', handleSignup);
         elements.logoutButton?.addEventListener('click', handleLogout);
+        elements.usernameForm?.addEventListener('submit', handleUsernameSave);
     }
 
     async function handleLogin(event) {
@@ -175,6 +182,39 @@
         });
     }
 
+    async function handleUsernameSave(event) {
+        event.preventDefault();
+        if (!ensureReady()) return;
+
+        const username = normalizeUsername(elements.username?.value || '');
+        if (!username) {
+            setProfileMessage('ユーザー名を入力してください。', 'error');
+            return;
+        }
+
+        await runAuthAction('ユーザー名を保存しています...', async () => {
+            const currentMetadata = currentSession?.user?.user_metadata || {};
+            const { data, error } = await supabaseClient.auth.updateUser({
+                data: {
+                    ...currentMetadata,
+                    username
+                }
+            });
+            if (error) throw error;
+
+            if (currentSession && data.user) {
+                currentSession = {
+                    ...currentSession,
+                    user: data.user
+                };
+            }
+
+            renderProfile(currentSession);
+            notifySessionChanged();
+            setProfileMessage('ユーザー名を保存しました。', 'success');
+        });
+    }
+
     async function runAuthAction(loadingMessage, action) {
         setControlsDisabled(true);
         setMessage(loadingMessage, 'muted');
@@ -235,8 +275,14 @@
             elements.panel.classList.add('is-authenticated');
             elements.form.hidden = true;
             elements.session.hidden = false;
-            elements.sessionEmail.textContent = email;
-            setAuthState(`${email} でログイン中です。`, 'ログイン中', 'success');
+            renderProfile(currentSession);
+            const username = getSessionUsername(currentSession);
+            elements.sessionEmail.textContent = username ? `${username} (${email})` : email;
+            setAuthState(
+                username ? `${username} としてログイン中です。` : 'ユーザー名を登録してください。',
+                'ログイン中',
+                username ? 'success' : 'muted'
+            );
             notifySessionChanged();
             return;
         }
@@ -244,9 +290,33 @@
         elements.panel.classList.remove('is-authenticated');
         elements.form.hidden = false;
         elements.session.hidden = true;
+        if (elements.profile) elements.profile.hidden = true;
         elements.sessionEmail.textContent = '';
         setAuthState('メールアドレスでログインできます。', '未ログイン', 'muted');
         notifySessionChanged();
+    }
+
+    function renderProfile(session) {
+        if (!elements.profile) return;
+
+        const username = getSessionUsername(session);
+        const suggested = username || getSuggestedUsername(session);
+        elements.profile.hidden = !session?.user;
+
+        if (elements.username) {
+            elements.username.value = suggested;
+        }
+
+        if (elements.profileStatus) {
+            elements.profileStatus.textContent = username
+                ? `${username} として提出されます。`
+                : '初回は提出者名になるユーザー名を保存してください。';
+        }
+
+        if (elements.profileMessage && !username) {
+            elements.profileMessage.textContent = 'ユーザー名を保存するとTeXを提出できます。';
+            elements.profileMessage.className = 'auth-message auth-message-muted';
+        }
     }
 
     function notifySessionChanged() {
@@ -269,7 +339,9 @@
             elements.form?.querySelector('button[type="submit"]'),
             elements.googleButton,
             elements.signupButton,
-            elements.logoutButton
+            elements.logoutButton,
+            elements.username,
+            elements.usernameSaveButton
         ].forEach(element => {
             if (element) element.disabled = disabled;
         });
@@ -288,6 +360,13 @@
 
         elements.message.textContent = text;
         elements.message.className = `auth-message auth-message-${kind}`;
+    }
+
+    function setProfileMessage(text, kind) {
+        if (!elements.profileMessage) return;
+
+        elements.profileMessage.textContent = text;
+        elements.profileMessage.className = `auth-message auth-message-${kind}`;
     }
 
     function getConfig() {
@@ -375,6 +454,26 @@
 
     function normalizeDomainRule(rule) {
         return String(rule || '').trim().toLowerCase().replace(/^@/, '');
+    }
+
+    function normalizeUsername(value) {
+        return String(value || '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 40);
+    }
+
+    function getSessionUsername(session) {
+        return normalizeUsername(session?.user?.user_metadata?.username || '');
+    }
+
+    function getSuggestedUsername(session) {
+        const metadata = session?.user?.user_metadata || {};
+        const fromMetadata = normalizeUsername(metadata.full_name || metadata.name || '');
+        if (fromMetadata) return fromMetadata;
+
+        const email = session?.user?.email || '';
+        return normalizeUsername(email.split('@')[0] || '');
     }
 
     function renderDomainNote() {
@@ -500,10 +599,19 @@
         window.SiteAuth = {
             getClient: () => supabaseClient,
             getSession: () => currentSession,
+            getUsername: () => getSessionUsername(currentSession),
+            hasUsername: () => Boolean(getSessionUsername(currentSession)),
             requireSession: () => {
                 if (currentSession) return currentSession;
 
                 window.dispatchEvent(new CustomEvent('site-auth-required'));
+                return null;
+            },
+            requireUsername: () => {
+                const username = getSessionUsername(currentSession);
+                if (username) return username;
+
+                window.dispatchEvent(new CustomEvent('site-username-required'));
                 return null;
             }
         };

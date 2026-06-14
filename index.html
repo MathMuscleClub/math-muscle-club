@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学科筋トレ部</title>
-    <link rel="stylesheet" href="style.css?v=20260614d">
+    <link rel="stylesheet" href="style.css?v=20260614e">
 </head>
 
 <body>
@@ -149,40 +149,16 @@
                                 <span id="exam-upload-auth-badge" class="auth-status-badge auth-status-muted">未ログイン</span>
                             </div>
                             <form id="exam-upload-form" class="exam-upload-form">
-                                <div class="exam-form-grid">
-                                    <div class="auth-field">
-                                        <label for="exam-upload-username">ユーザー名</label>
-                                        <input id="exam-upload-username" name="username" type="text" maxlength="40" autocomplete="nickname" required>
-                                    </div>
-                                    <div class="auth-field">
-                                        <label for="exam-upload-year">年度</label>
-                                        <input id="exam-upload-year" name="year" type="number" min="1900" max="2100" required>
-                                    </div>
-                                    <div class="auth-field">
-                                        <label for="exam-upload-era">元号表記</label>
-                                        <input id="exam-upload-era" name="era" type="text" placeholder="平成16年">
-                                    </div>
-                                    <div class="auth-field">
-                                        <label for="exam-upload-group">問題区分</label>
-                                        <select id="exam-upload-group" name="problemGroup" required>
-                                            <option value="A">A問題</option>
-                                            <option value="B">B問題</option>
-                                            <option value="C">C問題</option>
-                                        </select>
-                                    </div>
+                                <p id="exam-upload-profile-note" class="exam-upload-profile-note">ログインタブで登録したユーザー名で提出されます。</p>
+                                <div class="auth-field">
+                                    <label for="exam-upload-problem-file">問題文LaTeXファイル</label>
+                                    <input id="exam-upload-problem-file" name="problemTexFile" type="file" accept=".tex,.latex,text/plain">
                                 </div>
                                 <div class="auth-field">
-                                    <label for="exam-upload-title">タイトル</label>
-                                    <input id="exam-upload-title" name="title" type="text" placeholder="平成16年 B問題 解答" required>
+                                    <label for="exam-upload-answer-file">解答LaTeXファイル</label>
+                                    <input id="exam-upload-answer-file" name="answerTexFile" type="file" accept=".tex,.latex,text/plain" required>
                                 </div>
-                                <div class="auth-field">
-                                    <label for="exam-upload-summary">概要</label>
-                                    <textarea id="exam-upload-summary" name="summary" rows="3" placeholder="扱った問題や方針を短く書けます。"></textarea>
-                                </div>
-                                <div class="auth-field">
-                                    <label for="exam-upload-file">LaTeXファイル</label>
-                                    <input id="exam-upload-file" name="texFile" type="file" accept=".tex,.latex,text/plain" required>
-                                </div>
+                                <div id="exam-upload-detected-list" class="exam-upload-detected-list"></div>
                                 <div class="auth-actions">
                                     <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
                                 </div>
@@ -277,6 +253,25 @@
                             <button id="auth-logout-button" class="auth-secondary-button" type="button">ログアウト</button>
                         </div>
 
+                        <div id="auth-profile" class="auth-profile" hidden>
+                            <div class="auth-profile-header">
+                                <div>
+                                    <div class="auth-session-label">表示名</div>
+                                    <p id="auth-profile-status" class="auth-profile-status">提出者名を登録してください。</p>
+                                </div>
+                            </div>
+                            <form id="auth-username-form" class="auth-username-form">
+                                <div class="auth-field">
+                                    <label for="auth-username">ユーザー名</label>
+                                    <input id="auth-username" name="username" type="text" maxlength="40" autocomplete="nickname" required>
+                                </div>
+                                <div class="auth-actions">
+                                    <button id="auth-username-save-button" class="auth-primary-button" type="submit">ユーザー名を保存</button>
+                                </div>
+                            </form>
+                            <p id="auth-profile-message" class="auth-message auth-message-muted" role="status"></p>
+                        </div>
+
                         <p id="auth-message" class="auth-message" role="status"></p>
                     </div>
                 </section>
@@ -289,9 +284,9 @@
     </div>
 
     <!-- タブ切り替え用のスクリプト -->
-    <script src="exam-macros.js?v=20260614d"></script>
+    <script src="exam-macros.js?v=20260614e"></script>
     <script src="supabase-config.js"></script>
-    <script src="auth.js?v=20260614d"></script>
+    <script src="auth.js?v=20260614e"></script>
     <script>
         function switchTab(tabId) {
             // 全てのタブコンテンツからactiveを取り除く
@@ -646,16 +641,22 @@
 
         async function loadExamSubmission(submission) {
             try {
-                const response = await fetch(submission.texPath);
-                if (!response.ok) throw new Error(`${submission.texPath} could not be loaded`);
+                const loaded = await loadSubmissionTexSources(submission);
+                const parsed = loaded.sources.map(item => window.ExamMacros.parse(item.source));
+                const sections = loaded.sources.flatMap(item => {
+                    return window.ExamMacros.splitSubmission(item.source, submission, item.kind)
+                        .filter(section => matchesSubmissionProblem(section, submission))
+                        .map(section => ({
+                            ...section,
+                            texPath: item.path,
+                            sourceKind: item.kind
+                        }));
+                });
 
-                const texSource = await response.text();
-                const parsed = window.ExamMacros.parse(texSource);
-                const sections = window.ExamMacros.splitSubmission(texSource, submission);
-                const tags = uniqueValues([...(submission.tags || []), ...parsed.tags]);
+                const tags = uniqueValues([...(submission.tags || []), ...parsed.flatMap(item => item.tags || []), ...sections.flatMap(section => section.tags || [])]);
                 const references = [
                     ...(Array.isArray(submission.references) ? submission.references : []),
-                    ...parsed.related.map(ref => ({
+                    ...parsed.flatMap(item => item.related || []).map(ref => ({
                         label: ref.label || ref.id,
                         href: ref.id ? `#${encodeURIComponent(ref.id)}` : '#'
                     }))
@@ -666,7 +667,7 @@
                     tags,
                     references,
                     sections,
-                    texSource,
+                    texSource: loaded.sources.map(item => item.source).join('\n\n'),
                     searchText: [
                         submission.id,
                         submission.year,
@@ -677,8 +678,8 @@
                         submission.summary,
                         submission.uploadedByName,
                         tags.join(' '),
-                        parsed.plainText,
-                        texSource
+                        parsed.map(item => item.plainText).join(' '),
+                        loaded.sources.map(item => item.source).join(' ')
                     ].join(' ').toLowerCase()
                 };
             } catch (error) {
@@ -701,6 +702,34 @@
             }
         }
 
+        async function loadSubmissionTexSources(submission) {
+            const sources = [];
+            const pairs = [
+                { path: submission.problemTexPath, kind: 'problem' },
+                { path: submission.answerTexPath, kind: 'answer' },
+                { path: submission.texPath, kind: submission.kind || '' }
+            ].filter(item => item.path);
+
+            for (const item of pairs) {
+                const response = await fetch(item.path);
+                if (!response.ok) throw new Error(`${item.path} could not be loaded`);
+                sources.push({
+                    ...item,
+                    source: await response.text()
+                });
+            }
+
+            return { sources };
+        }
+
+        function matchesSubmissionProblem(section, submission) {
+            if (!submission.problemNumber && !submission.problemGroup && !submission.year) return true;
+            const matchesYear = !submission.year || String(section.year || submission.year) === String(submission.year);
+            const matchesGroup = !submission.problemGroup || String(section.problemGroup || submission.problemGroup) === String(submission.problemGroup);
+            const matchesNumber = !submission.problemNumber || String(section.problemNumber || submission.problemNumber) === String(submission.problemNumber);
+            return matchesYear && matchesGroup && matchesNumber;
+        }
+
         function buildExamProblems(submissions) {
             const problemMap = new Map();
 
@@ -709,7 +738,8 @@
                 sections.forEach(section => {
                     const problemGroup = section.problemGroup || submission.problemGroup || 'A';
                     const problemNumber = section.problemNumber || submission.problemNumber || '1';
-                    const key = makeExamProblemKey(submission.year, problemGroup, problemNumber);
+                    const year = section.year || submission.year;
+                    const key = makeExamProblemKey(year, problemGroup, problemNumber);
                     const problem = ensureExamProblem(problemMap, key, submission, section, problemGroup, problemNumber);
 
                     problem.tags = uniqueValues([...problem.tags, ...(submission.tags || [])]);
@@ -729,13 +759,13 @@
                         title: section.title || submission.title || '解答',
                         html: section.html,
                         plainText: section.plainText,
-                        texPath: submission.texPath,
+                        texPath: section.texPath || submission.answerTexPath || submission.texPath,
                         uploadedByName: submission.uploadedByName || '匿名',
                         uploadedByEmail: submission.uploadedByEmail || '',
                         uploadedAt: submission.uploadedAt || '',
                         status: submission.status || 'submitted',
-                        summary: submission.summary || '',
-                        submissionTitle: submission.title || '',
+                        summary: section.summary || submission.summary || '',
+                        submissionTitle: section.title || submission.title || '',
                         sourceType: submission.sourceType || '',
                         tags: submission.tags || []
                     });
@@ -769,11 +799,11 @@
 
         function ensureExamProblem(problemMap, key, submission, section, problemGroup, problemNumber) {
             if (!problemMap.has(key)) {
-                const title = `${submission.era ? `${submission.era} ` : ''}${problemGroup}問題 第${problemNumber}問`;
+                const title = `${section.era || submission.era ? `${section.era || submission.era} ` : ''}${problemGroup}問題 第${problemNumber}問`;
                 problemMap.set(key, {
                     key,
-                    year: submission.year,
-                    era: submission.era || '',
+                    year: section.year || submission.year,
+                    era: section.era || submission.era || '',
                     problemGroup,
                     problemNumber,
                     title,
@@ -787,8 +817,8 @@
             }
 
             const problem = problemMap.get(key);
-            problem.year = problem.year || submission.year;
-            problem.era = problem.era || submission.era || '';
+            problem.year = problem.year || section.year || submission.year;
+            problem.era = problem.era || section.era || submission.era || '';
             problem.problemGroup = problem.problemGroup || problemGroup;
             problem.problemNumber = problem.problemNumber || problemNumber;
             problem.title = problem.title || section.title || submission.title || key;
@@ -958,12 +988,9 @@
             const form = document.getElementById('exam-upload-form');
             if (!form) return;
 
-            const usernameInput = document.getElementById('exam-upload-username');
-            if (usernameInput && localStorage.getItem('examUploadUsername')) {
-                usernameInput.value = localStorage.getItem('examUploadUsername');
-            }
-
             form.addEventListener('submit', handleExamUpload);
+            document.getElementById('exam-upload-problem-file')?.addEventListener('change', previewExamUploadFiles);
+            document.getElementById('exam-upload-answer-file')?.addEventListener('change', previewExamUploadFiles);
             window.addEventListener('site-auth-changed', updateExamUploadAuthState);
             examUploadFormReady = true;
             updateExamUploadAuthState();
@@ -973,20 +1000,34 @@
             const form = document.getElementById('exam-upload-form');
             const badge = document.getElementById('exam-upload-auth-badge');
             const message = document.getElementById('exam-upload-message');
+            const note = document.getElementById('exam-upload-profile-note');
             const session = window.SiteAuth?.getSession?.();
             const isLoggedIn = Boolean(session?.user);
+            const username = window.SiteAuth?.getUsername?.() || '';
+            const canUpload = isLoggedIn && Boolean(username);
 
             if (badge) {
-                badge.textContent = isLoggedIn ? 'ログイン中' : '未ログイン';
-                badge.className = `auth-status-badge auth-status-${isLoggedIn ? 'success' : 'muted'}`;
+                badge.textContent = canUpload ? username : isLoggedIn ? '名前未登録' : '未ログイン';
+                badge.className = `auth-status-badge auth-status-${canUpload ? 'success' : 'muted'}`;
+            }
+
+            if (note) {
+                note.textContent = canUpload
+                    ? `${username} として提出されます。`
+                    : isLoggedIn
+                        ? 'ログインタブでユーザー名を保存すると提出できます。'
+                        : 'ログインするとTeXを提出できます。';
             }
 
             form?.querySelectorAll('input, textarea, select, button').forEach(control => {
-                control.disabled = !isLoggedIn;
+                control.disabled = !canUpload;
             });
 
             if (message && !isLoggedIn) {
                 message.textContent = 'ログインするとTeXを提出できます。';
+                message.className = 'auth-message auth-message-muted';
+            } else if (message && !username) {
+                message.textContent = 'ログインタブでユーザー名を保存してください。';
                 message.className = 'auth-message auth-message-muted';
             } else if (message && !message.textContent) {
                 message.textContent = '';
@@ -1001,27 +1042,36 @@
                 if (typeof switchTab === 'function') switchTab('auth');
                 return;
             }
-
-            const form = event.currentTarget;
-            const formData = new FormData(form);
-            const username = String(formData.get('username') || '').trim();
-            const texFile = formData.get('texFile');
-            if (!username || !(texFile instanceof File) || texFile.size === 0) {
-                setExamUploadMessage('ユーザー名とLaTeXファイルを確認してください。', 'error');
+            const username = window.SiteAuth?.requireUsername?.();
+            if (!username) {
+                setExamUploadMessage('ログインタブでユーザー名を保存してください。', 'error');
+                if (typeof switchTab === 'function') switchTab('auth');
                 return;
             }
 
-            localStorage.setItem('examUploadUsername', username);
+            const form = event.currentTarget;
+            const formData = new FormData(form);
+            const problemFile = formData.get('problemTexFile');
+            const answerFile = formData.get('answerTexFile');
+            if (!(answerFile instanceof File) || answerFile.size === 0) {
+                setExamUploadMessage('解答LaTeXファイルを選んでください。', 'error');
+                return;
+            }
+
             setExamUploadMessage('TeXを確認しています...', 'muted');
 
             try {
-                const texSource = await texFile.text();
-                const sections = window.ExamMacros.splitSubmission(texSource, {
-                    year: formData.get('year'),
-                    problemGroup: formData.get('problemGroup'),
-                    title: formData.get('title')
-                });
-                formData.set('detectedSections', String(sections.length));
+                const detected = await getDetectedUploadParts(problemFile, answerFile);
+                const validation = validateDetectedUploadParts(detected);
+                if (!validation.ok) {
+                    setExamUploadMessage(validation.message, 'error');
+                    renderDetectedUploadParts(detected, validation.message);
+                    return;
+                }
+
+                formData.set('username', username);
+                formData.set('detectedProblems', String(detected.problemParts.length));
+                formData.set('detectedAnswers', String(detected.answerParts.length));
                 formData.set('uploadedByEmail', session.user?.email || '');
 
                 setExamUploadMessage('アップロードしています...', 'muted');
@@ -1038,11 +1088,79 @@
 
                 setExamUploadMessage('アップロードを受け付けました。GitHub Pagesへの反映を待っています。', 'success');
                 form.reset();
-                document.getElementById('exam-upload-username').value = username;
+                renderDetectedUploadParts({ problemParts: [], answerParts: [] });
             } catch (error) {
                 console.error(error);
                 setExamUploadMessage(`${error.message || 'アップロードに失敗しました。'} Edge Functionの設定も確認してください。`, 'error');
             }
+        }
+
+        async function previewExamUploadFiles() {
+            const form = document.getElementById('exam-upload-form');
+            if (!form) return;
+            const formData = new FormData(form);
+            const problemFile = formData.get('problemTexFile');
+            const answerFile = formData.get('answerTexFile');
+
+            try {
+                const detected = await getDetectedUploadParts(problemFile, answerFile);
+                const validation = validateDetectedUploadParts(detected, false);
+                renderDetectedUploadParts(detected, validation.ok ? '' : validation.message);
+            } catch (error) {
+                renderDetectedUploadParts({ problemParts: [], answerParts: [] }, error.message || 'TeXの確認に失敗しました。');
+            }
+        }
+
+        async function getDetectedUploadParts(problemFile, answerFile) {
+            const problemSource = problemFile instanceof File && problemFile.size > 0 ? await problemFile.text() : '';
+            const answerSource = answerFile instanceof File && answerFile.size > 0 ? await answerFile.text() : '';
+
+            return {
+                problemParts: problemSource ? window.ExamMacros.splitSubmission(problemSource, {}, 'problem') : [],
+                answerParts: answerSource ? window.ExamMacros.splitSubmission(answerSource, {}, 'answer') : []
+            };
+        }
+
+        function validateDetectedUploadParts(detected, requireAnswer = true) {
+            if (requireAnswer && detected.answerParts.length === 0) {
+                return { ok: false, message: '解答LaTeXから提出対象を読み取れませんでした。' };
+            }
+
+            const allParts = [...detected.problemParts, ...detected.answerParts];
+            const missing = allParts.find(part => !part.year || !part.problemGroup || !part.problemNumber);
+            if (missing) {
+                return {
+                    ok: false,
+                    message: '\\examyear, \\examgroup, \\examnumber を各問題・解答ブロックに入れてください。'
+                };
+            }
+
+            return { ok: true, message: '' };
+        }
+
+        function renderDetectedUploadParts(detected, warning = '') {
+            const list = document.getElementById('exam-upload-detected-list');
+            if (!list) return;
+
+            const rows = [
+                ...detected.problemParts.map(part => ({ ...part, label: '問題文' })),
+                ...detected.answerParts.map(part => ({ ...part, label: '解答' }))
+            ];
+
+            if (rows.length === 0 && !warning) {
+                list.innerHTML = '';
+                return;
+            }
+
+            list.innerHTML = `
+                ${warning ? `<p class="error">${escapeHTML(warning)}</p>` : ''}
+                ${rows.length > 0 ? rows.map(part => `
+                    <div class="exam-detected-chip">
+                        <span>${escapeHTML(part.label)}</span>
+                        <strong>${escapeHTML(part.year || '?')}年度 ${escapeHTML(part.problemGroup || '?')} 第${escapeHTML(part.problemNumber || '?')}問</strong>
+                    </div>
+                `).join('') : ''}
+            `;
         }
 
         function setExamUploadMessage(text, kind) {
