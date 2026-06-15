@@ -14,16 +14,21 @@
             id: normalizeSpace(item.args[0]),
             label: normalizeSpace(item.args[1])
         }));
+
+        const macroDeclarations = collectAllowedMacroDeclarations(uncommented);
+        const rawMacros = macroDeclarations.map(decl => decl.text).join('\n');
+
         const body = applyDeclaredOperators(uncommented, getDocumentBody(uncommented))
             .replace(/\\maketitle/g, '')
             .trim();
+        const enrichedBody = rawMacros ? `${rawMacros}\n\n${body}` : body;
 
         return {
             field: normalizeSpace(field),
             tags,
             related,
-            html: renderLatexFragment(body),
-            plainText: latexToPlainText(body)
+            html: renderLatexFragment(enrichedBody),
+            plainText: latexToPlainText(enrichedBody)
         };
     }
 
@@ -32,10 +37,13 @@
         // ファイル全体（プリアンブル含む）からメタデータを抽出してデフォルト値とする
         const fileMetadata = parseExamMetadata(uncommented, metadata, defaultKind);
 
+        const macroDeclarations = collectAllowedMacroDeclarations(uncommented);
+        const rawMacros = macroDeclarations.map(decl => decl.text).join('\n');
+
         const body = applyDeclaredOperators(uncommented, getDocumentBody(uncommented))
             .replace(/\\maketitle/g, '')
             .trim();
-        const metadataParts = splitByMetadataBlocks(body, fileMetadata, defaultKind);
+        const metadataParts = splitByMetadataBlocks(body, fileMetadata, defaultKind, rawMacros);
         if (metadataParts.length > 0) return metadataParts;
 
         const headings = [
@@ -48,6 +56,7 @@
             const fallbackTitle = fileMetadata.title || '提出された解答';
             const kind = normalizeExamKind(defaultKind || fileMetadata.kind || fallbackTitle);
             const isProblem = kind === 'problem';
+            const enrichedBody = rawMacros ? `${rawMacros}\n\n${body}` : body;
             return [{
                 id: makeSectionId(fileMetadata, fallbackTitle, kind),
                 kind,
@@ -59,8 +68,8 @@
                 problemNumber: normalizeProblemNumber(fileMetadata.problemNumber || '1'),
                 summary: normalizeSpace(fileMetadata.summary),
                 tags: isProblem && Array.isArray(fileMetadata.tags) ? fileMetadata.tags : [],
-                html: renderLatexFragment(body),
-                plainText: latexToPlainText(body),
+                html: renderLatexFragment(enrichedBody),
+                plainText: latexToPlainText(enrichedBody),
                 source: body
             }];
         }
@@ -72,6 +81,7 @@
             const kind = normalizeExamKind(defaultKind || parsed.kind);
             const isProblem = kind === 'problem';
             const sectionBody = body.slice(heading.end, next ? next.start : body.length).trim();
+            const enrichedSectionBody = rawMacros ? `${rawMacros}\n\n${sectionBody}` : sectionBody;
 
             return {
                 id: makeSectionId(fileMetadata, title, kind),
@@ -84,14 +94,14 @@
                 problemNumber: parsed.problemNumber,
                 summary: normalizeSpace(fileMetadata.summary),
                 tags: isProblem && Array.isArray(fileMetadata.tags) ? fileMetadata.tags : [],
-                html: renderLatexFragment(sectionBody),
-                plainText: latexToPlainText(sectionBody),
+                html: renderLatexFragment(enrichedSectionBody),
+                plainText: latexToPlainText(enrichedSectionBody),
                 source: sectionBody
             };
         }).filter(section => section.html || section.plainText);
     }
 
-    function splitByMetadataBlocks(body, metadata, defaultKind) {
+    function splitByMetadataBlocks(body, metadata, defaultKind, rawMacros = '') {
         const starts = findMetadataBlockStarts(body);
         if (starts.length === 0) return [];
 
@@ -100,6 +110,7 @@
             const source = body.slice(start, end).trim();
             const parsed = parseExamMetadata(source, metadata, defaultKind);
             const content = stripExamMetadataCommands(source).trim();
+            const enrichedContent = rawMacros ? `${rawMacros}\n\n${content}` : content;
 
             return {
                 id: makeSectionId(parsed, parsed.title || parsed.problemNumber || source, parsed.kind),
@@ -112,8 +123,8 @@
                 problemNumber: parsed.problemNumber,
                 summary: parsed.summary,
                 tags: parsed.tags,
-                html: renderLatexFragment(content),
-                plainText: latexToPlainText(content),
+                html: renderLatexFragment(enrichedContent),
+                plainText: latexToPlainText(enrichedContent),
                 source
             };
         }).filter(part => part.html || part.plainText);

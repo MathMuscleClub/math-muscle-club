@@ -66,6 +66,31 @@ const DEFAULT_MACRO_ALLOWLIST: MacroAllowlist = {
   ],
 };
 
+function uncommentExamMacros(source: string): string {
+  // 行頭にある「%」とそれに続くスペース、そして \exam... コマンドを、% なしの状態にする
+  return source.replace(/^%[ \t]*(\\(?:exam\w+)[^\n]*)/gm, "$1");
+}
+
+function commentOutMetadataMacros(source: string): string {
+  // \exam... から始まるメタデータマクロをコメントアウトする
+  return source.replace(/^([ \t]*)(\\(?:exam\w+)[^\n]*)/gm, "$1% $2");
+}
+
+function buildStandaloneTex(body: string, sharedMacros: string): string {
+  const commentedBody = commentOutMetadataMacros(body);
+  const macrosSection = sharedMacros.trim()
+    ? `\n% ── 共通数学マクロ定義 ──\n${sharedMacros.trim()}\n`
+    : "";
+  return `\\documentclass[12pt]{jlreq}
+\\usepackage{amsmath, amssymb}
+${macrosSection}
+\\begin{document}
+
+${commentedBody.trim()}
+
+\\end{document}`;
+}
+
 Deno.serve(async (request) => {
   const optionsResponse = handleOptions(request);
   if (optionsResponse) return optionsResponse;
@@ -93,8 +118,10 @@ Deno.serve(async (request) => {
       return await deleteSubmission(formData, user, email, username);
     }
 
-    const problemSource = await readTexInput(formData.get("problemTexFile"), formData.get("problemTexSource"));
-    const answerSource = await readTexInput(formData.get("answerTexFile"), formData.get("answerTexSource"));
+    const rawProblemSource = await readTexInput(formData.get("problemTexFile"), formData.get("problemTexSource"));
+    const rawAnswerSource = await readTexInput(formData.get("answerTexFile"), formData.get("answerTexSource"));
+    const problemSource = uncommentExamMacros(rawProblemSource);
+    const answerSource = uncommentExamMacros(rawAnswerSource);
     const replaceSubmissionId = cleanText(formData.get("replaceSubmissionId"), 160);
     if (!problemSource.trim() && !answerSource.trim()) {
       return errorResponse("問題文または解答のTeXを入力してください。");
@@ -439,16 +466,18 @@ function findDuplicateTexPartKeys(parts: TexPart[]) {
 }
 
 function splitTexParts(source: string, defaultKind: "problem" | "answer", macroAllowlist: MacroAllowlist): TexPart[] {
-  const body = getDocumentBody(source).replace(/\\maketitle/g, "").trim();
+  const uncommented = uncommentExamMacros(source);
+  const body = getDocumentBody(uncommented).replace(/\\maketitle/g, "").trim();
   const starts = findMetadataBlockStarts(body);
-  const sharedMacros = extractSharedMacroPrefix(source, body, starts, macroAllowlist);
+  const sharedMacros = extractSharedMacroPrefix(uncommented, body, starts, macroAllowlist);
   const ranges = starts.length > 0
     ? starts.map((start, index) => ({ start, end: starts[index + 1] ?? body.length }))
     : [{ start: 0, end: body.length }];
 
   return ranges.map(({ start, end }) => {
-    const partSource = prependSharedMacros(body.slice(start, end).trim(), sharedMacros);
-    const metadata = parseExamMetadata(partSource, defaultKind);
+    const partBody = body.slice(start, end).trim();
+    const metadata = parseExamMetadata(partBody, defaultKind);
+    const partSource = buildStandaloneTex(partBody, sharedMacros);
     return {
       ...metadata,
       source: partSource,
