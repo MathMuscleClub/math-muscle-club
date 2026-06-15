@@ -1,0 +1,11 @@
+supabase/.temp/
+supabase/.env*
+
+# LaTeX temporary files
+*.aux
+*.log
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdf

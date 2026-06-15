@@ -1,14 +1,20 @@
 (function () {
+    function uncommentExamMacros(source) {
+        // 行頭にある「%」とそれに続くスペース、そして \exam... コマンドを、% なしの状態にする
+        return source.replace(/^%[ \t]*(\\(?:exam\w+)[^\n]*)/gm, '$1');
+    }
+
     function parse(source) {
-        const tags = collectCommandArgs(source, 'examtag', 1).map(item => normalizeSpace(item.args[0]));
-        const field = collectCommandArgs(source, 'examfield', 1)[0]?.args?.[0]
-            || collectCommandArgs(source, 'examsubject', 1)[0]?.args?.[0]
+        const uncommented = uncommentExamMacros(source);
+        const tags = collectCommandArgs(uncommented, 'examtag', 1).map(item => normalizeSpace(item.args[0]));
+        const field = collectCommandArgs(uncommented, 'examfield', 1)[0]?.args?.[0]
+            || collectCommandArgs(uncommented, 'examsubject', 1)[0]?.args?.[0]
             || '';
-        const related = collectCommandArgs(source, 'examrelated', 2).map(item => ({
+        const related = collectCommandArgs(uncommented, 'examrelated', 2).map(item => ({
             id: normalizeSpace(item.args[0]),
             label: normalizeSpace(item.args[1])
         }));
-        const body = applyDeclaredOperators(source, getDocumentBody(source))
+        const body = applyDeclaredOperators(uncommented, getDocumentBody(uncommented))
             .replace(/\\maketitle/g, '')
             .trim();
 
@@ -22,10 +28,14 @@
     }
 
     function splitSubmission(source, metadata = {}, defaultKind = '') {
-        const body = applyDeclaredOperators(source, getDocumentBody(source))
+        const uncommented = uncommentExamMacros(source);
+        // ファイル全体（プリアンブル含む）からメタデータを抽出してデフォルト値とする
+        const fileMetadata = parseExamMetadata(uncommented, metadata, defaultKind);
+
+        const body = applyDeclaredOperators(uncommented, getDocumentBody(uncommented))
             .replace(/\\maketitle/g, '')
             .trim();
-        const metadataParts = splitByMetadataBlocks(body, metadata, defaultKind);
+        const metadataParts = splitByMetadataBlocks(body, fileMetadata, defaultKind);
         if (metadataParts.length > 0) return metadataParts;
 
         const headings = [
@@ -35,20 +45,20 @@
             .sort((a, b) => a.start - b.start);
 
         if (headings.length === 0) {
-            const fallbackTitle = metadata.title || '提出された解答';
-            const kind = normalizeExamKind(defaultKind || metadata.kind || fallbackTitle);
+            const fallbackTitle = fileMetadata.title || '提出された解答';
+            const kind = normalizeExamKind(defaultKind || fileMetadata.kind || fallbackTitle);
             const isProblem = kind === 'problem';
             return [{
-                id: makeSectionId(metadata, fallbackTitle, kind),
+                id: makeSectionId(fileMetadata, fallbackTitle, kind),
                 kind,
                 title: fallbackTitle,
-                year: normalizeYear(metadata.year),
-                era: normalizeSpace(metadata.era),
-                field: isProblem ? normalizeSpace(metadata.field) : '',
-                problemGroup: normalizeProblemGroup(metadata.problemGroup),
-                problemNumber: normalizeProblemNumber(metadata.problemNumber || '1'),
-                summary: normalizeSpace(metadata.summary),
-                tags: isProblem && Array.isArray(metadata.tags) ? metadata.tags : [],
+                year: normalizeYear(fileMetadata.year),
+                era: normalizeSpace(fileMetadata.era),
+                field: isProblem ? normalizeSpace(fileMetadata.field) : '',
+                problemGroup: normalizeProblemGroup(fileMetadata.problemGroup),
+                problemNumber: normalizeProblemNumber(fileMetadata.problemNumber || '1'),
+                summary: normalizeSpace(fileMetadata.summary),
+                tags: isProblem && Array.isArray(fileMetadata.tags) ? fileMetadata.tags : [],
                 html: renderLatexFragment(body),
                 plainText: latexToPlainText(body),
                 source: body
@@ -58,22 +68,22 @@
         return headings.map((heading, index) => {
             const next = headings[index + 1];
             const title = normalizeSpace(heading.args[0]);
-            const parsed = parseExamSectionTitle(title, metadata);
+            const parsed = parseExamSectionTitle(title, fileMetadata);
             const kind = normalizeExamKind(defaultKind || parsed.kind);
             const isProblem = kind === 'problem';
             const sectionBody = body.slice(heading.end, next ? next.start : body.length).trim();
 
             return {
-                id: makeSectionId(metadata, title, kind),
+                id: makeSectionId(fileMetadata, title, kind),
                 kind,
                 title,
-                year: normalizeYear(metadata.year),
-                era: normalizeSpace(metadata.era),
-                field: isProblem ? normalizeSpace(metadata.field) : '',
+                year: normalizeYear(fileMetadata.year),
+                era: normalizeSpace(fileMetadata.era),
+                field: isProblem ? normalizeSpace(fileMetadata.field) : '',
                 problemGroup: parsed.problemGroup,
                 problemNumber: parsed.problemNumber,
-                summary: normalizeSpace(metadata.summary),
-                tags: isProblem && Array.isArray(metadata.tags) ? metadata.tags : [],
+                summary: normalizeSpace(fileMetadata.summary),
+                tags: isProblem && Array.isArray(fileMetadata.tags) ? fileMetadata.tags : [],
                 html: renderLatexFragment(sectionBody),
                 plainText: latexToPlainText(sectionBody),
                 source: sectionBody
