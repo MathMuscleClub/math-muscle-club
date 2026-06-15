@@ -235,6 +235,15 @@
             return `\n${token}\n`;
         };
 
+        // マクロ定義を抽出して数式環境で囲んで stash する
+        const macroDeclarations = collectAllowedMacroDeclarations(text);
+        for (let i = macroDeclarations.length - 1; i >= 0; i--) {
+            const decl = macroDeclarations[i];
+            const mathWrapped = `\\(${decl.text}\\)`;
+            const token = stash(mathWrapped);
+            text = text.slice(0, decl.start) + token + text.slice(decl.end);
+        }
+
         text = replaceEnvironment(text, 'enumerate', body => stash(renderList(body, 'ol')));
         text = replaceEnvironment(text, 'itemize', body => stash(renderList(body, 'ul')));
         text = replaceCommand(text, 'fold', 2, args => stash(renderFold(args[0], args[1])));
@@ -488,6 +497,111 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
+    }
+
+    const MACRO_RULES = [
+        { name: "DeclareMathOperator", requiredArgs: 2 },
+        { name: "DeclareMathOperator*", requiredArgs: 2 },
+        { name: "newcommand", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
+        { name: "newcommand*", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
+        { name: "providecommand", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
+        { name: "providecommand*", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 }
+    ];
+
+    function collectAllowedMacroDeclarations(source) {
+        const rules = [...MACRO_RULES].sort((a, b) => b.name.length - a.name.length);
+        const declarations = [];
+
+        for (const rule of rules) {
+            const needle = `\\${rule.name}`;
+            let index = 0;
+            while ((index = source.indexOf(needle, index)) !== -1) {
+                const next = source[index + needle.length] || '';
+                if (/[A-Za-z]/.test(next) || (!rule.name.endsWith('*') && next === '*')) {
+                    index += needle.length;
+                    continue;
+                }
+
+                const declaration = readAllowedMacroDeclaration(source, index, rule);
+                if (declaration) {
+                    declarations.push({ start: index, end: index + declaration.length, text: declaration });
+                    index += declaration.length;
+                } else {
+                    index += needle.length;
+                }
+            }
+        }
+
+        return removeNestedMacroDeclarations(declarations.sort((a, b) => a.start - b.start));
+    }
+
+    function removeNestedMacroDeclarations(declarations) {
+        const selected = [];
+        for (const declaration of declarations) {
+            const isNested = selected.some(item => declaration.start >= item.start && declaration.end <= item.end);
+            if (!isNested) selected.push(declaration);
+        }
+        return selected;
+    }
+
+    function readAllowedMacroDeclaration(source, start, rule) {
+        let cursor = start + rule.name.length + 1;
+        let requiredRead = 0;
+        let optionalRead = 0;
+        const maxOptionalArgs = Math.max(0, rule.maxOptionalArgs ?? 0);
+
+        while (cursor < source.length) {
+            cursor = skipInlineSpace(source, cursor);
+
+            if (rule.optionalArgs && optionalRead < maxOptionalArgs && source[cursor] === '[') {
+                const bracketed = readBracketed(source, cursor);
+                if (!bracketed) return '';
+                cursor = bracketed.end;
+                optionalRead++;
+                continue;
+            }
+
+            if (source[cursor] === '{') {
+                const braced = readBraced(source, cursor);
+                if (!braced) return '';
+                cursor = braced.end;
+                requiredRead++;
+                if (requiredRead >= rule.requiredArgs) break;
+                continue;
+            }
+
+            return '';
+        }
+
+        if (requiredRead < rule.requiredArgs) return '';
+        return source.slice(start, cursor).trim();
+    }
+
+    function readBracketed(source, start) {
+        let depth = 0;
+        for (let index = start; index < source.length; index++) {
+            const char = source[index];
+            const escaped = index > 0 && source[index - 1] === '\\';
+
+            if (char === '[' && !escaped) {
+                depth++;
+            } else if (char === ']' && !escaped) {
+                depth--;
+                if (depth === 0) {
+                    return {
+                        value: source.slice(start + 1, index),
+                        end: index + 1
+                    };
+                }
+            }
+        }
+        return null;
+    }
+
+    function skipInlineSpace(source, start) {
+        let cursor = start;
+        while (/[ \t\r\n]/.test(source[cursor] || '')) cursor++;
+        return cursor;
     }
 
     window.ExamMacros = {
