@@ -1,50 +1,5 @@
 [
   {
-    "id": "2012-B-15-problem",
-    "year": 2012,
-    "era": "平成24年",
-    "problemGroup": "B",
-    "problemNumber": "15",
-    "field": "代数",
-    "title": "平成24年 B 第15問",
-    "summary": "",
-    "problemTexPath": "exams/2012/B/15/problem.tex",
-    "uploadedByName": "わらびもち",
-    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
-    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
-    "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:53:00.759Z",
-    "tags": [
-      "行列",
-      "Schur分解",
-      "ノルム",
-      "線形代数"
-    ],
-    "status": "problem"
-  },
-  {
-    "id": "2012-B-1-problem",
-    "year": 2012,
-    "era": "平成24年",
-    "problemGroup": "B",
-    "problemNumber": "1",
-    "field": "代数",
-    "title": "平成24年 B 第1問",
-    "summary": "",
-    "problemTexPath": "exams/2012/B/1/problem.tex",
-    "uploadedByName": "わらびもち",
-    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
-    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
-    "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:46:48.352Z",
-    "tags": [
-      "体論",
-      "ガロア理論",
-      "有理関数体"
-    ],
-    "status": "problem"
-  },
-  {
     "id": "2012-B-18-problem",
     "year": 2012,
     "era": "平成24年",
@@ -58,7 +13,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "固有値問題",
       "微分作用素",
@@ -80,7 +35,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "常微分方程式",
       "周期関数",
@@ -102,12 +57,35 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "遷移系",
       "不動点",
       "集合",
       "論理"
+    ],
+    "status": "problem"
+  },
+  {
+    "id": "2012-B-15-problem",
+    "year": 2012,
+    "era": "平成24年",
+    "problemGroup": "B",
+    "problemNumber": "15",
+    "field": "代数",
+    "title": "平成24年 B 第15問",
+    "summary": "",
+    "problemTexPath": "exams/2012/B/15/problem.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
+    "tags": [
+      "行列",
+      "Schur分解",
+      "ノルム",
+      "線形代数"
     ],
     "status": "problem"
   },
@@ -125,7 +103,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "積分",
       "無限積",
@@ -147,7 +125,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "確率収束",
       "独立確率変数",
@@ -170,7 +148,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "Fourier解析",
       "周期関数",
@@ -192,7 +170,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "測度論",
       "可測関数",
@@ -214,7 +192,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "偏微分方程式",
       "熱方程式",
@@ -236,7 +214,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "複素解析",
       "正則関数",
@@ -258,7 +236,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "微分幾何",
       "写像",
@@ -280,7 +258,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "微分幾何",
       "多様体",
@@ -302,7 +280,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "位相幾何",
       "ホモロジー",
@@ -324,7 +302,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "リーマン幾何",
       "体積要素",
@@ -346,7 +324,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "非可換代数",
       "表現論",
@@ -368,7 +346,7 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "群論",
       "単純群",
@@ -390,11 +368,33 @@
     "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
     "uploadedAt": "2026-06-14T12:42:17.225Z",
-    "updatedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
     "tags": [
       "可換環",
       "極大イデアル",
       "べき零元"
+    ],
+    "status": "problem"
+  },
+  {
+    "id": "2012-B-1-problem",
+    "year": 2012,
+    "era": "平成24年",
+    "problemGroup": "B",
+    "problemNumber": "1",
+    "field": "代数",
+    "title": "平成24年 B 第1問",
+    "summary": "",
+    "problemTexPath": "exams/2012/B/1/problem.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-14T12:42:17.225Z",
+    "updatedAt": "2026-06-15T07:13:13.847Z",
+    "tags": [
+      "体論",
+      "ガロア理論",
+      "有理関数体"
     ],
     "status": "problem"
   }
