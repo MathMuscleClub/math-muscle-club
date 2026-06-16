@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学科筋トレ部</title>
     <link rel="stylesheet" href="style.css?v=20260614g">
+    <link rel="stylesheet" href="latex-typing.css?v=20260616a">
 </head>
 
 <body>
@@ -22,6 +23,7 @@
             <button class="tab-button" onclick="switchTab('goals')">目標と実績</button>
             <button class="tab-button" onclick="switchTab('diary')">活動日記</button>
             <button class="tab-button" onclick="switchTab('exam-answers')">過去問解答</button>
+            <button class="tab-button" onclick="switchTab('latex-typing')">LaTeXタイピング</button>
             <button class="tab-button" onclick="switchTab('auth')">ログイン</button>
         </nav>
 
@@ -230,6 +232,132 @@
                 </section>
             </div>
 
+            <!-- タブ: LaTeXタイピング -->
+            <div id="latex-typing" class="tab-content">
+                <section class="latex-typing-section">
+                    <h2>LaTeXタイピング「数式打」</h2>
+                    
+                    <!-- コース選択画面 -->
+                    <div id="lt-lobby" class="lt-lobby">
+                        <p class="lt-description">数学科筋トレ部特製！LaTeXコマンドや数式のタイピング練習ゲームです。コンパイル可能な同等表現（スペース有無、波括弧省略など）なら、どの打ち方でも正解になります！</p>
+                        <div class="lt-courses">
+                            <div class="lt-course-card" onclick="startLaTeXGame('easy')">
+                                <div class="lt-course-title">お手軽コース (3,000円)</div>
+                                <div class="lt-course-desc">簡単な記号やギリシャ文字が中心。初心者向け。</div>
+                                <div class="lt-course-meta">制限時間: 60秒 / 目標金額: 3,000円</div>
+                                <button class="lt-start-btn">スタート</button>
+                            </div>
+                            <div class="lt-course-card recommended" onclick="startLaTeXGame('normal')">
+                                <div class="lt-course-badge">お勧め</div>
+                                <div class="lt-course-title">お勧めコース (5,000円)</div>
+                                <div class="lt-course-desc">基本的な公式や微分積分の記号。標準レベル。</div>
+                                <div class="lt-course-meta">制限時間: 90秒 / 目標金額: 5,000円</div>
+                                <button class="lt-start-btn">スタート</button>
+                            </div>
+                            <div class="lt-course-card" onclick="startLaTeXGame('hard')">
+                                <div class="lt-course-title">高級コース (10,000円)</div>
+                                <div class="lt-course-desc">複雑な公式、行列、複数行の数式。プロ向け。</div>
+                                <div class="lt-course-meta">制限時間: 120秒 / 目標金額: 10,000円</div>
+                                <button class="lt-start-btn">スタート</button>
+                            </div>
+                        </div>
+                        <div class="lt-instructions">
+                            <h3>💡 遊び方と特徴</h3>
+                            <ul>
+                                <li>流れてくるお皿の数式を、下に表示されるLaTeXコードでタイピングしてください。</li>
+                                <li><strong>コンパイル等価判定</strong>: `x^2` を `x^{2}` と打っても、`\frac12` を `\frac{1}{2}` と打っても正解になります！スペースキーも数式的に不要な場所なら打っても打たなくてもOK。</li>
+                                <li><strong>コンボボーナス</strong>: ミスなしで連続してタイピングすると、残り時間が少し回復します！</li>
+                                <li>日本語キーボードの `¥` キーは、バックスラッシュ `\` と同じものとして扱われます。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- ゲーム画面 -->
+                    <div id="lt-game" class="lt-game" style="display: none;">
+                        <div class="lt-game-header">
+                            <div class="lt-status-item">
+                                <span class="lt-label">残り時間:</span>
+                                <span id="lt-time" class="lt-value">60.0</span>秒
+                            </div>
+                            <div class="lt-status-item">
+                                <span class="lt-label">売上:</span>
+                                <span id="lt-score" class="lt-value">0</span>円
+                            </div>
+                            <div class="lt-status-item">
+                                <span class="lt-label">コンボ:</span>
+                                <span id="lt-combo" class="lt-value">0</span>皿
+                            </div>
+                        </div>
+                        
+                        <!-- 寿司レーン (流れるお皿を表示するエリア) -->
+                        <div class="lt-lane-container">
+                            <div class="lt-lane-belt"></div>
+                            <div id="lt-plate-area" class="lt-plate-area">
+                                <!-- お皿要素がJSで動的に生成され、左から右へ流れる -->
+                            </div>
+                        </div>
+                        
+                        <!-- タイピング表示エリア -->
+                        <div class="lt-typing-container">
+                            <!-- 数式の名称ラベル -->
+                            <div id="lt-math-label" class="lt-math-label">数式名</div>
+                            
+                            <!-- MathJaxでレンダリングされた数式プレビュー（お皿の上にも表示されるが、ここでも大きく表示） -->
+                            <div id="lt-math-preview" class="lt-math-preview"></div>
+                            
+                            <!-- タイピングするテキスト (入力済み、次に打つべき、未入力) -->
+                            <div class="lt-typing-text-wrapper">
+                                <span id="lt-text-typed" class="lt-text-typed"></span>
+                                <span id="lt-text-current" class="lt-text-current"></span>
+                                <span id="lt-text-untyped" class="lt-text-untyped"></span>
+                            </div>
+                            
+                            <!-- ユーザーが打ち間違えたときのエフェクトやヒント表示 -->
+                            <div id="lt-keyboard-hint" class="lt-keyboard-hint"></div>
+                        </div>
+                        
+                        <div class="lt-game-footer">
+                            <button class="lt-btn lt-danger-btn" onclick="quitLaTeXGame()">ゲームを中断</button>
+                        </div>
+                    </div>
+                    
+                    <!-- リザルト画面 -->
+                    <div id="lt-result" class="lt-result" style="display: none;">
+                        <h3 class="lt-result-title">結果発表</h3>
+                        <div class="lt-result-score-panel">
+                            <div class="lt-result-score-main">
+                                <span class="lt-label">売上金額:</span>
+                                <strong id="lt-res-score">0</strong>円
+                            </div>
+                            <div class="lt-result-eval" id="lt-res-eval">お得でした！</div>
+                        </div>
+                        <div class="lt-result-stats">
+                            <div class="lt-stat-item">
+                                <span class="lt-label">正しく打ったキー数:</span>
+                                <span id="lt-res-correct" class="lt-value">0</span>回
+                            </div>
+                            <div class="lt-stat-item">
+                                <span class="lt-label">平均タイプ速度:</span>
+                                <span id="lt-res-speed" class="lt-value">0.0</span>回/秒
+                            </div>
+                            <div class="lt-stat-item">
+                                <span class="lt-label">ミスタイプ数:</span>
+                                <span id="lt-res-miss" class="lt-value">0</span>回
+                            </div>
+                            <div class="lt-stat-item">
+                                <span class="lt-label">正解率:</span>
+                                <span id="lt-res-accuracy" class="lt-value">0.0</span>%
+                            </div>
+                        </div>
+                        <div class="lt-result-actions">
+                            <button class="lt-btn lt-primary-btn" onclick="restartLaTeXGame()">もう一度遊ぶ</button>
+                            <button class="lt-btn lt-secondary-btn" onclick="quitLaTeXGame()">ロビーへ戻る</button>
+                            <a id="lt-share-btn" class="lt-btn lt-twitter-btn" href="#" target="_blank">結果をXでシェア</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
             <!-- タブ5: ログイン -->
             <div id="auth" class="tab-content">
                 <section>
@@ -313,8 +441,14 @@
     <script src="exam-macros.js?v=20260614g"></script>
     <script src="supabase-config.js"></script>
     <script src="auth.js?v=20260614f"></script>
+    <script src="latex-typing.js?v=20260616a"></script>
     <script>
         function switchTab(tabId) {
+            // ゲーム中なら他のタブに切り替えた時に中断する
+            if (tabId !== 'latex-typing') {
+                quitLaTeXGame();
+            }
+
             // 全てのタブコンテンツからactiveを取り除く
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => {

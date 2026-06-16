@@ -1,0 +1,640 @@
+/**
+ * LaTeX Typing Game "Formula-Da" (数式打)
+ * Stylesheet (Luxurious Japanese Modern Light Theme - Gold & Emerald Harmony)
+ */
+
+/* Game Container Tab Content Wrapper */
+.latex-typing-section {
+    background: linear-gradient(135deg, #ffffff 0%, #fdfcf7 100%); /* Elegant warm cypress silk background */
+    color: #2c3e50;
+    border-radius: 12px;
+    padding: 36px;
+    border: 1px solid #d4af37; /* Thin gold border */
+    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.08), 0 5px 15px rgba(0, 0, 0, 0.02);
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Beautiful luxury header with gold accent */
+.latex-typing-section h2 {
+    color: #275d41; /* Deep emerald green */
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5c158; /* Gold border-bottom */
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.latex-typing-section h2::before {
+    background: linear-gradient(180deg, #d4af37, #aa7c11); /* Gold vertical bar */
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+    width: 6px;
+    height: 1.25em;
+    border-radius: 999px;
+}
+
+/* --- LOBBY (Course Selection) --- */
+.lt-description {
+    color: #4a5568;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    margin-bottom: 32px;
+    background: #fbf9f1; /* Soft golden tint background */
+    padding: 18px 24px;
+    border-radius: 8px;
+    border-left: 4px solid #d4af37;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+}
+
+.lt-courses {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    margin-bottom: 36px;
+}
+
+.lt-course-card {
+    background: #ffffff;
+    border: 1px solid #e2d1a6; /* Soft gold-beige border */
+    border-radius: 12px;
+    padding: 28px 24px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.lt-course-card:hover {
+    transform: translateY(-5px);
+    border-color: #d4af37;
+    box-shadow: 0 15px 30px rgba(212, 175, 55, 0.18), 0 0 15px rgba(212, 175, 55, 0.05);
+    background: #fffdf9;
+}
+
+/* Recommended badge with luxurious metallic gold look */
+.lt-course-card.recommended {
+    border-color: #d4af37;
+    background: #fffdf6; /* Warm golden glow */
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.05);
+}
+
+.lt-course-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #d4af37 0%, #f5e08b 50%, #aa7c11 100%); /* Gold gradient */
+    color: #3b2a00; /* Deep gold-brown text */
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 4px 16px;
+    border-radius: 4px;
+    box-shadow: 0 3px 6px rgba(212, 175, 55, 0.3);
+    letter-spacing: 0.5px;
+    border: 1px solid #f2d06b;
+}
+
+.lt-course-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 12px;
+}
+
+.lt-course-desc {
+    font-size: 0.85rem;
+    color: #666666;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.lt-course-meta {
+    font-size: 0.75rem;
+    color: #936b00;
+    font-weight: 800;
+    margin-bottom: 20px;
+    background: rgba(212, 175, 55, 0.12);
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.lt-start-btn {
+    background: #ffffff;
+    color: #4a5568;
+    border: 1px solid #cbd5e1;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.lt-course-card:hover .lt-start-btn {
+    background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
+    color: #ffffff;
+    border-color: #aa7c11;
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+}
+
+.lt-instructions {
+    background: #fffdfa;
+    border: 1px solid #e2d1a6;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.02);
+}
+
+.lt-instructions h3 {
+    color: #c27d00;
+    margin-top: 0;
+    margin-bottom: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lt-instructions ul {
+    margin: 0;
+    padding-left: 0;
+}
+
+.lt-instructions li {
+    font-size: 0.85rem;
+    color: #4a5568;
+    margin-bottom: 8px;
+}
+
+.lt-instructions li::before {
+    color: #d4af37;
+}
+
+/* --- GAME SCREEN --- */
+.lt-game {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.lt-game-header {
+    display: flex;
+    justify-content: space-around;
+    background: #fffdf8;
+    border: 1px solid #e2d1a6;
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.03);
+}
+
+.lt-status-item {
+    font-size: 0.9rem;
+    color: #718096;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lt-status-item .lt-label {
+    font-weight: 700;
+}
+
+.lt-status-item .lt-value {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1a202c;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#lt-time {
+    color: #d97706;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#lt-time.time-bonus {
+    color: #275d41;
+    transform: scale(1.3);
+    text-shadow: 0 0 10px rgba(39, 93, 65, 0.4);
+}
+
+#lt-score {
+    color: #936b00;
+    text-shadow: 0 1px 1px rgba(212, 175, 55, 0.1);
+}
+
+#lt-combo {
+    color: #0891b2;
+}
+
+/* --- SUSHI LANE (BELT CONVEYOR) - GOLD & HINOKI COUNTER --- */
+.lt-lane-container {
+    height: 150px;
+    background: linear-gradient(180deg, #fdfbf7 0%, #f6edd6 60%, #eadcbe 100%); /* Hinoki wood with gold dust gradient */
+    border: 1px solid #d4af37;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 5px 12px rgba(170, 124, 17, 0.15), 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+/* Conveyor belt lines (Gold threaded belt) */
+.lt-lane-belt {
+    position: absolute;
+    bottom: 24px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: repeating-linear-gradient(90deg, #d4af37, #d4af37 2px, #c59f27 2px, #c59f27 4px, #fdfbf7 4px, #fdfbf7 25px);
+    border-top: 1px solid #aa7c11;
+    border-bottom: 1px solid #aa7c11;
+    animation: beltMove 1.2s linear infinite;
+    opacity: 0.95;
+}
+
+/* Shadow masks at the ends of conveyor belt (creates depth) */
+.lt-lane-container::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    background: linear-gradient(90deg, rgba(170, 124, 17, 0.25) 0%, transparent 100%);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.lt-lane-container::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    background: linear-gradient(-90deg, rgba(170, 124, 17, 0.25) 0%, transparent 100%);
+    z-index: 10;
+    pointer-events: none;
+}
+
+@keyframes beltMove {
+    from { background-position: 0 0; }
+    to { background-position: 25px 0; }
+}
+
+.lt-plate-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Floating sushi plate style */
+.lt-sushi-plate {
+    position: absolute;
+    bottom: 14px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+    transition: none;
+    filter: drop-shadow(0 6px 8px rgba(139, 92, 26, 0.25)); /* Gorgeous soft shadow under plate */
+}
+
+/* Wajima lacquerware dish style with double gold rings */
+.lt-sushi-dish {
+    width: 82px;
+    height: 34px;
+    background: radial-gradient(ellipse at center, #ef4444 0%, #b91c1c 75%, #7f1d1d 100%); 
+    border: 2px solid #d4af37;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.35);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lt-sushi-dish::before {
+    content: "";
+    width: 62px;
+    height: 22px;
+    border: 1px solid #fef08a; /* Inner gold circle */
+    border-radius: 50%;
+    position: absolute;
+    opacity: 0.65;
+}
+
+/* Math formula container floating on dish (Premium washi look) */
+.lt-sushi-math {
+    position: absolute;
+    bottom: 26px; 
+    background: linear-gradient(135deg, #ffffff 0%, #fcfbf8 100%);
+    border: 1.5px solid #d4af37;
+    color: #1a202c;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+    transform-origin: bottom center;
+    animation: floatMath 2s ease-in-out infinite;
+    border-top: 2px solid #fcd34d;
+}
+
+@keyframes floatMath {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-5px) scale(1.02); }
+}
+
+.lt-sushi-math .mjx-chtml, .lt-sushi-math .MathJax {
+    color: #1a202c !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* --- TYPING CONTAINER --- */
+.lt-typing-container {
+    background: #fffdf9;
+    border: 1.5px solid #e2d1a6; /* Gold borders */
+    border-radius: 10px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 10px 25px rgba(212, 175, 55, 0.04);
+}
+
+.lt-math-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #936b00;
+    background: #fffbeb;
+    padding: 4px 16px;
+    border-radius: 999px;
+    border: 1px solid #fef08a;
+    letter-spacing: 0.5px;
+}
+
+.lt-math-preview {
+    font-size: 1.9rem;
+    min-height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #111111;
+    width: 100%;
+}
+
+/* Premium Typo Display */
+.lt-typing-text-wrapper {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: #ffffff;
+    border: 1px solid #e2d1a6;
+    border-radius: 6px;
+    padding: 16px 20px;
+    width: 100%;
+    text-align: center;
+    word-break: break-all;
+    min-height: 62px;
+    transition: all 0.15s ease;
+    box-shadow: inset 0 2px 4px rgba(212, 175, 55, 0.02);
+}
+
+/* Flash effect on typo (elegant neon pink/red) */
+.lt-typing-text-wrapper.typo-flash {
+    background: #fff5f5;
+    border-color: #ef4444;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+    transform: scale(0.995);
+}
+
+/* Deep Emerald green echo for typed characters */
+.lt-text-typed {
+    color: #047857; 
+    text-shadow: 0 0 2px rgba(4, 120, 87, 0.15);
+}
+
+/* Optional guides */
+.lt-text-current {
+    color: #d4af37;
+    background: #fefbeb;
+    border-bottom: 2px solid #d4af37;
+    padding: 0 2px;
+}
+
+.lt-text-untyped {
+    color: #a0aec0;
+}
+
+.lt-keyboard-hint {
+    font-size: 0.8rem;
+    color: #0891b2;
+    font-weight: 700;
+    min-height: 1.2rem;
+}
+
+/* --- FOOTER & BUTTONS --- */
+.lt-game-footer {
+    display: flex;
+    justify-content: center;
+}
+
+.lt-btn {
+    background: #ffffff;
+    color: #4a5568;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 11px 26px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.lt-btn:hover {
+    background: var(--surface-soft);
+    color: var(--text);
+    border-color: #a0aec0;
+    transform: translateY(-1px);
+}
+
+/* Luxurious Gold primary button */
+.lt-primary-btn {
+    background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
+    color: #ffffff;
+    border-color: #aa7c11;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.lt-primary-btn:hover {
+    background: linear-gradient(135deg, #e5c158 0%, #b38728 100%);
+    border-color: #b38728;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    transform: translateY(-1px);
+}
+
+.lt-danger-btn {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+
+.lt-danger-btn:hover {
+    background: #fca5a5;
+    color: #7f1d1d;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15);
+}
+
+.lt-twitter-btn {
+    background: #0f1419;
+    color: #ffffff;
+    border-color: #0f1419;
+    text-decoration: none;
+}
+
+.lt-twitter-btn:hover {
+    background: #272c30;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* --- RESULT PANEL --- */
+.lt-result {
+    text-align: center;
+    animation: slideUp 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.lt-result-title {
+    font-size: 1.5rem;
+    color: #aa7c11;
+    margin-bottom: 24px;
+    font-weight: 800;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.01);
+}
+
+.lt-result-score-panel {
+    background: #fffdf8;
+    border: 1px solid #e2d1a6;
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.03);
+}
+
+.lt-result-score-main {
+    font-size: 1.3rem;
+    color: #718096;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+/* Highly luxurious Gold leaf gradient for score */
+.lt-result-score-main strong {
+    font-size: 3.2rem;
+    font-weight: 900;
+    margin-left: 8px;
+    font-family: 'Outfit', monospace;
+    background: linear-gradient(135deg, #b38728 0%, #fbf5b7 25%, #aa771c 50%, #fbf5b7 75%, #aa771c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    filter: drop-shadow(0 2px 4px rgba(170, 124, 17, 0.15));
+}
+
+.lt-result-eval {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d3748;
+    background: #f7fafc;
+    padding: 8px 16px;
+    border-radius: 6px;
+    display: inline-block;
+    border: 1px solid #edf2f7;
+}
+
+.lt-result-eval.profit {
+    color: #275d41;
+    background: #f0fdf4;
+    border-color: #b9f6ca;
+}
+
+.lt-result-eval.loss {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fee2e2;
+}
+
+.lt-result-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 36px;
+}
+
+.lt-stat-item {
+    background: #ffffff;
+    border: 1px solid #e2d1a6;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.01);
+    transition: all 0.2s ease;
+}
+
+.lt-stat-item:hover {
+    border-color: #d4af37;
+    box-shadow: 0 6px 12px rgba(212, 175, 55, 0.06);
+}
+
+.lt-stat-item .lt-label {
+    font-size: 0.8rem;
+    color: #718096;
+    font-weight: 600;
+}
+
+.lt-stat-item .lt-value {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1a202c;
+    font-family: monospace;
+}
+
+.lt-result-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
