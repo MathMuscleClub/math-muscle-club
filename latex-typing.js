@@ -1125,6 +1125,22 @@ class LaTeXSushidaGame {
         const shareUrl = encodeURIComponent(window.location.href);
         document.getElementById('lt-share-btn').href = `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`;
 
+        // mixi2 Share link (clipboard copy & redirect)
+        const mixi2ShareBtn = document.getElementById('lt-mixi2-share-btn');
+        if (mixi2ShareBtn) {
+            const plainShareText = `【Tex打】LaTeXタイピングゲーム(${courseName}コース)をプレイしました！\n売上: ${this.score}円\n正確キー: ${this.correctKeys}回 / ミス: ${this.missKeys}回\n正解率: ${accuracy.toFixed(1)}%\n#数学科筋トレ部 #LaTeXタイピング\n${window.location.href}`;
+            mixi2ShareBtn.onclick = (e) => {
+                e.preventDefault();
+                navigator.clipboard.writeText(plainShareText).then(() => {
+                    alert('結果をクリップボードにコピーしました！\nmixi2を開きますので、投稿画面で貼り付けてください。');
+                    window.open('https://mixi.social/', '_blank');
+                }).catch(err => {
+                    console.error('クリップボードのコピーに失敗しました: ', err);
+                    window.open('https://mixi.social/', '_blank');
+                });
+            };
+        }
+
         // Switch panels
         document.getElementById('lt-game').style.display = 'none';
         document.getElementById('lt-result').style.display = 'block';

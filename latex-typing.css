@@ -556,6 +556,19 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
+.lt-mixi2-btn {
+    background: #ff7f00;
+    color: #ffffff;
+    border-color: #ff7f00;
+    text-decoration: none;
+}
+
+.lt-mixi2-btn:hover {
+    background: #ff9933;
+    border-color: #ff9933;
+    box-shadow: 0 4px 10px rgba(255, 127, 0, 0.3);
+}
+
 /* --- RESULT PANEL --- */
 .lt-result {
     text-align: center;
