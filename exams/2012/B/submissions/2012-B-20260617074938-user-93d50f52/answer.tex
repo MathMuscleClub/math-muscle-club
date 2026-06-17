@@ -1,0 +1,51 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath,amssymb,amsthm}
+\theoremstyle{definition}
+\newtheorem*{solution}{解答}
+
+\begin{document}
+
+\begin{solution}
+$d^i : C^i \to C^{i+1}$ is defined as a direct sum of
+\[
+R_{i_1 \dots i_l} \to R_{j_1 \dots j_{l+1}}
+\]
+\[
+\frac{a}{x_{i_1}^{m_1} \dots x_{i_l}^{m_l}} \mapsto 
+\begin{cases} 
+(-1)^{k-1} \frac{a}{x_{j_1}^{m_1} \dots x_{j_{l+1}}^{m_{l+1}}} & (j_1, \dots, j_{l+1} = i_1, \dots, i_l, k) \\
+0 & \text{o.w.}
+\end{cases}
+\]
+Then $d^i \circ d^{i-1} = 0$ for $\forall i \ge 1$.
+Problem: check this.
+
+$M: R$-mod
+\[
+C^\bullet(\underline{x}; M) = C^\bullet(\underline{x}; R) \otimes_R M
+\]
+
+e.g. $C^\bullet(x, y, z; R)$
+\[
+0 \to R \xrightarrow{d^0} R_x \oplus R_y \oplus R_z \xrightarrow{d^1} R_{xy} \oplus R_{yz} \oplus R_{xz} \xrightarrow{d^2} R_{xyz} \to 0
+\]
+\[
+a \mapsto \left( \frac{a}{1}, \frac{a}{1}, \frac{a}{1} \right)
+\]
+\[
+\left( \frac{a}{x^l}, \frac{b}{y^m}, \frac{c}{z^n} \right) \mapsto \left( \frac{b}{y^m} - \frac{a}{x^l}, \frac{c}{z^n} - \frac{b}{y^m}, \frac{c}{z^n} - \frac{a}{x^l} \right)
+\]
+\[
+\left( \frac{a}{(xy)^l}, \frac{b}{(yz)^m}, \frac{c}{(xz)^n} \right) \mapsto \frac{a}{(xy)^l} + \frac{b}{(yz)^m} - \frac{c}{(xz)^n}
+\]
+
+Thm
+$x_1, \dots, x_n \in R$, イデアルの生成元 i.e. $I = (x_1, \dots, x_n)$
+Then $H_I^i(M) \cong H^i(C^\bullet(\underline{x}; M))$
+
+pf: Apply Lem 1 (consider the case $F = \Gamma_I(-)$)
+ETS verify (1) $\sim$ (3) in Lem 1.
+(1) $\iff H^0(C^\bullet(\underline{x}; M)) \cong \Gamma_I(M)$
+\end{solution}
+
+\end{document}
