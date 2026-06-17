@@ -792,7 +792,14 @@ const LATEX_QUESTIONS = {
         { tex: "\\nabla \\times \\vec{E} = -\\frac{\\partial \\vec{B}}{\\partial t}", label: "ファラデーの電磁誘導の法則" },
         { tex: "e^x = 1 + x + \\frac{x^2}{2} + \\frac{x^3}{6} + \\cdots", label: "指数関数のテイラー展開" },
         { tex: "\\int_0^1 \\frac{1}{1+x^2} dx = \\frac{\\pi}{4}", label: "定積分" },
-        { tex: "A \\vec{x} = \\lambda \\vec{x}", label: "固有値と固有ベクトル" }
+        { tex: "A \\vec{x} = \\lambda \\vec{x}", label: "固有値と固有ベクトル" },
+        { tex: "H^n(X; G)", label: "コホモロジー群" },
+        { tex: "d^n \\circ d^{n-1} = 0", label: "コバウンダリ作用素の合成 (d^2 = 0)" },
+        { tex: "a \\smile b", label: "カップ積 (cup product)" },
+        { tex: "H^n_{dR}(M)", label: "ド・ラームコホモロジー群" },
+        { tex: "\\check{H}^p(\\mathcal{U}, \\mathcal{F})", label: "チェフコホモロジー群" },
+        { tex: "H^*(X; R)", label: "コホモロジー環" },
+        { tex: "H^n(X, A) \\to H^{n+1}(A)", label: "コホモロジー長完全系列の連結準同型" }
     ]
 };
 
