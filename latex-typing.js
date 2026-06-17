@@ -1,5 +1,5 @@
 /**
- * LaTeX Typing Game "Formula-Da" (数式打)
+ * LaTeX Typing Game "Tex-Da" (Tex打)
  * Core Game Logic, Parser, and Equivalence Engine
  */
 
@@ -1054,7 +1054,7 @@ class LaTeXSushidaGame {
 
         // Twitter Share link
         const courseName = this.currentCourse === 'easy' ? 'お手軽' : (this.currentCourse === 'normal' ? 'お勧め' : '高級');
-        const shareText = encodeURIComponent(`【数式打】LaTeXタイピングゲーム(${courseName}コース)をプレイしました！\n売上: ${this.score}円\n正確キー: ${this.correctKeys}回 / ミス: ${this.missKeys}回\n正解率: ${accuracy.toFixed(1)}%\n#数学科筋トレ部 #LaTeXタイピング\n`);
+        const shareText = encodeURIComponent(`【Tex打】LaTeXタイピングゲーム(${courseName}コース)をプレイしました！\n売上: ${this.score}円\n正確キー: ${this.correctKeys}回 / ミス: ${this.missKeys}回\n正解率: ${accuracy.toFixed(1)}%\n#数学科筋トレ部 #LaTeXタイピング\n`);
         const shareUrl = encodeURIComponent(window.location.href);
         document.getElementById('lt-share-btn').href = `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`;
 
