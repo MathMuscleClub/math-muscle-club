@@ -859,6 +859,8 @@ class LaTeXSushidaGame {
         document.getElementById('lt-lobby').style.display = 'none';
         document.getElementById('lt-result').style.display = 'none';
         document.getElementById('lt-game').style.display = 'block';
+        document.getElementById('lt-score').textContent = this.score;
+        document.getElementById('lt-combo').textContent = this.combo;
 
         this.nextQuestion();
         
