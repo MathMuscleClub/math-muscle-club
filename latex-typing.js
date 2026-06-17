@@ -914,6 +914,24 @@ class LaTeXSushidaGame {
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
     }
 
+    getPlateInfo(tex) {
+        // バックスラッシュ等を除外した実質的な文字数に近いものを計算
+        const cleanTex = tex.replace(/[\\]/g, '');
+        const len = cleanTex.length;
+        
+        if (len < 6) {
+            return { price: 100, colorClass: 'plate-blue' };
+        } else if (len < 12) {
+            return { price: 180, colorClass: 'plate-red' };
+        } else if (len < 20) {
+            return { price: 240, colorClass: 'plate-gold' };
+        } else if (len < 35) {
+            return { price: 380, colorClass: 'plate-purple' };
+        } else {
+            return { price: 500, colorClass: 'plate-black' };
+        }
+    }
+
     nextQuestion() {
         if (this.questions.length === 0) {
             // Re-fill and shuffle if ran out
@@ -938,12 +956,15 @@ class LaTeXSushidaGame {
             document.body.appendChild(buffer);
         }
 
+        const plateInfo = this.getPlateInfo(this.currentQuestion.tex);
+
         // Render sushi plate inside lane
         const plateArea = document.getElementById('lt-plate-area');
         if (plateArea) {
             plateArea.innerHTML = `
                 <div id="lt-sushi-plate" class="lt-sushi-plate" style="left: -10%">
-                    <div class="lt-sushi-dish">
+                    <div class="lt-sushi-dish ${plateInfo.colorClass}">
+                        <span class="lt-plate-price">¥${plateInfo.price}</span>
                         <div class="lt-sushi-math" id="lt-sushi-math-text">\\(${this.currentQuestion.tex}\\)</div>
                     </div>
                 </div>
@@ -1013,11 +1034,10 @@ class LaTeXSushidaGame {
             if (this.engine.isComplete()) {
                 this.se.playPlateClear();
                 
-                // Calculate score (higher complexity = higher price)
-                const baseValue = this.currentCourse === 'easy' ? 200 : (this.currentCourse === 'normal' ? 400 : 800);
-                const formulaLengthFactor = Math.floor(this.currentQuestion.tex.length * 10);
-                const comboBonus = this.combo * 20;
-                const earned = baseValue + formulaLengthFactor + comboBonus;
+                // Calculate score based on plate price
+                const plateInfo = this.getPlateInfo(this.currentQuestion.tex);
+                const comboBonus = this.combo * 10;
+                const earned = plateInfo.price + comboBonus;
                 
                 this.score += earned;
                 document.getElementById('lt-score').textContent = this.score;
