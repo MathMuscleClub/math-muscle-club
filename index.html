@@ -222,18 +222,56 @@
                                             </div>
                                             
                                             <div class="exam-upload-split-card image-card">
-                                                <h4>画像で提出（GeminiでPDF化）</h4>
-                                                <p class="exam-upload-card-desc">解答の写真やスクショ画像をアップロードし、AIで自動的にLaTeX/PDF化します。</p>
-                                                <div class="auth-field" style="margin-bottom: 1rem;">
-                                                    <label for="exam-upload-answer-image-file">画像ファイルを選択</label>
-                                                    <input id="exam-upload-answer-image-file" type="file" accept="image/png,image/jpeg,image/webp">
+                                                <h4>画像で提出（GeminiでTeX化）</h4>
+                                                <p class="exam-upload-card-desc">解答の写真やスクショをアップロードし、AIでLaTeX化してプレビュー・編集できます。</p>
+                                                <div class="auth-field" style="margin-bottom: 0.75rem;">
+                                                    <label for="exam-upload-gemini-model">AIモデル</label>
+                                                    <select id="exam-upload-gemini-model" name="geminiModel">
+                                                        <option value="3.5-flash">3.5 Flash</option>
+                                                        <option value="3.1-flash-lite">3.1 Flash-Lite</option>
+                                                        <option value="2.5-flash">2.5 Flash</option>
+                                                        <option value="2.5-flash-lite">2.5 Flash-Lite</option>
+                                                    </select>
                                                 </div>
-                                                <button id="exam-upload-submit-image" class="auth-primary-button" type="button">画像を解析して送信</button>
+                                                <div class="auth-field" style="margin-bottom: 1rem;">
+                                                    <label for="exam-upload-answer-image-file">画像ファイルを選択（複数可）</label>
+                                                    <input id="exam-upload-answer-image-file" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+                                                    <p id="exam-upload-image-file-count" class="exam-upload-card-desc" style="margin:0.3rem 0 0; font-size:0.8rem;"></p>
+                                                </div>
+                                                <button id="exam-upload-analyze-image" class="auth-primary-button" type="button">✨ AIで変換してプレビュー</button>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div id="exam-upload-detected-list" class="exam-upload-detected-list"></div>
+
+                                    <!-- 画像→AIでTeX/PDF化したプレビューエリア -->
+                                    <div id="exam-image-preview-area" class="exam-image-preview-area" hidden>
+                                        <div class="exam-image-preview-header">
+                                            <span class="exam-image-preview-title">AI変換結果のプレビュー・編集</span>
+                                            <div class="exam-image-preview-actions">
+                                                <button type="button" id="exam-image-download-tex" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px;">TeXをダウンロード</button>
+                                                <button type="button" id="exam-image-render-pdf" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px;">PDFで確認</button>
+                                            </div>
+                                        </div>
+                                        <div class="exam-image-preview-tabs">
+                                            <button type="button" class="exam-image-preview-tab active" data-preview-tab="tex">📝 TeX編集</button>
+                                            <button type="button" class="exam-image-preview-tab" data-preview-tab="pdf">📄 PDFプレビュー</button>
+                                        </div>
+                                        <div class="exam-image-preview-body" id="exam-image-tex-panel">
+                                            <textarea id="exam-image-tex-editor" class="exam-image-tex-editor" spellcheck="false" placeholder="AIが生成したTeXコードがここに表示されます..."></textarea>
+                                        </div>
+                                        <div class="exam-image-preview-body" id="exam-image-pdf-panel" hidden>
+                                            <div id="exam-image-pdf-container" class="exam-image-pdf-container">
+                                                <p class="exam-pdf-placeholder-text">「PDFで確認」ボタンを押すと、TeXをPDFにコンパイルして表示します。</p>
+                                            </div>
+                                        </div>
+                                        <div class="exam-image-submit-row">
+                                            <p>内容を確認・編集してから送信してください。</p>
+                                            <button type="button" id="exam-upload-submit-image" class="auth-primary-button">このTeXで提出</button>
+                                        </div>
+                                    </div>
+
                                     <div class="auth-actions">
                                         <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
                                         <button id="exam-upload-cancel-edit" class="auth-secondary-button" type="button" hidden>編集をやめる</button>
@@ -1993,7 +2031,19 @@
 
             // 解答個別ボタンのイベントリスナー
             document.getElementById('exam-upload-submit-pdf')?.addEventListener('click', () => handleNewAnswerUploadAction('pdf'));
-            document.getElementById('exam-upload-submit-image')?.addEventListener('click', () => handleNewAnswerUploadAction('image'));
+            document.getElementById('exam-upload-analyze-image')?.addEventListener('click', () => handleImageAnalyzeAndPreview());
+            document.getElementById('exam-upload-submit-image')?.addEventListener('click', () => handleSubmitAnalyzedImage());
+
+            // 画像プレビューのタブ切り替え
+            document.querySelectorAll('.exam-image-preview-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchImagePreviewTab(tab.dataset.previewTab));
+            });
+            document.getElementById('exam-image-download-tex')?.addEventListener('click', downloadImageTex);
+            document.getElementById('exam-image-render-pdf')?.addEventListener('click', renderImagePreviewPdf);
+
+            // 画像ファイル選択時のファイル数表示
+            const imageFileInput = document.getElementById('exam-upload-answer-image-file');
+            imageFileInput?.addEventListener('change', () => updateImageFileCount(imageFileInput));
 
             // 提出タイプ切り替えイベント
             const typeRadios = form.querySelectorAll('input[name="uploadType"]');
@@ -2054,9 +2104,9 @@
             }
 
             container.innerHTML = numbers.map(num => `
-                <label class="exam-number-checkbox-label" style="display: inline-flex; align-items: center; margin-right: 1rem; cursor: pointer;">
-                    <input type="checkbox" name="targetProblemNumber" value="${escapeAttribute(num)}" style="margin-right: 0.25rem;">
-                    <span>第${escapeHTML(num)}問</span>
+                <label class="exam-number-checkbox-label">
+                    <input type="checkbox" name="targetProblemNumber" value="${escapeAttribute(num)}">
+                    <span class="exam-number-chip">第${escapeHTML(num)}問</span>
                 </label>
             `).join('');
         }
@@ -2090,8 +2140,10 @@
 
             // 個別送信ボタンの disabled 制御
             const pdfBtn = document.getElementById('exam-upload-submit-pdf');
+            const analyzeBtn = document.getElementById('exam-upload-analyze-image');
             const imgBtn = document.getElementById('exam-upload-submit-image');
             if (pdfBtn) pdfBtn.disabled = !canUpload;
+            if (analyzeBtn) analyzeBtn.disabled = !canUpload;
             if (imgBtn) imgBtn.disabled = !canUpload;
 
             if (message && !isLoggedIn) {
@@ -2106,6 +2158,292 @@
 
             if (examProblemsState.length > 0) {
                 renderExamAnswerResults();
+            }
+        }
+
+
+        // ─── 画像→AI変換プレビュー機能 ───────────────────────
+
+        // プレビューエリアに表示するTeXコード（編集可能）
+        let _imageAnalyzedTexCode = '';
+        // 元の画像ファイル
+        let _imageAnalyzedFile = null;
+
+        function updateImageFileCount(fileInput) {
+            const countLabel = document.getElementById('exam-upload-image-file-count');
+            if (!countLabel) return;
+            const count = fileInput?.files?.length || 0;
+            if (count === 0) {
+                countLabel.textContent = '';
+            } else if (count === 1) {
+                countLabel.textContent = `📎 ${fileInput.files[0].name}`;
+            } else {
+                const names = Array.from(fileInput.files).map(f => f.name).join('、');
+                countLabel.textContent = `📎 ${count}枚選択中: ${names}`;
+            }
+        }
+
+        function switchImagePreviewTab(tabName) {
+            document.querySelectorAll('.exam-image-preview-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.previewTab === tabName);
+            });
+            const texPanel = document.getElementById('exam-image-tex-panel');
+            const pdfPanel = document.getElementById('exam-image-pdf-panel');
+            if (texPanel) texPanel.hidden = tabName !== 'tex';
+            if (pdfPanel) pdfPanel.hidden = tabName !== 'pdf';
+        }
+
+        function downloadImageTex() {
+            const editor = document.getElementById('exam-image-tex-editor');
+            const code = editor ? editor.value : _imageAnalyzedTexCode;
+            if (!code.trim()) return;
+            const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'answer.tex';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function renderImagePreviewPdf() {
+            const editor = document.getElementById('exam-image-tex-editor');
+            const texCode = editor ? editor.value : _imageAnalyzedTexCode;
+            if (!texCode.trim()) {
+                alert('プレビューするTeXコードがありません。');
+                return;
+            }
+
+            const container = document.getElementById('exam-image-pdf-container');
+            if (!container) return;
+
+            // PDFタブに切り替え
+            switchImagePreviewTab('pdf');
+            container.innerHTML = '<p class="loading">PDFを生成中...</p>';
+
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = window.SiteAuth?.getSession?.()?.access_token;
+                if (token) headers.Authorization = `Bearer ${token}`;
+
+                const response = await fetch(getFunctionUrl('render-exam-pdf'), {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ rawTex: texCode, mode: 'raw' })
+                });
+
+                if (response.ok && response.headers.get('content-type')?.includes('application/pdf')) {
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    // TeXダウンロード用のBlobURLを生成
+                    const texBlob = new Blob([texCode], { type: 'text/plain;charset=utf-8' });
+                    const texUrl = URL.createObjectURL(texBlob);
+                    container.innerHTML = `
+                        <div style="display:flex; gap:0.5rem; padding:0.5rem; justify-content:flex-end; background:#f8f9fa; border-bottom:1px solid var(--line-soft);">
+                            <a href="${texUrl}" download="answer.tex" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px; text-decoration:none; display:inline-flex; align-items:center;">📝 TeXをダウンロード</a>
+                            <a href="${blobUrl}" target="_blank" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px; text-decoration:none; display:inline-flex; align-items:center;">別タブで開く</a>
+                        </div>
+                        <iframe src="${blobUrl}" width="100%" style="height:480px; border:none; display:block;"></iframe>
+                    `;
+                } else {
+                    const data = await readJsonResponse(response);
+                    throw new Error(data.message || 'PDF生成サービスが未設定またはエラーが発生しました。');
+                }
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `<p class="error" style="padding:1rem;">PDFの生成に失敗しました: ${escapeHTML(error.message)}</p>`;
+            }
+        }
+
+        async function handleImageAnalyzeAndPreview() {
+            const session = window.SiteAuth?.requireSession?.();
+            if (!session) {
+                setExamUploadMessage('ログインしてからアップロードしてください。', 'error');
+                if (typeof switchTab === 'function') switchTab('auth');
+                return;
+            }
+            const username = window.SiteAuth?.requireUsername?.();
+            if (!username) {
+                setExamUploadMessage('ログインタブでユーザー名を保存してください。', 'error');
+                if (typeof switchTab === 'function') switchTab('auth');
+                return;
+            }
+
+            const year = document.getElementById('exam-upload-year')?.value;
+            const group = document.getElementById('exam-upload-group')?.value;
+            if (!year || !group) {
+                setExamUploadMessage('年度と問題区分を指定してください。', 'error');
+                return;
+            }
+
+            const checkedBoxes = document.querySelectorAll('input[name="targetProblemNumber"]:checked');
+            const numbers = Array.from(checkedBoxes).map(cb => cb.value);
+            if (numbers.length === 0) {
+                setExamUploadMessage('対象の問題を1つ以上選択してください。', 'error');
+                return;
+            }
+
+            const fileInput = document.getElementById('exam-upload-answer-image-file');
+            const files = Array.from(fileInput?.files || []).filter(f => f.size > 0);
+            if (files.length === 0) {
+                setExamUploadMessage('画像ファイルを1枚以上選択してください。', 'error');
+                return;
+            }
+
+            const modelKey = document.getElementById('exam-upload-gemini-model')?.value || '1.5-flash';
+
+            // プレビューエリアを表示してローディング状態にする
+            const previewArea = document.getElementById('exam-image-preview-area');
+            const texEditor = document.getElementById('exam-image-tex-editor');
+            const pdfContainer = document.getElementById('exam-image-pdf-container');
+            if (previewArea) previewArea.hidden = false;
+            if (texEditor) texEditor.value = `解析中...\nGeminiが${files.length}枚の画像からTeXを生成しています。しばらくお待ちください...`;
+            if (pdfContainer) pdfContainer.innerHTML = '<p class="exam-pdf-placeholder-text">「PDFで確認」ボタンを押すと、TeXをPDFにコンパイルして表示します。</p>';
+            switchImagePreviewTab('tex');
+
+            const analyzeBtn = document.getElementById('exam-upload-analyze-image');
+            if (analyzeBtn) analyzeBtn.disabled = true;
+
+            setExamUploadMessage(`${files.length}枚の画像をAI解析しています（モデル: ${modelKey}）...`, 'muted');
+
+            try {
+                const formData = new FormData();
+                formData.set('action', 'analyze-image-only');
+                formData.set('username', username);
+                formData.set('uploadedByEmail', session.user?.email || '');
+                formData.set('year', year);
+                formData.set('problemGroup', group);
+                formData.set('problemNumbers', numbers.join(','));
+                formData.set('geminiModel', modelKey);
+                // 複数ファイルをappendで追加
+                files.forEach(file => formData.append('answerFile', file));
+
+                const response = await fetch(getFunctionUrl('upload-exam-tex'), {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                    body: formData
+                });
+
+                const payload = await readJsonResponse(response);
+
+                // レート制限エラーの特別表示
+                if (response.status === 429) {
+                    if (texEditor) texEditor.value = '';
+                    if (previewArea) previewArea.hidden = true;
+                    setExamUploadMessage(
+                        `⚠️ レート制限: ${payload.message || 'このモデルの利用制限に達しました。しばらく待つか、他のモデルを試してください。'}`,
+                        'error'
+                    );
+                    return;
+                }
+
+                if (!response.ok) throw new Error(payload.message || 'AI解析に失敗しました。');
+
+                const latexCode = payload.latexCode || '';
+                _imageAnalyzedTexCode = latexCode;
+
+                if (texEditor) texEditor.value = latexCode;
+
+                const modelLabel = document.getElementById('exam-upload-gemini-model')?.selectedOptions[0]?.text || modelKey;
+                setExamUploadMessage(
+                    `✨ ${files.length}枚の画像からTeXを生成しました（${modelLabel}）。内容を確認・編集してから「このTeXで提出」を押してください。`,
+                    'success'
+                );
+                previewArea?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (error) {
+                console.error(error);
+                if (texEditor) texEditor.value = '';
+                if (previewArea) previewArea.hidden = true;
+                setExamUploadMessage(`画像の解析に失敗しました: ${error.message}`, 'error');
+            } finally {
+                if (analyzeBtn) analyzeBtn.disabled = false;
+            }
+        }
+
+        async function handleSubmitAnalyzedImage() {
+            const session = window.SiteAuth?.requireSession?.();
+            if (!session) {
+                setExamUploadMessage('ログインしてからアップロードしてください。', 'error');
+                return;
+            }
+            const username = window.SiteAuth?.requireUsername?.();
+            if (!username) {
+                setExamUploadMessage('ログインタブでユーザー名を保存してください。', 'error');
+                return;
+            }
+
+            const texEditor = document.getElementById('exam-image-tex-editor');
+            const latexCode = texEditor ? texEditor.value : _imageAnalyzedTexCode;
+
+            if (!latexCode.trim() || latexCode.startsWith('解析中...')) {
+                setExamUploadMessage('送信するTeXコードがありません。先に「AIで変換してプレビュー」を実行してください。', 'error');
+                return;
+            }
+
+            const year = document.getElementById('exam-upload-year')?.value;
+            const group = document.getElementById('exam-upload-group')?.value;
+            if (!year || !group) {
+                setExamUploadMessage('年度と問題区分を指定してください。', 'error');
+                return;
+            }
+
+            const checkedBoxes = document.querySelectorAll('input[name="targetProblemNumber"]:checked');
+            const numbers = Array.from(checkedBoxes).map(cb => cb.value);
+            if (numbers.length === 0) {
+                setExamUploadMessage('対象の問題を1つ以上選択してください。', 'error');
+                return;
+            }
+
+            const modelKey = document.getElementById('exam-upload-gemini-model')?.value || '1.5-flash';
+
+            const submitBtn = document.getElementById('exam-upload-submit-image');
+            if (submitBtn) submitBtn.disabled = true;
+
+            setExamUploadMessage('TeXを送信しています...', 'muted');
+
+            try {
+                const formData = new FormData();
+                formData.set('action', 'upload-image');
+                formData.set('username', username);
+                formData.set('uploadedByEmail', session.user?.email || '');
+                formData.set('year', year);
+                formData.set('problemGroup', group);
+                formData.set('problemNumbers', numbers.join(','));
+                formData.set('geminiModel', modelKey);
+                formData.set('preconvertedTex', latexCode);
+                // ダミーファイルをanswerFileとして追加（サーバー側バリデーション通過用）
+                const texBlob = new Blob([latexCode], { type: 'text/plain' });
+                const texFile = new File([texBlob], 'answer.tex', { type: 'text/plain' });
+                formData.append('answerFile', texFile);
+
+                const response = await fetch(getFunctionUrl('upload-exam-tex'), {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                    body: formData
+                });
+
+                const payload = await readJsonResponse(response);
+                if (!response.ok) throw new Error(payload.message || 'アップロードに失敗しました。');
+
+                setExamUploadMessage('アップロードを受け付けました。GitHub Pagesへの反映を待っています。', 'success');
+
+                // リセット
+                const fileInput = document.getElementById('exam-upload-answer-image-file');
+                if (fileInput) fileInput.value = '';
+                updateImageFileCount(fileInput);
+                if (texEditor) texEditor.value = '';
+                checkedBoxes.forEach(cb => { cb.checked = false; });
+                _imageAnalyzedTexCode = '';
+                _imageAnalyzedFile = null;
+                const previewArea = document.getElementById('exam-image-preview-area');
+                if (previewArea) previewArea.hidden = true;
+
+                await loadData();
+            } catch (error) {
+                console.error(error);
+                setExamUploadMessage(`${error.message || 'アップロードに失敗しました。'} Edge Functionの設定も確認してください。`, 'error');
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
             }
         }
 

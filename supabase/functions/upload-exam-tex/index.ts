@@ -123,6 +123,9 @@ Deno.serve(async (request) => {
     if (action === "upload-pdf") {
       return await handlePdfUpload(formData, user, email, username);
     }
+    if (action === "analyze-image-only") {
+      return await handleAnalyzeImageOnly(formData, user, email, username);
+    }
     if (action === "upload-image") {
       return await handleImageUpload(formData, user, email, username);
     }
@@ -305,6 +308,172 @@ async function handlePdfUpload(
   return jsonResponse({ entries: [entry] });
 }
 
+// ── Gemini モデル定義 ────────────────────────────────────
+const GEMINI_MODELS: Record<string, string> = {
+  "3.5-flash": "gemini-3.5-flash",
+  "3.1-flash-lite": "gemini-3.1-flash-lite",
+  "2.5-flash": "gemini-2.5-flash-preview-05-20",
+  "2.5-flash-lite": "gemini-2.5-flash-lite-preview-06-17",
+};
+const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash";
+
+function resolveGeminiModel(modelKey: string | null): string {
+  if (!modelKey) return DEFAULT_GEMINI_MODEL;
+  return GEMINI_MODELS[modelKey.trim()] || DEFAULT_GEMINI_MODEL;
+}
+
+// 解答のTeXテンプレート型（プロンプトに渡す構造）
+const ANSWER_TEX_TEMPLATE = `
+% ===== 解答TeX テンプレート =====
+% 以下の形式で出力してください：
+%
+% \\documentclass[12pt]{jlreq}
+% \\usepackage{amsmath,amssymb,amsthm}
+% \\theoremstyle{definition}
+% \\newtheorem*{solution}{解答}
+%
+% \\begin{document}
+%
+% \\begin{solution}
+% （解答内容）
+% \\end{solution}
+%
+% \\end{document}
+% ================================
+`.trim();
+
+const ANALYZE_PROMPT = `添付された画像は数学の答案用紙（解答）の写真です。
+画像内のすべてのテキストと数式を正確に読み取り、以下の形式のコンパイル可能な LaTeX ドキュメントとして出力してください。
+
+【出力形式】
+\\documentclass[12pt]{jlreq}
+\\usepackage{amsmath,amssymb,amsthm}
+\\theoremstyle{definition}
+\\newtheorem*{solution}{解答}
+
+\\begin{document}
+
+\\begin{solution}
+（ここに解答内容を入れる。数式はすべて amsmath 記法で記述）
+\\end{solution}
+
+\\end{document}
+
+【注意事項】
+- 数式は必ず数式環境（\\( \\) または \\[ \\] または align 環境など）で囲む
+- 日本語テキストはそのまま出力する
+- 複数ページある場合はすべてのページの内容を1つのドキュメントに含める
+- 出力は LaTeX コードのみとし、説明・挨拶・コードブロック記号（\`\`\`）は不要`;
+
+async function callGeminiWithImages(
+  apiKey: string,
+  modelId: string,
+  imageFiles: { base64: string; mimeType: string }[],
+): Promise<{ latexCode: string; rateLimited: boolean; error?: string }> {
+  const imageParts = imageFiles.map(img => ({
+    inlineData: { mimeType: img.mimeType, data: img.base64 },
+  }));
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: ANALYZE_PROMPT }, ...imageParts] }],
+        generationConfig: { temperature: 0.1 },
+      }),
+    }
+  );
+
+  if (response.status === 429) {
+    const errText = await response.text().catch(() => "");
+    return {
+      latexCode: "",
+      rateLimited: true,
+      error: `モデル「${modelId}」のレート制限に達しました。しばらく待ってから再試行するか、別のモデルをお試しください。詳細: ${errText.slice(0, 200)}`,
+    };
+  }
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => response.statusText);
+    return {
+      latexCode: "",
+      rateLimited: false,
+      error: `Gemini API エラー (${response.status}): ${errText.slice(0, 300)}`,
+    };
+  }
+
+  const result = await response.json();
+  const generatedText: string = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const latexCode = cleanGeneratedLatex(generatedText);
+
+  return { latexCode, rateLimited: false };
+}
+
+async function handleAnalyzeImageOnly(
+  formData: FormData,
+  user: { id?: string },
+  email: string,
+  username: string,
+) {
+  const yearStr = cleanYear(formData.get("year"));
+  const problemGroup = cleanProblemGroup(formData.get("problemGroup"));
+  const problemNumbersStr = cleanText(formData.get("problemNumbers"), 200);
+  const modelKey = cleanText(formData.get("geminiModel"), 40);
+
+  if (!yearStr || !problemGroup) {
+    return errorResponse("年度と問題区分を指定してください。");
+  }
+  if (!problemNumbersStr) {
+    return errorResponse("解答が含まれる問題番号を選択してください。");
+  }
+
+  // 複数画像ファイルの取得
+  const allFiles = formData.getAll("answerFile");
+  const imageFiles = allFiles.filter(
+    (f): f is File => f instanceof File && f.size > 0 && (f.type || "").startsWith("image/")
+  );
+  if (imageFiles.length === 0) {
+    return errorResponse("画像ファイルを1枚以上選択してください。");
+  }
+
+  const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+  if (!geminiApiKey) {
+    return errorResponse("サーバー側の設定エラー: GEMINI_API_KEY が未設定です。");
+  }
+
+  const modelId = resolveGeminiModel(modelKey);
+
+  // 全画像をbase64に変換
+  const imageData = await Promise.all(imageFiles.map(async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    return {
+      base64: encodeBase64Binary(new Uint8Array(arrayBuffer)),
+      mimeType: file.type || "image/jpeg",
+    };
+  }));
+
+  try {
+    const result = await callGeminiWithImages(geminiApiKey, modelId, imageData);
+
+    if (result.rateLimited) {
+      return errorResponse(result.error || "レート制限エラー", 429);
+    }
+    if (result.error) {
+      return errorResponse(result.error, 502);
+    }
+    if (!result.latexCode.trim()) {
+      return errorResponse("Geminiから有効なLaTeXコードが返されませんでした。");
+    }
+
+    return jsonResponse({ latexCode: result.latexCode, model: modelId, imageCount: imageFiles.length });
+  } catch (error) {
+    console.error("Gemini API call failed:", error);
+    return errorResponse(`画像の解析に失敗しました: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 async function handleImageUpload(
   formData: FormData,
   user: { id?: string },
@@ -314,7 +483,7 @@ async function handleImageUpload(
   const yearStr = cleanYear(formData.get("year"));
   const problemGroup = cleanProblemGroup(formData.get("problemGroup"));
   const problemNumbersStr = cleanText(formData.get("problemNumbers"), 200);
-  const answerFile = formData.get("answerFile");
+  const modelKey = cleanText(formData.get("geminiModel"), 40);
 
   if (!yearStr || !problemGroup) {
     return errorResponse("年度と問題区分を指定してください。");
@@ -322,18 +491,51 @@ async function handleImageUpload(
   if (!problemNumbersStr) {
     return errorResponse("解答が含まれる問題番号を選択してください。");
   }
-  if (!(answerFile instanceof File) || answerFile.size === 0) {
-    return errorResponse("画像ファイルを選択してください。");
-  }
 
   const problemNumbers = problemNumbersStr.split(",").map(n => n.trim()).filter(Boolean);
   if (problemNumbers.length === 0) {
     return errorResponse("解答が含まれる問題番号を正しく選択してください。");
   }
 
-  const mimeType = answerFile.type || "";
-  if (!mimeType.startsWith("image/")) {
-    return errorResponse("提出できるファイル形式は画像ファイル (JPEG, PNG 等) のみです。");
+  // preconvertedTex が渡されている場合（フロントでプレビュー・編集済み）は Gemini をスキップ
+  const preconvertedTex = String(formData.get("preconvertedTex") || "").slice(0, 200000);
+  if (preconvertedTex && preconvertedTex.trim()) {
+    const uploadedAt = new Date().toISOString();
+    const safeGroup = cleanPathPart(problemGroup);
+    const id = `${yearStr}-${safeGroup}-${dateSlug(uploadedAt)}-${slugify(username)}-${crypto.randomUUID().slice(0, 8)}`;
+    const filePath = `exams/${yearStr}/${safeGroup}/submissions/${id}/answer.tex`;
+    await putGitHubTextFile(filePath, preconvertedTex.trim(), `Add ${yearStr} ${safeGroup} answer TeX (reviewed from image) by ${username}`);
+    const manifest = await readManifest();
+    const entry: ManifestItem = {
+      id,
+      year: Number(yearStr),
+      problemGroup,
+      problemNumbers,
+      filePath,
+      fileType: "tex",
+      uploadedByName: username,
+      uploadedByEmail: email,
+      uploadedByUserId: user.id || "",
+      uploadedAt,
+      status: "submitted"
+    };
+    const nextManifest = upsertManifestItem(manifest.items, entry);
+    await putGitHubFile(
+      "exam-submissions.json",
+      `${JSON.stringify(nextManifest, null, 2)}\n`,
+      `Register exam answer TeX (from image, reviewed) by ${username}`,
+      manifest.sha,
+    );
+    return jsonResponse({ entries: [entry] });
+  }
+
+  // 複数画像ファイルの取得
+  const allFiles = formData.getAll("answerFile");
+  const imageFiles = allFiles.filter(
+    (f): f is File => f instanceof File && f.size > 0 && (f.type || "").startsWith("image/")
+  );
+  if (imageFiles.length === 0) {
+    return errorResponse("画像ファイルを1枚以上選択してください。");
   }
 
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
@@ -341,54 +543,29 @@ async function handleImageUpload(
     return errorResponse("サーバー側の設定エラー: GEMINI_API_KEY が未設定です。");
   }
 
-  const arrayBuffer = await answerFile.arrayBuffer();
-  const bytes = new Uint8Array(arrayBuffer);
-  const imageBase64 = encodeBase64Binary(bytes);
+  const modelId = resolveGeminiModel(modelKey);
+
+  const imageData = await Promise.all(imageFiles.map(async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    return {
+      base64: encodeBase64Binary(new Uint8Array(arrayBuffer)),
+      mimeType: file.type || "image/jpeg",
+    };
+  }));
 
   let latexCode = "";
   try {
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: "添付された画像は数学の答案用紙（解答）の写真です。画像内のテキストと数式を読み取り、コンパイル可能な日本語の jlreq クラスの LaTeX ドキュメント（\\begin{document}から\\end{document}まで）として完璧に再現してください。数式は amsmath や amssymb を使用してください。出力は LaTeX コードブロック（```latex ... ```）または生の LaTeX テキストのみにしてください。説明や余計な挨拶は一切不要です。",
-                },
-                {
-                  inlineData: {
-                    mimeType: mimeType,
-                    data: imageBase64,
-                  },
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.1,
-          },
-        }),
-      }
-    );
-
-    if (!geminiResponse.ok) {
-      const errText = await geminiResponse.text();
-      throw new Error(`Gemini API エラー: ${errText || geminiResponse.statusText}`);
+    const result = await callGeminiWithImages(geminiApiKey, modelId, imageData);
+    if (result.rateLimited) {
+      return errorResponse(result.error || "レート制限エラー", 429);
     }
-
-    const result = await geminiResponse.json();
-    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    latexCode = cleanGeneratedLatex(generatedText);
-
-    if (!latexCode.trim()) {
-      throw new Error("Geminiから有効なLaTeXコードが返されませんでした。");
+    if (result.error) {
+      return errorResponse(result.error, 502);
     }
+    if (!result.latexCode.trim()) {
+      return errorResponse("Geminiから有効なLaTeXコードが返されませんでした。");
+    }
+    latexCode = result.latexCode;
   } catch (error) {
     console.error("Gemini API call failed:", error);
     return errorResponse(`画像の解析に失敗しました: ${error instanceof Error ? error.message : String(error)}`);
