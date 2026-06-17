@@ -708,7 +708,21 @@ const LATEX_QUESTIONS = {
         { tex: "\\cos x", label: "余弦関数 (cos x)" },
         { tex: "\\tan x", label: "正接関数 (tan x)" },
         { tex: "\\log x", label: "常用対数 (log x)" },
-        { tex: "\\ln x", label: "自然対数 (ln x)" }
+        { tex: "\\ln x", label: "自然対数 (ln x)" },
+        { tex: "\\partial", label: "偏微分記号 (∂)" },
+        { tex: "\\nabla", label: "ナブラ記号 (∇)" },
+        { tex: "A \\setminus B", label: "差集合 (A \\ B)" },
+        { tex: "\\eta", label: "エータ (η)" },
+        { tex: "\\rho", label: "ロー (ρ)" },
+        { tex: "\\tau", label: "タウ (τ)" },
+        { tex: "\\psi", label: "プサイ (ψ)" },
+        { tex: "x \\neq y", label: "不等関係 (x ≠ y)" },
+        { tex: "x \\ge y", label: "大小関係 (x ≥ y)" },
+        { tex: "\\angle A", label: "角A (∠A)" },
+        { tex: "\\triangle ABC", label: "三角形ABC (△ABC)" },
+        { tex: "\\vec{v}", label: "ベクトルv" },
+        { tex: "\\bar{x}", label: "xバー (平均値など)" },
+        { tex: "\\hat{y}", label: "yハット" }
     ],
     normal: [
         { tex: "\\sin^2 \\theta + \\cos^2 \\theta = 1", label: "三角関数の相互関係" },
@@ -731,7 +745,19 @@ const LATEX_QUESTIONS = {
         { tex: "e^{i \\pi} + 1 = 0", label: "オイラーの等式" },
         { tex: "f(x) = x^2", label: "二次関数の基本形" },
         { tex: "\\bar{x} = \\frac{1}{n}\\sum_{i=1}^n x_i", label: "データの平均値 (相加平均)" },
-        { tex: "s^2 = \\frac{1}{n}\\sum_{i=1}^n (x_i - \\bar{x})^2", label: "標本分散の計算式" }
+        { tex: "s^2 = \\frac{1}{n}\\sum_{i=1}^n (x_i - \\bar{x})^2", label: "標本分散の計算式" },
+        { tex: "\\sin(x+y) = \\sin x \\cos y + \\cos x \\sin y", label: "正弦の加法定理" },
+        { tex: "\\cos(x+y) = \\cos x \\cos y - \\sin x \\sin y", label: "余弦の加法定理" },
+        { tex: "\\tan(x+y) = \\frac{\\tan x + \\tan y}{1 - \\tan x \\tan y}", label: "正接の加法定理" },
+        { tex: "\\log_a b = \\frac{\\log_c b}{\\log_c a}", label: "対数の底の変換公式" },
+        { tex: "\\sum_{k=1}^n k^2 = \\frac{1}{6}n(n+1)(2n+1)", label: "平方数の和の公式" },
+        { tex: "\\sum_{k=1}^n k^3 = \\left(\\frac{1}{2}n(n+1)\\right)^2", label: "立方数の和の公式" },
+        { tex: "ax^2 + bx + c = 0", label: "二次方程式の一般形" },
+        { tex: "\\vec{a} \\cdot \\vec{b} = a_x b_x + a_y b_y", label: "成分表示によるベクトルの内積" },
+        { tex: "x^2 - y^2 = (x-y)(x+y)", label: "因数分解の公式" },
+        { tex: "n! = n(n-1) \\cdots 1", label: "階乗の定義" },
+        { tex: "\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1", label: "三角関数の極限" },
+        { tex: "\\binom{n}{k} = \\frac{n!}{k!(n-k)!}", label: "二項係数" }
     ],
     hard: [
         { tex: "\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", label: "二次方程式の解の公式" },
@@ -754,7 +780,19 @@ const LATEX_QUESTIONS = {
         { tex: "\\int_{\\partial M} \\omega = \\int_M d\\omega", label: "一般化されたストークスの定理" },
         { tex: "f(x) = \\begin{cases} x & (x \\ge 0) \\\\ -x & (x < 0) \\end{cases}", label: "絶対値関数の定義" },
         { tex: "E[X] = \\int_{-\\infty}^{\\infty} x f(x) dx", label: "連続確率変数の期待値" },
-        { tex: "V[X] = E[X^2] - (E[X])^2", label: "分散の計算公式" }
+        { tex: "V[X] = E[X^2] - (E[X])^2", label: "分散の計算公式" },
+        { tex: "\\int_0^{\\infty} x^{n-1} e^{-x} dx = (n-1)!", label: "ガンマ関数の整数値" },
+        { tex: "\\det(A) = \\sum_{\\sigma \\in S_n} \\operatorname{sgn}(\\sigma) \\prod_{i=1}^n a_{i,\\sigma(i)}", label: "行列式の定義" },
+        { tex: "f(z) = \\sum_{n=0}^{\\infty} a_n (z-a)^n", label: "テイラー展開" },
+        { tex: "\\sigma^2 = E[(X-\\mu)^2]", label: "分散の定義" },
+        { tex: "\\rho(X,Y) = \\frac{\\operatorname{Cov}(X,Y)}{\\sigma_X \\sigma_Y}", label: "相関係数" },
+        { tex: "\\frac{\\partial^2 u}{\\partial t^2} = c^2 \\nabla^2 u", label: "波動方程式" },
+        { tex: "\\frac{\\partial u}{\\partial t} = \\alpha \\nabla^2 u", label: "熱伝導方程式" },
+        { tex: "i \\hbar \\frac{\\partial}{\\partial t} |\\psi\\rangle = H |\\psi\\rangle", label: "シュレーディンガー方程式" },
+        { tex: "\\nabla \\times \\vec{E} = -\\frac{\\partial \\vec{B}}{\\partial t}", label: "ファラデーの電磁誘導の法則" },
+        { tex: "e^x = 1 + x + \\frac{x^2}{2} + \\frac{x^3}{6} + \\cdots", label: "指数関数のテイラー展開" },
+        { tex: "\\int_0^1 \\frac{1}{1+x^2} dx = \\frac{\\pi}{4}", label: "定積分" },
+        { tex: "A \\vec{x} = \\lambda \\vec{x}", label: "固有値と固有ベクトル" }
     ]
 };
 
