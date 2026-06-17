@@ -1937,3 +1937,63 @@ footer p {
         padding: 12px;
     }
 }
+
+/* ==========================================
+   新方式の解答アップロード / PDF表示用の追加スタイル
+   ========================================== */
+.exam-upload-type-selector {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.exam-type-radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.exam-type-radio-label input[type="radio"] {
+    cursor: pointer;
+}
+
+.exam-numbers-checkbox-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    padding: 0.75rem;
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+}
+
+.exam-pdf-view-container {
+    margin-top: 1rem;
+    background: var(--surface-soft);
+    border-radius: 8px;
+    padding: 4px;
+    overflow: hidden;
+}
+
+.exam-pdf-iframe {
+    width: 100%;
+    min-height: 600px;
+    border: none;
+    display: block;
+}
+
+.exam-pdf-placeholder-text {
+    padding: 2rem;
+    text-align: center;
+    color: #777777;
+    background: var(--surface-soft);
+    border: 2px dashed var(--line);
+    border-radius: 6px;
+    margin: 0.5rem 0;
+    font-size: 0.88rem;
+}

@@ -160,22 +160,60 @@
                                 <form id="exam-upload-form" class="exam-upload-form">
                                     <input id="exam-upload-replace-id" name="replaceSubmissionId" type="hidden">
                                     <p id="exam-upload-profile-note" class="exam-upload-profile-note">ログインタブで登録したユーザー名で提出されます。</p>
-                                    <div class="auth-field">
-                                        <label for="exam-upload-problem-file">問題文LaTeXファイル</label>
-                                        <input id="exam-upload-problem-file" name="problemTexFile" type="file" accept=".tex,.latex,text/plain">
+                                    
+                                    <div class="auth-field" style="margin-bottom: 1.5rem;">
+                                        <label>提出タイプ</label>
+                                        <div class="exam-upload-type-selector">
+                                            <label class="exam-type-radio-label">
+                                                <input type="radio" name="uploadType" value="problem" checked>
+                                                <span>問題文の提出/編集</span>
+                                            </label>
+                                            <label class="exam-type-radio-label">
+                                                <input type="radio" name="uploadType" value="answer">
+                                                <span>解答ファイルの提出</span>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="auth-field">
-                                        <label for="exam-upload-problem-source">問題文TeXを直接編集</label>
-                                        <textarea id="exam-upload-problem-source" name="problemTexSource" rows="8" spellcheck="false"></textarea>
+
+                                    <!-- 問題文提出用のフィールドグループ -->
+                                    <div id="exam-upload-problem-fields">
+                                        <div class="auth-field">
+                                            <label for="exam-upload-problem-file">問題文LaTeXファイル</label>
+                                            <input id="exam-upload-problem-file" name="problemTexFile" type="file" accept=".tex,.latex,text/plain">
+                                        </div>
+                                        <div class="auth-field">
+                                            <label for="exam-upload-problem-source">問題文TeXを直接編集</label>
+                                            <textarea id="exam-upload-problem-source" name="problemTexSource" rows="8" spellcheck="false"></textarea>
+                                        </div>
                                     </div>
-                                    <div class="auth-field">
-                                        <label for="exam-upload-answer-file">解答LaTeXファイル</label>
-                                        <input id="exam-upload-answer-file" name="answerTexFile" type="file" accept=".tex,.latex,text/plain">
+
+                                    <!-- 解答提出用のフィールドグループ (新方式) -->
+                                    <div id="exam-upload-answer-fields" style="display: none;">
+                                        <div class="exam-form-grid">
+                                            <div class="auth-field">
+                                                <label for="exam-upload-year">年度</label>
+                                                <select id="exam-upload-year" name="year"></select>
+                                            </div>
+                                            <div class="auth-field">
+                                                <label for="exam-upload-group">問題区分</label>
+                                                <select id="exam-upload-group" name="problemGroup">
+                                                    <option value="A">A問題</option>
+                                                    <option value="B" selected>B問題</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="auth-field">
+                                            <label>対象の大問（複数選択）</label>
+                                            <div id="exam-upload-numbers-container" class="exam-numbers-checkbox-list">
+                                                <p class="no-data">年度・区分に合う問題がありません。</p>
+                                            </div>
+                                        </div>
+                                        <div class="auth-field">
+                                            <label for="exam-upload-answer-file-new">解答ファイル (.pdf / .tex)</label>
+                                            <input id="exam-upload-answer-file-new" name="answerFile" type="file" accept=".pdf,.tex,.latex,text/plain">
+                                        </div>
                                     </div>
-                                    <div class="auth-field">
-                                        <label for="exam-upload-answer-source">解答TeXを直接編集</label>
-                                        <textarea id="exam-upload-answer-source" name="answerTexSource" rows="10" spellcheck="false"></textarea>
-                                    </div>
+
                                     <div id="exam-upload-detected-list" class="exam-upload-detected-list"></div>
                                     <div class="auth-actions">
                                         <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
@@ -848,6 +886,22 @@
         }
 
         async function loadExamSubmission(submission) {
+            if (submission.status === 'submitted' && submission.filePath) {
+                const tags = submission.tags || [];
+                return {
+                    ...submission,
+                    tags,
+                    references: Array.isArray(submission.references) ? submission.references : [],
+                    searchText: [
+                        submission.id,
+                        submission.year,
+                        submission.problemGroup,
+                        (submission.problemNumbers || []).join(' '),
+                        submission.uploadedByName,
+                        tags.join(' ')
+                    ].join(' ').toLowerCase()
+                };
+            }
             try {
                 const loaded = await loadSubmissionTexSources(submission);
                 const parsed = loaded.sources.map(item => ({
@@ -956,6 +1010,40 @@
             const problemMap = new Map();
 
             submissions.forEach(submission => {
+                if (submission.status === 'submitted' && submission.filePath) {
+                    const problemNumbers = submission.problemNumbers || [];
+                    problemNumbers.forEach(num => {
+                        const key = makeExamProblemKey(submission.year, submission.problemGroup, num);
+                        const problem = ensureExamProblem(problemMap, key, submission, {
+                            kind: 'answer',
+                            problemGroup: submission.problemGroup,
+                            problemNumber: num,
+                            title: submission.title || `${submission.year}年度 ${submission.problemGroup} 第${num}問`
+                        }, submission.problemGroup, num);
+
+                        problem.tags = uniqueValues([...problem.tags, ...(submission.tags || [])]);
+                        
+                        problem.answers.push({
+                            id: submission.id,
+                            submissionId: submission.id,
+                            title: submission.title || `${submission.year}年度 ${submission.problemGroup} 第${num}問 解答`,
+                            filePath: submission.filePath,
+                            fileType: submission.fileType || 'pdf',
+                            uploadedByName: submission.uploadedByName || '匿名',
+                            uploadedByEmail: submission.uploadedByEmail || '',
+                            uploadedByUserId: submission.uploadedByUserId || '',
+                            uploadedAt: submission.uploadedAt || '',
+                            updatedAt: submission.updatedAt || '',
+                            status: submission.status || 'submitted',
+                            summary: submission.summary || '',
+                            submissionTitle: submission.title || '',
+                            tags: [],
+                            html: ''
+                        });
+                    });
+                    return;
+                }
+
                 const sections = Array.isArray(submission.sections) ? submission.sections : [];
                 sections.forEach(section => {
                     const problemGroup = section.problemGroup || submission.problemGroup || 'A';
@@ -1460,6 +1548,53 @@
                 button.addEventListener('click', () => handleExamAnswerDelete(button));
             });
 
+            container.querySelectorAll('.exam-load-pdf-button').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const year = button.dataset.year;
+                    const group = button.dataset.group;
+                    const problemKey = button.dataset.problemKey;
+                    const pane = button.closest('.exam-answer-pane');
+                    const pdfContainer = pane.querySelector('.exam-pdf-view-container');
+                    if (!pdfContainer) return;
+
+                    pdfContainer.innerHTML = '<p class="loading">PDFを生成中...</p>';
+                    button.disabled = true;
+
+                    try {
+                        const payload = {
+                            year: year,
+                            problemGroup: group,
+                            mode: 'answers-only',
+                            problemKeys: [problemKey]
+                        };
+
+                        const headers = { 'Content-Type': 'application/json' };
+                        const token = window.SiteAuth?.getSession?.()?.access_token;
+                        if (token) headers.Authorization = `Bearer ${token}`;
+
+                        const response = await fetch(getFunctionUrl('render-exam-pdf'), {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok && response.headers.get('content-type')?.includes('application/pdf')) {
+                            const blob = await response.blob();
+                            const blobUrl = URL.createObjectURL(blob);
+                            pdfContainer.innerHTML = `<iframe class="exam-pdf-iframe" src="${blobUrl}" width="100%" height="600px" style="border: none; border-radius: 8px;"></iframe>`;
+                        } else {
+                            const data = await readJsonResponse(response);
+                            throw new Error(data.message || 'PDF生成サービスが未設定です。');
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        pdfContainer.innerHTML = `<p class="error">PDFの生成に失敗しました: ${escapeHTML(error.message)}</p>`;
+                    } finally {
+                        button.disabled = false;
+                    }
+                });
+            });
+
             typesetMath(container);
         }
 
@@ -1543,6 +1678,58 @@
                 </div>`
                 : '';
 
+            // 新形式の解答で PDF の場合
+            if (answer.filePath && answer.fileType === 'pdf') {
+                return `
+                    <section class="exam-answer-pane${activeClass}" data-answer-panel="${index}">
+                        <div class="exam-answer-byline">
+                            <span>${escapeHTML(answer.submissionTitle || answer.title || '解答')}</span>
+                            <span class="badge badge-achieved">${statusLabel}</span>
+                            ${uploadLabel ? `<span class="exam-answer-meta">${escapeHTML(uploadLabel)}</span>` : ''}
+                            ${updateLabel ? `<span class="exam-answer-meta">${escapeHTML(updateLabel)}</span>` : ''}
+                        </div>
+                        ${summaryHTML}
+                        ${actionsHTML}
+                        <div class="exam-link-row">
+                            <a href="${escapeAttribute(answer.filePath)}" target="_blank">PDFを別タブで開く</a>
+                            <a href="${escapeAttribute(answer.filePath)}" download>PDFをダウンロード</a>
+                        </div>
+                        <div class="exam-pdf-view-container">
+                            <iframe class="exam-pdf-iframe" src="${escapeAttribute(answer.filePath)}" width="100%" height="600px" style="border: none; border-radius: 8px;"></iframe>
+                        </div>
+                    </section>
+                `;
+            }
+
+            // 新形式の解答で TeX の場合
+            if (answer.filePath && answer.fileType === 'tex') {
+                const problemKey = makeExamProblemKey(answer.year, answer.problemGroup, answer.problemNumber);
+                return `
+                    <section class="exam-answer-pane${activeClass}" data-answer-panel="${index}">
+                        <div class="exam-answer-byline">
+                            <span>${escapeHTML(answer.submissionTitle || answer.title || '解答')}</span>
+                            <span class="badge badge-achieved">${statusLabel}</span>
+                            ${uploadLabel ? `<span class="exam-answer-meta">${escapeHTML(uploadLabel)}</span>` : ''}
+                            ${updateLabel ? `<span class="exam-answer-meta">${escapeHTML(updateLabel)}</span>` : ''}
+                        </div>
+                        ${summaryHTML}
+                        ${actionsHTML}
+                        <div class="exam-link-row">
+                            <button type="button" class="exam-inline-button exam-load-pdf-button" 
+                                data-year="${escapeAttribute(answer.year)}"
+                                data-group="${escapeAttribute(answer.problemGroup)}"
+                                data-problem-key="${escapeAttribute(problemKey)}">PDFを生成して表示</button>
+                            <a href="${escapeAttribute(answer.filePath)}" target="_blank">TeXを開く</a>
+                            <a href="${escapeAttribute(answer.filePath)}" download>TeXをダウンロード</a>
+                        </div>
+                        <div class="exam-pdf-view-container" id="pdf-container-${escapeAttribute(answer.submissionId)}">
+                            <p class="exam-pdf-placeholder-text">上の「PDFを生成して表示」ボタンを押すと、TeXをPDFにコンパイルしてインライン表示します。</p>
+                        </div>
+                    </section>
+                `;
+            }
+
+            // 旧形式 (HTML表示)
             return `
                 <section class="exam-answer-pane${activeClass}" data-answer-panel="${index}">
                     <div class="exam-answer-byline">
@@ -1778,16 +1965,68 @@
 
             form.addEventListener('submit', handleExamUpload);
             document.getElementById('exam-upload-problem-file')?.addEventListener('change', previewExamUploadFiles);
-            document.getElementById('exam-upload-answer-file')?.addEventListener('change', previewExamUploadFiles);
             document.getElementById('exam-upload-problem-source')?.addEventListener('input', previewExamUploadFiles);
-            document.getElementById('exam-upload-answer-source')?.addEventListener('input', previewExamUploadFiles);
             document.getElementById('exam-upload-cancel-edit')?.addEventListener('click', () => {
                 resetExamUploadEditState();
                 setExamUploadMessage('', 'muted');
             });
+
+            // 提出タイプ切り替えイベント
+            const typeRadios = form.querySelectorAll('input[name="uploadType"]');
+            typeRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const type = e.target.value;
+                    const problemFields = document.getElementById('exam-upload-problem-fields');
+                    const answerFields = document.getElementById('exam-upload-answer-fields');
+                    if (problemFields) problemFields.style.display = type === 'problem' ? '' : 'none';
+                    if (answerFields) answerFields.style.display = type === 'answer' ? '' : 'none';
+                    
+                    if (type === 'answer') {
+                        updateExamUploadYearOptions();
+                        updateExamUploadNumbersChoices();
+                    }
+                });
+            });
+
+            // 年度・区分変更イベント
+            document.getElementById('exam-upload-year')?.addEventListener('change', updateExamUploadNumbersChoices);
+            document.getElementById('exam-upload-group')?.addEventListener('change', updateExamUploadNumbersChoices);
+
             window.addEventListener('site-auth-changed', updateExamUploadAuthState);
             examUploadFormReady = true;
             updateExamUploadAuthState();
+        }
+
+        function updateExamUploadYearOptions() {
+            const yearSelect = document.getElementById('exam-upload-year');
+            if (!yearSelect) return;
+            const years = uniqueValues(examProblemsState.map(problem => problem.year)).sort((a, b) => Number(b) - Number(a));
+            yearSelect.innerHTML = years.map(year => `<option value="${escapeAttribute(year)}">${escapeHTML(year)}年度</option>`).join('');
+        }
+
+        function updateExamUploadNumbersChoices() {
+            const container = document.getElementById('exam-upload-numbers-container');
+            const year = document.getElementById('exam-upload-year')?.value;
+            const group = document.getElementById('exam-upload-group')?.value;
+            if (!container || !year || !group) return;
+
+            const numbers = uniqueValues(
+                examProblemsState
+                    .filter(problem => String(problem.year) === String(year) && String(problem.problemGroup) === String(group))
+                    .map(problem => problem.problemNumber)
+            ).sort((a, b) => Number(a) - Number(b));
+
+            if (numbers.length === 0) {
+                container.innerHTML = '<p class="no-data">この年度・区分に合う問題がありません。</p>';
+                return;
+            }
+
+            container.innerHTML = numbers.map(num => `
+                <label class="exam-number-checkbox-label" style="display: inline-flex; align-items: center; margin-right: 1rem; cursor: pointer;">
+                    <input type="checkbox" name="targetProblemNumber" value="${escapeAttribute(num)}" style="margin-right: 0.25rem;">
+                    <span>第${escapeHTML(num)}問</span>
+                </label>
+            `).join('');
         }
 
         function updateExamUploadAuthState() {
@@ -1810,7 +2049,7 @@
                     ? `${username} として提出されます。`
                     : isLoggedIn
                         ? 'ログインタブでユーザー名を保存すると提出できます。'
-                        : 'ログインするとTeXを提出できます。';
+                        : 'ログインすると提出できます。';
             }
 
             form?.querySelectorAll('input, textarea, select, button').forEach(control => {
@@ -1818,7 +2057,7 @@
             });
 
             if (message && !isLoggedIn) {
-                message.textContent = 'ログインするとTeXを提出できます。';
+                message.textContent = 'ログインすると提出できます。';
                 message.className = 'auth-message auth-message-muted';
             } else if (message && !username) {
                 message.textContent = 'ログインタブでユーザー名を保存してください。';
@@ -1848,11 +2087,63 @@
             }
 
             const form = event.currentTarget;
+            const uploadType = form.querySelector('input[name="uploadType"]:checked')?.value || 'problem';
+
+            if (uploadType === 'answer') {
+                const formData = new FormData();
+                formData.set('action', 'upload-answer');
+                formData.set('username', username);
+                formData.set('uploadedByEmail', session.user?.email || '');
+                formData.set('year', document.getElementById('exam-upload-year').value);
+                formData.set('problemGroup', document.getElementById('exam-upload-group').value);
+                
+                const checkedBoxes = form.querySelectorAll('input[name="targetProblemNumber"]:checked');
+                const numbers = Array.from(checkedBoxes).map(cb => cb.value);
+                if (numbers.length === 0) {
+                    setExamUploadMessage('対象の問題を1つ以上選択してください。', 'error');
+                    return;
+                }
+                formData.set('problemNumbers', numbers.join(','));
+
+                const fileInput = document.getElementById('exam-upload-answer-file-new');
+                const file = fileInput?.files?.[0];
+                if (!file || file.size === 0) {
+                    setExamUploadMessage('解答ファイルを選択してください。', 'error');
+                    return;
+                }
+                formData.set('answerFile', file);
+
+                setExamUploadMessage('アップロードしています...', 'muted');
+
+                try {
+                    const response = await fetch(getFunctionUrl('upload-exam-tex'), {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`
+                        },
+                        body: formData
+                    });
+
+                    const payload = await readJsonResponse(response);
+                    if (!response.ok) throw new Error(payload.message || 'アップロードに失敗しました。');
+
+                    setExamUploadMessage('アップロードを受け付けました。GitHub Pagesへの反映を待っています。', 'success');
+                    form.reset();
+                    document.getElementById('exam-upload-problem-fields').style.display = 'block';
+                    document.getElementById('exam-upload-answer-fields').style.display = 'none';
+                    form.querySelector('input[name="uploadType"][value="problem"]').checked = true;
+                } catch (error) {
+                    console.error(error);
+                    setExamUploadMessage(`${error.message || 'アップロードに失敗しました。'} Edge Functionの設定も確認してください。`, 'error');
+                }
+                return;
+            }
+
             const formData = new FormData(form);
             const isReplacing = Boolean(String(formData.get('replaceSubmissionId') || '').trim());
             const sources = await readExamUploadSources(formData);
             if (!sources.problemSource.trim() && !sources.answerSource.trim()) {
-                setExamUploadMessage('問題文または解答のTeXを入力してください。', 'error');
+                setExamUploadMessage('問題文のTeXを入力してください。', 'error');
                 return;
             }
 

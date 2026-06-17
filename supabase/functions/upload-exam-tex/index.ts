@@ -40,6 +40,9 @@ type ManifestItem = Record<string, unknown> & {
   era?: string;
   problemGroup?: string;
   problemNumber?: string;
+  problemNumbers?: string[];
+  filePath?: string;
+  fileType?: "pdf" | "tex";
   field?: string;
   title?: string;
   summary?: string;
@@ -116,6 +119,9 @@ Deno.serve(async (request) => {
     const action = cleanText(formData.get("action"), 20);
     if (action === "delete") {
       return await deleteSubmission(formData, user, email, username);
+    }
+    if (action === "upload-answer") {
+      return await handleNewAnswerUpload(formData, user, email, username);
     }
 
     const rawProblemSource = await readTexInput(formData.get("problemTexFile"), formData.get("problemTexSource"));
@@ -208,6 +214,116 @@ Deno.serve(async (request) => {
     return errorResponse(error instanceof Error ? error.message : "提出に失敗しました。", 500);
   }
 });
+
+function encodeBase64Binary(bytes: Uint8Array): string {
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.slice(index, index + chunkSize));
+  }
+  return btoa(binary);
+}
+
+async function putGitHubBinaryFileEncoded(path: string, base64Content: string, message: string) {
+  const existing = await maybeGetGitHubFile(path);
+  const response = await fetch(gitHubContentsUrl(path, false), {
+    method: "PUT",
+    headers: {
+      ...gitHubHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message,
+      content: base64Content,
+      branch: gitHubBranch(),
+      ...(existing?.sha ? { sha: existing.sha } : {}),
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`GitHubへの保存に失敗しました。${body}`);
+  }
+}
+
+async function handleNewAnswerUpload(
+  formData: FormData,
+  user: { id?: string },
+  email: string,
+  username: string,
+) {
+  const yearStr = cleanYear(formData.get("year"));
+  const problemGroup = cleanProblemGroup(formData.get("problemGroup"));
+  const problemNumbersStr = cleanText(formData.get("problemNumbers"), 200);
+  const answerFile = formData.get("answerFile");
+
+  if (!yearStr || !problemGroup) {
+    return errorResponse("年度と問題区分を指定してください。");
+  }
+  if (!problemNumbersStr) {
+    return errorResponse("解答が含まれる問題番号を選択してください。");
+  }
+  if (!(answerFile instanceof File) || answerFile.size === 0) {
+    return errorResponse("解答ファイルをアップロードしてください。");
+  }
+
+  const problemNumbers = problemNumbersStr.split(",").map(n => n.trim()).filter(Boolean);
+  if (problemNumbers.length === 0) {
+    return errorResponse("解答が含まれる問題番号を正しく選択してください。");
+  }
+
+  const fileName = answerFile.name.toLowerCase();
+  const isPdf = fileName.endsWith(".pdf");
+  const isTex = fileName.endsWith(".tex") || fileName.endsWith(".latex");
+
+  if (!isPdf && !isTex) {
+    return errorResponse("提出できるファイル形式は PDF (.pdf) または TeX (.tex, .latex) のみです。");
+  }
+
+  const fileType = isPdf ? "pdf" : "tex";
+  const uploadedAt = new Date().toISOString();
+
+  const safeGroup = cleanPathPart(problemGroup);
+  const id = `${yearStr}-${safeGroup}-${dateSlug(uploadedAt)}-${slugify(username)}-${crypto.randomUUID().slice(0, 8)}`;
+
+  const ext = isPdf ? "pdf" : "tex";
+  const filePath = `exams/${yearStr}/${safeGroup}/submissions/${id}/answer.${ext}`;
+
+  if (isPdf) {
+    const arrayBuffer = await answerFile.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    const base64Content = encodeBase64Binary(bytes);
+    await putGitHubBinaryFileEncoded(filePath, base64Content, `Add ${yearStr} ${safeGroup} answer PDF by ${username}`);
+  } else {
+    const textContent = await answerFile.text();
+    await putGitHubTextFile(filePath, textContent, `Add ${yearStr} ${safeGroup} answer TeX by ${username}`);
+  }
+
+  const manifest = await readManifest();
+  const entry: ManifestItem = {
+    id,
+    year: Number(yearStr),
+    problemGroup,
+    problemNumbers,
+    filePath,
+    fileType,
+    uploadedByName: username,
+    uploadedByEmail: email,
+    uploadedByUserId: user.id || "",
+    uploadedAt,
+    status: "submitted"
+  };
+
+  const nextManifest = upsertManifestItem(manifest.items, entry);
+  await putGitHubFile(
+    "exam-submissions.json",
+    `${JSON.stringify(nextManifest, null, 2)}\n`,
+    `Register exam answer by ${username}`,
+    manifest.sha,
+  );
+
+  return jsonResponse({ entries: [entry] });
+}
 
 async function readTexInput(fileValue: FormDataEntryValue | null, textValue: FormDataEntryValue | null) {
   if (fileValue instanceof File && fileValue.size > 0) {
@@ -424,7 +540,7 @@ function findExistingProblemTexPath(items: ManifestItem[], part: TexPart) {
 }
 
 function getAnswerTexPath(item: ManifestItem) {
-  return String(item.answerTexPath || item.texPath || "");
+  return String(item.filePath || item.answerTexPath || item.texPath || "");
 }
 
 function canManageManifestItem(item: ManifestItem, user: { id?: string }, email: string) {
