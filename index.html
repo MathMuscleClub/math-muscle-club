@@ -202,15 +202,34 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="auth-field">
+                                        <div class="auth-field" style="margin-bottom: 1.5rem;">
                                             <label>対象の大問（複数選択）</label>
                                             <div id="exam-upload-numbers-container" class="exam-numbers-checkbox-list">
                                                 <p class="no-data">年度・区分に合う問題がありません。</p>
                                             </div>
                                         </div>
-                                        <div class="auth-field">
-                                            <label for="exam-upload-answer-file-new">解答ファイル (.pdf / .tex)</label>
-                                            <input id="exam-upload-answer-file-new" name="answerFile" type="file" accept=".pdf,.tex,.latex,text/plain">
+                                        
+                                        <!-- PDF提出と画像提出の入力エリア・ボタンの分離 -->
+                                        <div class="exam-upload-split-container">
+                                            <div class="exam-upload-split-card pdf-card">
+                                                <h4>PDFで提出</h4>
+                                                <p class="exam-upload-card-desc">作成済みの解答PDFファイルをそのままアップロードします。</p>
+                                                <div class="auth-field" style="margin-bottom: 1rem;">
+                                                    <label for="exam-upload-answer-pdf-file">PDFファイルを選択</label>
+                                                    <input id="exam-upload-answer-pdf-file" type="file" accept=".pdf">
+                                                </div>
+                                                <button id="exam-upload-submit-pdf" class="auth-primary-button" type="button">PDF解答を送信</button>
+                                            </div>
+                                            
+                                            <div class="exam-upload-split-card image-card">
+                                                <h4>画像で提出（GeminiでPDF化）</h4>
+                                                <p class="exam-upload-card-desc">解答の写真やスクショ画像をアップロードし、AIで自動的にLaTeX/PDF化します。</p>
+                                                <div class="auth-field" style="margin-bottom: 1rem;">
+                                                    <label for="exam-upload-answer-image-file">画像ファイルを選択</label>
+                                                    <input id="exam-upload-answer-image-file" type="file" accept="image/png,image/jpeg,image/webp">
+                                                </div>
+                                                <button id="exam-upload-submit-image" class="auth-primary-button" type="button">画像を解析して送信</button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1972,6 +1991,10 @@
                 setExamUploadMessage('', 'muted');
             });
 
+            // 解答個別ボタンのイベントリスナー
+            document.getElementById('exam-upload-submit-pdf')?.addEventListener('click', () => handleNewAnswerUploadAction('pdf'));
+            document.getElementById('exam-upload-submit-image')?.addEventListener('click', () => handleNewAnswerUploadAction('image'));
+
             // 提出タイプ切り替えイベント
             const typeRadios = form.querySelectorAll('input[name="uploadType"]');
             typeRadios.forEach(radio => {
@@ -1979,8 +2002,11 @@
                     const type = e.target.value;
                     const problemFields = document.getElementById('exam-upload-problem-fields');
                     const answerFields = document.getElementById('exam-upload-answer-fields');
+                    const submitBtn = document.getElementById('exam-upload-submit');
+                    
                     if (problemFields) problemFields.style.display = type === 'problem' ? '' : 'none';
                     if (answerFields) answerFields.style.display = type === 'answer' ? '' : 'none';
+                    if (submitBtn) submitBtn.style.display = type === 'problem' ? '' : 'none';
                     
                     if (type === 'answer') {
                         updateExamUploadYearOptions();
@@ -1988,6 +2014,11 @@
                     }
                 });
             });
+
+            // 初期状態でのボタン表示
+            const activeType = form.querySelector('input[name="uploadType"]:checked')?.value || 'problem';
+            const submitBtn = document.getElementById('exam-upload-submit');
+            if (submitBtn) submitBtn.style.display = activeType === 'problem' ? '' : 'none';
 
             // 年度・区分変更イベント
             document.getElementById('exam-upload-year')?.addEventListener('change', updateExamUploadNumbersChoices);
@@ -2057,6 +2088,12 @@
                 control.disabled = !canUpload;
             });
 
+            // 個別送信ボタンの disabled 制御
+            const pdfBtn = document.getElementById('exam-upload-submit-pdf');
+            const imgBtn = document.getElementById('exam-upload-submit-image');
+            if (pdfBtn) pdfBtn.disabled = !canUpload;
+            if (imgBtn) imgBtn.disabled = !canUpload;
+
             if (message && !isLoggedIn) {
                 message.textContent = 'ログインすると提出できます。';
                 message.className = 'auth-message auth-message-muted';
@@ -2069,6 +2106,84 @@
 
             if (examProblemsState.length > 0) {
                 renderExamAnswerResults();
+            }
+        }
+
+        async function handleNewAnswerUploadAction(type) {
+            const session = window.SiteAuth?.requireSession?.();
+            if (!session) {
+                setExamUploadMessage('ログインしてからアップロードしてください。', 'error');
+                if (typeof switchTab === 'function') switchTab('auth');
+                return;
+            }
+            const username = window.SiteAuth?.requireUsername?.();
+            if (!username) {
+                setExamUploadMessage('ログインタブでユーザー名を保存してください。', 'error');
+                if (typeof switchTab === 'function') switchTab('auth');
+                return;
+            }
+
+            const year = document.getElementById('exam-upload-year')?.value;
+            const group = document.getElementById('exam-upload-group')?.value;
+            if (!year || !group) {
+                setExamUploadMessage('年度と問題区分を指定してください。', 'error');
+                return;
+            }
+
+            const checkedBoxes = document.querySelectorAll('input[name="targetProblemNumber"]:checked');
+            const numbers = Array.from(checkedBoxes).map(cb => cb.value);
+            if (numbers.length === 0) {
+                setExamUploadMessage('対象の問題を1つ以上選択してください。', 'error');
+                return;
+            }
+
+            const fileInputId = type === 'pdf' ? 'exam-upload-answer-pdf-file' : 'exam-upload-answer-image-file';
+            const fileInput = document.getElementById(fileInputId);
+            const file = fileInput?.files?.[0];
+            if (!file || file.size === 0) {
+                setExamUploadMessage('ファイルを選択してください。', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.set('action', type === 'pdf' ? 'upload-pdf' : 'upload-image');
+            formData.set('username', username);
+            formData.set('uploadedByEmail', session.user?.email || '');
+            formData.set('year', year);
+            formData.set('problemGroup', group);
+            formData.set('problemNumbers', numbers.join(','));
+            formData.set('answerFile', file);
+
+            const submitButton = document.getElementById(type === 'pdf' ? 'exam-upload-submit-pdf' : 'exam-upload-submit-image');
+            if (submitButton) submitButton.disabled = true;
+
+            setExamUploadMessage(type === 'pdf' ? 'PDFを送信しています...' : '画像を送信・AI解析しています...', 'muted');
+
+            try {
+                const response = await fetch(getFunctionUrl('upload-exam-tex'), {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`
+                    },
+                    body: formData
+                });
+
+                const payload = await readJsonResponse(response);
+                if (!response.ok) throw new Error(payload.message || 'アップロードに失敗しました。');
+
+                setExamUploadMessage('アップロードを受け付けました。GitHub Pagesへの反映を待っています。', 'success');
+                
+                // 入力欄をクリア
+                if (fileInput) fileInput.value = '';
+                checkedBoxes.forEach(cb => { cb.checked = false; });
+                
+                // データを再ロード
+                await loadData();
+            } catch (error) {
+                console.error(error);
+                setExamUploadMessage(`${error.message || 'アップロードに失敗しました。'} Edge Functionの設定も確認してください。`, 'error');
+            } finally {
+                if (submitButton) submitButton.disabled = false;
             }
         }
 
@@ -2088,58 +2203,6 @@
             }
 
             const form = event.currentTarget;
-            const uploadType = form.querySelector('input[name="uploadType"]:checked')?.value || 'problem';
-
-            if (uploadType === 'answer') {
-                const formData = new FormData();
-                formData.set('action', 'upload-answer');
-                formData.set('username', username);
-                formData.set('uploadedByEmail', session.user?.email || '');
-                formData.set('year', document.getElementById('exam-upload-year').value);
-                formData.set('problemGroup', document.getElementById('exam-upload-group').value);
-                
-                const checkedBoxes = form.querySelectorAll('input[name="targetProblemNumber"]:checked');
-                const numbers = Array.from(checkedBoxes).map(cb => cb.value);
-                if (numbers.length === 0) {
-                    setExamUploadMessage('対象の問題を1つ以上選択してください。', 'error');
-                    return;
-                }
-                formData.set('problemNumbers', numbers.join(','));
-
-                const fileInput = document.getElementById('exam-upload-answer-file-new');
-                const file = fileInput?.files?.[0];
-                if (!file || file.size === 0) {
-                    setExamUploadMessage('解答ファイルを選択してください。', 'error');
-                    return;
-                }
-                formData.set('answerFile', file);
-
-                setExamUploadMessage('アップロードしています...', 'muted');
-
-                try {
-                    const response = await fetch(getFunctionUrl('upload-exam-tex'), {
-                        method: 'POST',
-                        headers: {
-                            Authorization: `Bearer ${session.access_token}`
-                        },
-                        body: formData
-                    });
-
-                    const payload = await readJsonResponse(response);
-                    if (!response.ok) throw new Error(payload.message || 'アップロードに失敗しました。');
-
-                    setExamUploadMessage('アップロードを受け付けました。GitHub Pagesへの反映を待っています。', 'success');
-                    form.reset();
-                    document.getElementById('exam-upload-problem-fields').style.display = 'block';
-                    document.getElementById('exam-upload-answer-fields').style.display = 'none';
-                    form.querySelector('input[name="uploadType"][value="problem"]').checked = true;
-                } catch (error) {
-                    console.error(error);
-                    setExamUploadMessage(`${error.message || 'アップロードに失敗しました。'} Edge Functionの設定も確認してください。`, 'error');
-                }
-                return;
-            }
-
             const formData = new FormData(form);
             const isReplacing = Boolean(String(formData.get('replaceSubmissionId') || '').trim());
             const sources = await readExamUploadSources(formData);

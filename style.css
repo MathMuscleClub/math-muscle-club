@@ -1997,3 +1997,48 @@ footer p {
     margin: 0.5rem 0;
     font-size: 0.88rem;
 }
+
+.exam-upload-split-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.exam-upload-split-card {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.exam-upload-split-card h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.exam-upload-card-desc {
+    font-size: 0.82rem;
+    color: #666666;
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+}
+
+.exam-upload-split-card button {
+    margin-top: auto;
+    width: 100%;
+}
+
+@media (max-width: 640px) {
+    .exam-upload-split-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}

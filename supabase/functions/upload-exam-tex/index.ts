@@ -120,6 +120,12 @@ Deno.serve(async (request) => {
     if (action === "delete") {
       return await deleteSubmission(formData, user, email, username);
     }
+    if (action === "upload-pdf") {
+      return await handlePdfUpload(formData, user, email, username);
+    }
+    if (action === "upload-image") {
+      return await handleImageUpload(formData, user, email, username);
+    }
     if (action === "upload-answer") {
       return await handleNewAnswerUpload(formData, user, email, username);
     }
@@ -214,6 +220,212 @@ Deno.serve(async (request) => {
     return errorResponse(error instanceof Error ? error.message : "提出に失敗しました。", 500);
   }
 });
+
+function cleanGeneratedLatex(text: string): string {
+  let cleaned = text.trim();
+  
+  // Remove markdown code blocks
+  if (cleaned.startsWith("```")) {
+    const lines = cleaned.split("\n");
+    if (lines[0].startsWith("```")) {
+      lines.shift();
+    }
+    if (lines[lines.length - 1].startsWith("```")) {
+      lines.pop();
+    }
+    cleaned = lines.join("\n").trim();
+  }
+  
+  return cleaned;
+}
+
+async function handlePdfUpload(
+  formData: FormData,
+  user: { id?: string },
+  email: string,
+  username: string,
+) {
+  const yearStr = cleanYear(formData.get("year"));
+  const problemGroup = cleanProblemGroup(formData.get("problemGroup"));
+  const problemNumbersStr = cleanText(formData.get("problemNumbers"), 200);
+  const answerFile = formData.get("answerFile");
+
+  if (!yearStr || !problemGroup) {
+    return errorResponse("年度と問題区分を指定してください。");
+  }
+  if (!problemNumbersStr) {
+    return errorResponse("解答が含まれる問題番号を選択してください。");
+  }
+  if (!(answerFile instanceof File) || answerFile.size === 0) {
+    return errorResponse("PDFファイルを選択してください。");
+  }
+
+  const problemNumbers = problemNumbersStr.split(",").map(n => n.trim()).filter(Boolean);
+  if (problemNumbers.length === 0) {
+    return errorResponse("解答が含まれる問題番号を正しく選択してください。");
+  }
+
+  if (!answerFile.name.toLowerCase().endsWith(".pdf")) {
+    return errorResponse("提出できるファイル形式は PDF (.pdf) のみです。");
+  }
+
+  const uploadedAt = new Date().toISOString();
+  const safeGroup = cleanPathPart(problemGroup);
+  const id = `${yearStr}-${safeGroup}-${dateSlug(uploadedAt)}-${slugify(username)}-${crypto.randomUUID().slice(0, 8)}`;
+  const filePath = `exams/${yearStr}/${safeGroup}/submissions/${id}/answer.pdf`;
+
+  const arrayBuffer = await answerFile.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  const base64Content = encodeBase64Binary(bytes);
+  await putGitHubBinaryFileEncoded(filePath, base64Content, `Add ${yearStr} ${safeGroup} answer PDF by ${username}`);
+
+  const manifest = await readManifest();
+  const entry: ManifestItem = {
+    id,
+    year: Number(yearStr),
+    problemGroup,
+    problemNumbers,
+    filePath,
+    fileType: "pdf",
+    uploadedByName: username,
+    uploadedByEmail: email,
+    uploadedByUserId: user.id || "",
+    uploadedAt,
+    status: "submitted"
+  };
+
+  const nextManifest = upsertManifestItem(manifest.items, entry);
+  await putGitHubFile(
+    "exam-submissions.json",
+    `${JSON.stringify(nextManifest, null, 2)}\n`,
+    `Register exam answer PDF by ${username}`,
+    manifest.sha,
+  );
+
+  return jsonResponse({ entries: [entry] });
+}
+
+async function handleImageUpload(
+  formData: FormData,
+  user: { id?: string },
+  email: string,
+  username: string,
+) {
+  const yearStr = cleanYear(formData.get("year"));
+  const problemGroup = cleanProblemGroup(formData.get("problemGroup"));
+  const problemNumbersStr = cleanText(formData.get("problemNumbers"), 200);
+  const answerFile = formData.get("answerFile");
+
+  if (!yearStr || !problemGroup) {
+    return errorResponse("年度と問題区分を指定してください。");
+  }
+  if (!problemNumbersStr) {
+    return errorResponse("解答が含まれる問題番号を選択してください。");
+  }
+  if (!(answerFile instanceof File) || answerFile.size === 0) {
+    return errorResponse("画像ファイルを選択してください。");
+  }
+
+  const problemNumbers = problemNumbersStr.split(",").map(n => n.trim()).filter(Boolean);
+  if (problemNumbers.length === 0) {
+    return errorResponse("解答が含まれる問題番号を正しく選択してください。");
+  }
+
+  const mimeType = answerFile.type || "";
+  if (!mimeType.startsWith("image/")) {
+    return errorResponse("提出できるファイル形式は画像ファイル (JPEG, PNG 等) のみです。");
+  }
+
+  const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+  if (!geminiApiKey) {
+    return errorResponse("サーバー側の設定エラー: GEMINI_API_KEY が未設定です。");
+  }
+
+  const arrayBuffer = await answerFile.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  const imageBase64 = encodeBase64Binary(bytes);
+
+  let latexCode = "";
+  try {
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: "添付された画像は数学の答案用紙（解答）の写真です。画像内のテキストと数式を読み取り、コンパイル可能な日本語の jlreq クラスの LaTeX ドキュメント（\\begin{document}から\\end{document}まで）として完璧に再現してください。数式は amsmath や amssymb を使用してください。出力は LaTeX コードブロック（```latex ... ```）または生の LaTeX テキストのみにしてください。説明や余計な挨拶は一切不要です。",
+                },
+                {
+                  inlineData: {
+                    mimeType: mimeType,
+                    data: imageBase64,
+                  },
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.1,
+          },
+        }),
+      }
+    );
+
+    if (!geminiResponse.ok) {
+      const errText = await geminiResponse.text();
+      throw new Error(`Gemini API エラー: ${errText || geminiResponse.statusText}`);
+    }
+
+    const result = await geminiResponse.json();
+    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    latexCode = cleanGeneratedLatex(generatedText);
+
+    if (!latexCode.trim()) {
+      throw new Error("Geminiから有効なLaTeXコードが返されませんでした。");
+    }
+  } catch (error) {
+    console.error("Gemini API call failed:", error);
+    return errorResponse(`画像の解析に失敗しました: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  const uploadedAt = new Date().toISOString();
+  const safeGroup = cleanPathPart(problemGroup);
+  const id = `${yearStr}-${safeGroup}-${dateSlug(uploadedAt)}-${slugify(username)}-${crypto.randomUUID().slice(0, 8)}`;
+  const filePath = `exams/${yearStr}/${safeGroup}/submissions/${id}/answer.tex`;
+
+  await putGitHubTextFile(filePath, latexCode, `Add ${yearStr} ${safeGroup} answer TeX (auto-generated by Gemini) by ${username}`);
+
+  const manifest = await readManifest();
+  const entry: ManifestItem = {
+    id,
+    year: Number(yearStr),
+    problemGroup,
+    problemNumbers,
+    filePath,
+    fileType: "tex",
+    uploadedByName: username,
+    uploadedByEmail: email,
+    uploadedByUserId: user.id || "",
+    uploadedAt,
+    status: "submitted"
+  };
+
+  const nextManifest = upsertManifestItem(manifest.items, entry);
+  await putGitHubFile(
+    "exam-submissions.json",
+    `${JSON.stringify(nextManifest, null, 2)}\n`,
+    `Register exam answer TeX (Gemini) by ${username}`,
+    manifest.sha,
+  );
+
+  return jsonResponse({ entries: [entry] });
+}
 
 function encodeBase64Binary(bytes: Uint8Array): string {
   let binary = "";
