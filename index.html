@@ -22,7 +22,8 @@
             <button class="tab-button" onclick="switchTab('schedule')">活動予定</button>
             <button class="tab-button" onclick="switchTab('goals')">目標と実績</button>
             <button class="tab-button" onclick="switchTab('diary')">活動日記</button>
-            <button class="tab-button" onclick="switchTab('exam-answers')">過去問解答</button>
+            <button class="tab-button" onclick="switchTab('exam-answers')">過去問閲覧</button>
+            <button class="tab-button" onclick="switchTab('exam-upload')">解答・問題提出</button>
             <button class="tab-button" onclick="switchTab('latex-typing')">LaTeXタイピング</button>
             <button class="tab-button" onclick="switchTab('auth')">ログイン</button>
         </nav>
@@ -135,10 +136,10 @@
                 </section>
             </div>
 
-            <!-- タブ4: 過去問解答 -->
+            <!-- タブ4: 過去問閲覧 -->
             <div id="exam-answers" class="tab-content">
                 <section>
-                    <h2>過去問解答</h2>
+                    <h2>過去問閲覧</h2>
                     <div class="exam-dashboard">
                         <div class="exam-control-column" aria-label="過去問操作">
                             <div class="exam-answer-tools">
@@ -152,133 +153,6 @@
                                     <div id="exam-tag-filter" class="exam-tag-filter"></div>
                                 </div>
                             </div>
-                            <details class="exam-tool-panel exam-collapsible-panel" id="exam-upload-panel">
-                                <summary class="exam-tool-panel-header">
-                                    <h3>TeX提出</h3>
-                                    <span id="exam-upload-auth-badge" class="auth-status-badge auth-status-muted">未ログイン</span>
-                                </summary>
-                                <form id="exam-upload-form" class="exam-upload-form">
-                                    <input id="exam-upload-replace-id" name="replaceSubmissionId" type="hidden">
-                                    <p id="exam-upload-profile-note" class="exam-upload-profile-note">ログインタブで登録したユーザー名で提出されます。</p>
-                                    
-                                    <div class="auth-field" style="margin-bottom: 1.5rem;">
-                                        <label>提出タイプ</label>
-                                        <div class="exam-upload-type-selector">
-                                            <label class="exam-type-radio-label">
-                                                <input type="radio" name="uploadType" value="problem" checked>
-                                                <span>問題文の提出/編集</span>
-                                            </label>
-                                            <label class="exam-type-radio-label">
-                                                <input type="radio" name="uploadType" value="answer">
-                                                <span>解答ファイルの提出</span>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <!-- 問題文提出用のフィールドグループ -->
-                                    <div id="exam-upload-problem-fields">
-                                        <div class="auth-field">
-                                            <label for="exam-upload-problem-file">問題文LaTeXファイル</label>
-                                            <input id="exam-upload-problem-file" name="problemTexFile" type="file" accept=".tex,.latex,text/plain">
-                                        </div>
-                                        <div class="auth-field">
-                                            <label for="exam-upload-problem-source">問題文TeXを直接編集</label>
-                                            <textarea id="exam-upload-problem-source" name="problemTexSource" rows="8" spellcheck="false"></textarea>
-                                        </div>
-                                    </div>
-
-                                    <!-- 解答提出用のフィールドグループ (新方式) -->
-                                    <div id="exam-upload-answer-fields" style="display: none;">
-                                        <div class="exam-form-grid">
-                                            <div class="auth-field">
-                                                <label for="exam-upload-year">年度</label>
-                                                <select id="exam-upload-year" name="year"></select>
-                                            </div>
-                                            <div class="auth-field">
-                                                <label for="exam-upload-group">問題区分</label>
-                                                <select id="exam-upload-group" name="problemGroup">
-                                                    <option value="A">A問題</option>
-                                                    <option value="B" selected>B問題</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="auth-field" style="margin-bottom: 1.5rem;">
-                                            <label>対象の大問（複数選択）</label>
-                                            <div id="exam-upload-numbers-container" class="exam-numbers-checkbox-list">
-                                                <p class="no-data">年度・区分に合う問題がありません。</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- PDF提出と画像提出の入力エリア・ボタンの分離 -->
-                                        <div class="exam-upload-split-container">
-                                            <div class="exam-upload-split-card pdf-card">
-                                                <h4>PDFで提出</h4>
-                                                <p class="exam-upload-card-desc">作成済みの解答PDFファイルをそのままアップロードします。</p>
-                                                <div class="auth-field" style="margin-bottom: 1rem;">
-                                                    <label for="exam-upload-answer-pdf-file">PDFファイルを選択</label>
-                                                    <input id="exam-upload-answer-pdf-file" type="file" accept=".pdf">
-                                                </div>
-                                                <button id="exam-upload-submit-pdf" class="auth-primary-button" type="button">PDF解答を送信</button>
-                                            </div>
-                                            
-                                            <div class="exam-upload-split-card image-card">
-                                                <h4>画像で提出（GeminiでTeX化）</h4>
-                                                <p class="exam-upload-card-desc">解答の写真やスクショをアップロードし、AIでLaTeX化してプレビュー・編集できます。</p>
-                                                <div class="auth-field" style="margin-bottom: 0.75rem;">
-                                                    <label for="exam-upload-gemini-model">AIモデル</label>
-                                                    <select id="exam-upload-gemini-model" name="geminiModel">
-                                                        <option value="3.5-flash">3.5 Flash</option>
-                                                        <option value="3.1-flash-lite">3.1 Flash-Lite</option>
-                                                        <option value="2.5-flash">2.5 Flash</option>
-                                                        <option value="2.5-flash-lite">2.5 Flash-Lite</option>
-                                                    </select>
-                                                </div>
-                                                <div class="auth-field" style="margin-bottom: 1rem;">
-                                                    <label for="exam-upload-answer-image-file">画像ファイルを選択（複数可）</label>
-                                                    <input id="exam-upload-answer-image-file" type="file" accept="image/png,image/jpeg,image/webp" multiple>
-                                                    <p id="exam-upload-image-file-count" class="exam-upload-card-desc" style="margin:0.3rem 0 0; font-size:0.8rem;"></p>
-                                                </div>
-                                                <button id="exam-upload-analyze-image" class="auth-primary-button" type="button">✨ AIで変換してプレビュー</button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div id="exam-upload-detected-list" class="exam-upload-detected-list"></div>
-
-                                    <!-- 画像→AIでTeX/PDF化したプレビューエリア -->
-                                    <div id="exam-image-preview-area" class="exam-image-preview-area" hidden>
-                                        <div class="exam-image-preview-header">
-                                            <span class="exam-image-preview-title">AI変換結果のプレビュー・編集</span>
-                                            <div class="exam-image-preview-actions">
-                                                <button type="button" id="exam-image-download-tex" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px;">TeXをダウンロード</button>
-                                                <button type="button" id="exam-image-render-pdf" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px;">PDFで確認</button>
-                                            </div>
-                                        </div>
-                                        <div class="exam-image-preview-tabs">
-                                            <button type="button" class="exam-image-preview-tab active" data-preview-tab="tex">📝 TeX編集</button>
-                                            <button type="button" class="exam-image-preview-tab" data-preview-tab="pdf">📄 PDFプレビュー</button>
-                                        </div>
-                                        <div class="exam-image-preview-body" id="exam-image-tex-panel">
-                                            <textarea id="exam-image-tex-editor" class="exam-image-tex-editor" spellcheck="false" placeholder="AIが生成したTeXコードがここに表示されます..."></textarea>
-                                        </div>
-                                        <div class="exam-image-preview-body" id="exam-image-pdf-panel" hidden>
-                                            <div id="exam-image-pdf-container" class="exam-image-pdf-container">
-                                                <p class="exam-pdf-placeholder-text">「PDFで確認」ボタンを押すと、TeXをPDFにコンパイルして表示します。</p>
-                                            </div>
-                                        </div>
-                                        <div class="exam-image-submit-row">
-                                            <p>内容を確認・編集してから送信してください。</p>
-                                            <button type="button" id="exam-upload-submit-image" class="auth-primary-button">このTeXで提出</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="auth-actions">
-                                        <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
-                                        <button id="exam-upload-cancel-edit" class="auth-secondary-button" type="button" hidden>編集をやめる</button>
-                                    </div>
-                                    <p id="exam-upload-message" class="auth-message auth-message-muted" role="status"></p>
-                                </form>
-                            </details>
 
                             <details class="exam-tool-panel exam-collapsible-panel" id="exam-pdf-panel">
                                 <summary class="exam-tool-panel-header">
@@ -323,6 +197,141 @@
                                 <p class="loading">読み込み中...</p>
                             </div>
                         </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- タブ: 解答・問題提出 -->
+            <div id="exam-upload" class="tab-content">
+                <section>
+                    <h2>解答・問題提出</h2>
+                    <div class="exam-tool-panel" id="exam-upload-panel" style="background-color: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px; box-shadow: 0 8px 24px rgba(17, 24, 39, 0.03);">
+                        <div class="exam-tool-panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line-soft); padding-bottom: 0.75rem;">
+                            <h3 style="margin: 0; font-size: 1.25rem;">TeX / 解答ファイル提出</h3>
+                            <span id="exam-upload-auth-badge" class="auth-status-badge auth-status-muted">未ログイン</span>
+                        </div>
+                        <form id="exam-upload-form" class="exam-upload-form">
+                            <input id="exam-upload-replace-id" name="replaceSubmissionId" type="hidden">
+                            <p id="exam-upload-profile-note" class="exam-upload-profile-note">ログインタブで登録したユーザー名で提出されます。</p>
+                            
+                            <div class="auth-field" style="margin-bottom: 1.5rem;">
+                                <label>提出タイプ</label>
+                                <div class="exam-upload-type-selector">
+                                    <label class="exam-type-radio-label">
+                                        <input type="radio" name="uploadType" value="problem" checked>
+                                        <span>問題文の提出/編集</span>
+                                    </label>
+                                    <label class="exam-type-radio-label">
+                                        <input type="radio" name="uploadType" value="answer">
+                                        <span>解答ファイルの提出</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 問題文提出用のフィールドグループ -->
+                            <div id="exam-upload-problem-fields">
+                                <div class="auth-field">
+                                    <label for="exam-upload-problem-file">問題文LaTeXファイル</label>
+                                    <input id="exam-upload-problem-file" name="problemTexFile" type="file" accept=".tex,.latex,text/plain">
+                                </div>
+                                <div class="auth-field">
+                                    <label for="exam-upload-problem-source">問題文TeXを直接編集</label>
+                                    <textarea id="exam-upload-problem-source" name="problemTexSource" rows="8" spellcheck="false"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- 解答提出用のフィールドグループ (新方式) -->
+                            <div id="exam-upload-answer-fields" style="display: none;">
+                                <div class="exam-form-grid">
+                                    <div class="auth-field">
+                                        <label for="exam-upload-year">年度</label>
+                                        <select id="exam-upload-year" name="year"></select>
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-upload-group">問題区分</label>
+                                        <select id="exam-upload-group" name="problemGroup">
+                                            <option value="A">A問題</option>
+                                            <option value="B" selected>B問題</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="auth-field" style="margin-bottom: 1.5rem;">
+                                    <label>対象の大問（複数選択）</label>
+                                    <div id="exam-upload-numbers-container" class="exam-numbers-checkbox-list">
+                                        <p class="no-data">年度・区分に合う問題がありません。</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- PDF提出と画像提出の入力エリア・ボタンの分離 -->
+                                <div class="exam-upload-split-container">
+                                    <div class="exam-upload-split-card pdf-card">
+                                        <h4>PDFで提出</h4>
+                                        <p class="exam-upload-card-desc">作成済みの解答PDFファイルをそのままアップロードします。</p>
+                                        <div class="auth-field" style="margin-bottom: 1rem;">
+                                            <label for="exam-upload-answer-pdf-file">PDFファイルを選択</label>
+                                            <input id="exam-upload-answer-pdf-file" type="file" accept=".pdf">
+                                        </div>
+                                        <button id="exam-upload-submit-pdf" class="auth-primary-button" type="button">PDF解答を送信</button>
+                                    </div>
+                                    
+                                    <div class="exam-upload-split-card image-card">
+                                        <h4>画像で提出（GeminiでTeX化）</h4>
+                                        <p class="exam-upload-card-desc">解答の写真やスクショをアップロードし、AIでLaTeX化してプレビュー・編集できます。</p>
+                                        <div class="auth-field" style="margin-bottom: 0.75rem;">
+                                            <label for="exam-upload-gemini-model">AIモデル</label>
+                                            <select id="exam-upload-gemini-model" name="geminiModel">
+                                                <option value="3.5-flash">3.5 Flash</option>
+                                                <option value="3.1-flash-lite">3.1 Flash-Lite</option>
+                                                <option value="2.5-flash">2.5 Flash</option>
+                                                <option value="2.5-flash-lite">2.5 Flash-Lite</option>
+                                            </select>
+                                        </div>
+                                        <div class="auth-field" style="margin-bottom: 1rem;">
+                                            <label for="exam-upload-answer-image-file">画像ファイルを選択（複数可）</label>
+                                            <input id="exam-upload-answer-image-file" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+                                            <p id="exam-upload-image-file-count" class="exam-upload-card-desc" style="margin:0.3rem 0 0; font-size:0.8rem;"></p>
+                                        </div>
+                                        <button id="exam-upload-analyze-image" class="auth-primary-button" type="button">✨ AIで変換してプレビュー</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="exam-upload-detected-list" class="exam-upload-detected-list"></div>
+
+                            <!-- 画像→AIでTeX/PDF化したプレビューエリア -->
+                            <div id="exam-image-preview-area" class="exam-image-preview-area" hidden>
+                                <div class="exam-image-preview-header">
+                                    <span class="exam-image-preview-title">AI変換結果のプレビュー・編集</span>
+                                    <div class="exam-image-preview-actions">
+                                        <button type="button" id="exam-image-download-tex" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px;">TeXをダウンロード</button>
+                                        <button type="button" id="exam-image-compile" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px; background-color: var(--accent); color: white; border-color: var(--accent);">TeXをコンパイル</button>
+                                        <button type="button" id="exam-image-render-pdf" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px;" disabled>PDFで確認</button>
+                                    </div>
+                                </div>
+                                <div class="exam-image-preview-tabs">
+                                    <button type="button" class="exam-image-preview-tab active" data-preview-tab="tex">📝 TeX編集</button>
+                                    <button type="button" class="exam-image-preview-tab" data-preview-tab="pdf">📄 PDFプレビュー</button>
+                                </div>
+                                <div class="exam-image-preview-body" id="exam-image-tex-panel">
+                                    <textarea id="exam-image-tex-editor" class="exam-image-tex-editor" spellcheck="false" placeholder="AIが生成したTeXコードがここに表示されます..."></textarea>
+                                </div>
+                                <div class="exam-image-preview-body" id="exam-image-pdf-panel" hidden>
+                                    <div id="exam-image-pdf-container" class="exam-image-pdf-container">
+                                        <p class="exam-pdf-placeholder-text">「TeXをコンパイル」ボタンを押すと、TeXをPDFにコンパイルして表示します。</p>
+                                    </div>
+                                </div>
+                                <div class="exam-image-submit-row">
+                                    <p>内容を確認・編集してから送信してください。</p>
+                                    <button type="button" id="exam-upload-submit-image" class="auth-primary-button" disabled>このTeXで提出</button>
+                                </div>
+                            </div>
+
+                            <div class="auth-actions">
+                                <button id="exam-upload-submit" class="auth-primary-button" type="submit">アップロード</button>
+                                <button id="exam-upload-cancel-edit" class="auth-secondary-button" type="button" hidden>編集をやめる</button>
+                            </div>
+                            <p id="exam-upload-message" class="auth-message auth-message-muted" role="status"></p>
+                        </form>
                     </div>
                 </section>
             </div>
@@ -560,12 +569,22 @@
             // 対象のタブコンテンツとボタンをactiveにする
             const targetContent = document.getElementById(tabId);
             targetContent.classList.add('active');
-            document.body.classList.toggle('is-exam-tab', tabId === 'exam-answers');
+            document.body.classList.toggle('is-exam-tab', tabId === 'exam-answers' || tabId === 'exam-upload');
 
             // クリックされたボタンを特定してactiveにする
             const clickedButton = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
             if (clickedButton) {
                 clickedButton.classList.add('active');
+            }
+
+            if (tabId === 'exam-upload') {
+                setupExamUploadForm();
+                const activeType = document.querySelector('input[name="uploadType"]:checked')?.value || 'problem';
+                if (activeType === 'answer') {
+                    updateExamUploadYearOptions();
+                    updateExamUploadNumbersChoices();
+                }
+                updateExamUploadAuthState();
             }
         }
 
@@ -2039,13 +2058,13 @@
                 tab.addEventListener('click', () => switchImagePreviewTab(tab.dataset.previewTab));
             });
             document.getElementById('exam-image-download-tex')?.addEventListener('click', downloadImageTex);
-            document.getElementById('exam-image-render-pdf')?.addEventListener('click', renderImagePreviewPdf);
+            document.getElementById('exam-image-compile')?.addEventListener('click', handleImageCompile);
+            document.getElementById('exam-image-render-pdf')?.addEventListener('click', handleImageRenderPdfClick);
+            document.getElementById('exam-image-tex-editor')?.addEventListener('input', handleImageTexInput);
 
             // 画像ファイル選択時のファイル数表示
             const imageFileInput = document.getElementById('exam-upload-answer-image-file');
-            imageFileInput?.addEventListener('change', () => updateImageFileCount(imageFileInput));
-
-            // 提出タイプ切り替えイベント
+            imageFileInput?.addEventListener('change', () => updateImageFileCount(imageFileInput));            // 提出タイプ切り替えイベント
             const typeRadios = form.querySelectorAll('input[name="uploadType"]');
             typeRadios.forEach(radio => {
                 radio.addEventListener('change', (e) => {
@@ -2082,7 +2101,11 @@
         function updateExamUploadYearOptions() {
             const yearSelect = document.getElementById('exam-upload-year');
             if (!yearSelect) return;
-            const years = uniqueValues(examProblemsState.map(problem => problem.year)).sort((a, b) => Number(b) - Number(a));
+            const currentYear = new Date().getFullYear();
+            const years = [];
+            for (let y = currentYear; y >= 2000; y--) {
+                years.push(y);
+            }
             yearSelect.innerHTML = years.map(year => `<option value="${escapeAttribute(year)}">${escapeHTML(year)}年度</option>`).join('');
         }
 
@@ -2092,23 +2115,29 @@
             const group = document.getElementById('exam-upload-group')?.value;
             if (!container || !year || !group) return;
 
-            const numbers = uniqueValues(
+            // 常に1〜20問の大問を選択肢として表示する
+            const numbers = Array.from({ length: 20 }, (_, i) => String(i + 1));
+
+            // 登録済みの問題を特定する
+            const registeredNumbers = new Set(
                 examProblemsState
                     .filter(problem => String(problem.year) === String(year) && String(problem.problemGroup) === String(group))
-                    .map(problem => problem.problemNumber)
-            ).sort((a, b) => Number(a) - Number(b));
+                    .map(problem => String(problem.problemNumber))
+            );
 
-            if (numbers.length === 0) {
-                container.innerHTML = '<p class="no-data">この年度・区分に合う問題がありません。</p>';
-                return;
-            }
-
-            container.innerHTML = numbers.map(num => `
-                <label class="exam-number-checkbox-label">
-                    <input type="checkbox" name="targetProblemNumber" value="${escapeAttribute(num)}">
-                    <span class="exam-number-chip">第${escapeHTML(num)}問</span>
-                </label>
-            `).join('');
+            container.innerHTML = numbers.map(num => {
+                const isRegistered = registeredNumbers.has(num);
+                const badgeHTML = isRegistered ? '<span class="exam-registered-badge">問題あり</span>' : '';
+                return `
+                    <label class="exam-number-checkbox-label">
+                        <input type="checkbox" name="targetProblemNumber" value="${escapeAttribute(num)}">
+                        <span class="exam-number-chip">
+                            第${escapeHTML(num)}問
+                            ${badgeHTML}
+                        </span>
+                    </label>
+                `;
+            }).join('');
         }
 
         function updateExamUploadAuthState() {
@@ -2134,17 +2163,20 @@
                         : 'ログインすると提出できます。';
             }
 
-            form?.querySelectorAll('input, textarea, select, button').forEach(control => {
+            // 提出用コントロール（送信ボタン、ファイルインプット、テキストエリア）のみを無効化
+            const uploadControls = form?.querySelectorAll(
+                'input[type="file"], textarea, button[type="submit"], #exam-upload-submit-pdf, #exam-upload-analyze-image'
+            );
+            uploadControls?.forEach(control => {
                 control.disabled = !canUpload;
             });
 
-            // 個別送信ボタンの disabled 制御
-            const pdfBtn = document.getElementById('exam-upload-submit-pdf');
-            const analyzeBtn = document.getElementById('exam-upload-analyze-image');
-            const imgBtn = document.getElementById('exam-upload-submit-image');
-            if (pdfBtn) pdfBtn.disabled = !canUpload;
-            if (analyzeBtn) analyzeBtn.disabled = !canUpload;
-            if (imgBtn) imgBtn.disabled = !canUpload;
+            // 「このTeXで提出」ボタンに関しては、コンパイル成功時のみ有効化する制御が別途走るため、
+            // ログインしていないときは常に disabled にします。
+            const imgSubmitBtn = document.getElementById('exam-upload-submit-image');
+            if (imgSubmitBtn && !canUpload) {
+                imgSubmitBtn.disabled = true;
+            }
 
             if (message && !isLoggedIn) {
                 message.textContent = 'ログインすると提出できます。';
@@ -2168,6 +2200,38 @@
         let _imageAnalyzedTexCode = '';
         // 元の画像ファイル
         let _imageAnalyzedFile = null;
+        // 最後にコンパイルしたTeXコード
+        let _lastCompiledTex = '';
+        // 最後にコンパイルしたPDFのBlob URL
+        let _lastCompiledPdfBlobUrl = '';
+
+        function handleImageTexInput() {
+            const editor = document.getElementById('exam-image-tex-editor');
+            const texCode = editor ? editor.value : '';
+            const submitBtn = document.getElementById('exam-upload-submit-image');
+            const pdfBtn = document.getElementById('exam-image-render-pdf');
+
+            // 最後にコンパイルしたTeXと内容が異なる場合は無効化
+            if (texCode !== _lastCompiledTex) {
+                if (submitBtn) submitBtn.disabled = true;
+                if (pdfBtn) pdfBtn.disabled = true;
+            } else {
+                if (submitBtn) submitBtn.disabled = false;
+                if (pdfBtn) pdfBtn.disabled = false;
+            }
+        }
+
+        function handleImageRenderPdfClick() {
+            if (_lastCompiledPdfBlobUrl) {
+                window.open(_lastCompiledPdfBlobUrl, '_blank');
+            } else {
+                // BlobURLがない（印刷フォールバック時）は印刷画面を開く
+                const editor = document.getElementById('exam-image-tex-editor');
+                const texCode = editor ? editor.value : _imageAnalyzedTexCode;
+                const w = openPrintPreparationWindow({ year: 'preview', problemGroup: 'temp', mode: 'raw' });
+                writePrintableRawTexDocument(w, texCode);
+            }
+        }
 
         function updateImageFileCount(fileInput) {
             const countLabel = document.getElementById('exam-upload-image-file-count');
@@ -2206,7 +2270,7 @@
             URL.revokeObjectURL(url);
         }
 
-        async function renderImagePreviewPdf() {
+        async function handleImageCompile() {
             const editor = document.getElementById('exam-image-tex-editor');
             const texCode = editor ? editor.value : _imageAnalyzedTexCode;
             if (!texCode.trim()) {
@@ -2216,6 +2280,14 @@
 
             const container = document.getElementById('exam-image-pdf-container');
             if (!container) return;
+
+            const compileBtn = document.getElementById('exam-image-compile');
+            const submitBtn = document.getElementById('exam-upload-submit-image');
+            const pdfBtn = document.getElementById('exam-image-render-pdf');
+
+            if (compileBtn) compileBtn.disabled = true;
+            const originalText = compileBtn ? compileBtn.textContent : '';
+            if (compileBtn) compileBtn.textContent = 'コンパイル中...';
 
             // PDFタブに切り替え
             switchImagePreviewTab('pdf');
@@ -2234,25 +2306,103 @@
 
                 if (response.ok && response.headers.get('content-type')?.includes('application/pdf')) {
                     const blob = await response.blob();
-                    const blobUrl = URL.createObjectURL(blob);
+                    if (_lastCompiledPdfBlobUrl) {
+                        URL.revokeObjectURL(_lastCompiledPdfBlobUrl);
+                    }
+                    _lastCompiledPdfBlobUrl = URL.createObjectURL(blob);
+                    _lastCompiledTex = texCode;
+
+                    // ボタンの有効化
+                    if (submitBtn) submitBtn.disabled = false;
+                    if (pdfBtn) pdfBtn.disabled = false;
+
                     // TeXダウンロード用のBlobURLを生成
                     const texBlob = new Blob([texCode], { type: 'text/plain;charset=utf-8' });
                     const texUrl = URL.createObjectURL(texBlob);
+
                     container.innerHTML = `
                         <div style="display:flex; gap:0.5rem; padding:0.5rem; justify-content:flex-end; background:#f8f9fa; border-bottom:1px solid var(--line-soft);">
                             <a href="${texUrl}" download="answer.tex" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px; text-decoration:none; display:inline-flex; align-items:center;">📝 TeXをダウンロード</a>
-                            <a href="${blobUrl}" target="_blank" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px; text-decoration:none; display:inline-flex; align-items:center;">別タブで開く</a>
+                            <a href="${_lastCompiledPdfBlobUrl}" target="_blank" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px; text-decoration:none; display:inline-flex; align-items:center;">別タブで開く</a>
                         </div>
-                        <iframe src="${blobUrl}" width="100%" style="height:480px; border:none; display:block;"></iframe>
+                        <iframe src="${_lastCompiledPdfBlobUrl}" width="100%" style="height:480px; border:none; display:block;"></iframe>
                     `;
                 } else {
                     const data = await readJsonResponse(response);
                     throw new Error(data.message || 'PDF生成サービスが未設定またはエラーが発生しました。');
                 }
             } catch (error) {
-                console.error(error);
-                container.innerHTML = `<p class="error" style="padding:1rem;">PDFの生成に失敗しました: ${escapeHTML(error.message)}</p>`;
+                console.warn(error);
+                // 印刷画面へのフォールバック処理を呼び出す
+                const printWindow = openPrintPreparationWindow({ year: 'preview', problemGroup: 'temp', mode: 'raw' });
+                const opened = writePrintableRawTexDocument(printWindow, texCode);
+                
+                if (opened) {
+                    _lastCompiledTex = texCode;
+                    if (_lastCompiledPdfBlobUrl) {
+                        URL.revokeObjectURL(_lastCompiledPdfBlobUrl);
+                        _lastCompiledPdfBlobUrl = '';
+                    }
+
+                    // ボタンの有効化
+                    if (submitBtn) submitBtn.disabled = false;
+                    if (pdfBtn) pdfBtn.disabled = false; // 印刷画面の再表示ボタンとして機能させる
+
+                    container.innerHTML = `
+                        <p class="success" style="padding:1rem; color: var(--accent);">PDF生成サービス未設定のため、印刷プレビュー画面を別タブで開きました。そこからPDFとして保存できます。</p>
+                        <div style="display:flex; gap:0.5rem; padding:0.5rem; justify-content:flex-end; background:#f8f9fa; border-bottom:1px solid var(--line-soft);">
+                            <button type="button" id="exam-image-reopen-print" class="auth-secondary-button" style="font-size:0.82rem; min-height:32px; padding:5px 10px;">印刷画面を再表示</button>
+                        </div>
+                    `;
+                    document.getElementById('exam-image-reopen-print')?.addEventListener('click', () => {
+                        const w = openPrintPreparationWindow({ year: 'preview', problemGroup: 'temp', mode: 'raw' });
+                        writePrintableRawTexDocument(w, texCode);
+                    });
+                } else {
+                    container.innerHTML = `<p class="error" style="padding:1rem;">PDFの生成に失敗しました: ${escapeHTML(error.message)}</p>`;
+                }
+            } finally {
+                if (compileBtn) {
+                    compileBtn.disabled = false;
+                    compileBtn.textContent = originalText;
+                }
             }
+        }
+                function writePrintableRawTexDocument(printWindow, texCode) {
+            if (!printWindow || printWindow.closed) return false;
+
+            var html = '';
+            html += '<!DOCTYPE html>\n';
+            html += '<html lang="ja">\n';
+            html += '<head>\n';
+            html += '    <meta charset="UTF-8">\n';
+            html += '    <title>TeXプレビュー一時生成</title>\n';
+            html += '    <style>\n';
+            html += '        body { color: #161616; font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; line-height: 1.7; margin: 24mm; }\n';
+            html += '        pre { white-space: pre-wrap; font-family: monospace; }\n';
+            html += '        @media print { body { margin: 18mm; } }\n';
+            html += '    </style>\n';
+            html += '    <script>\n';
+            html += '        window.MathJax = {\n';
+            html += '            tex: { inlineMath: [["$", "$"], ["\\\\(", "\\\\)"]], displayMath: [["$$", "$$"], ["\\\\[", "\\\\]"]] },\n';
+            html += '            svg: { fontCache: "global" },\n';
+            html += '            startup: {\n';
+            html += '                pageReady: () => window.MathJax.startup.defaultPageReady().then(() => setTimeout(() => window.print(), 300))\n';
+            html += '            }\n';
+            html += '        };\n';
+            html += '    <\/script>\n';
+            html += '    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>\n';
+            html += '</head>\n';
+            html += '<body>\n';
+            html += '    <div id="math-content">\n';
+            html += '        ' + texCode + '\n';
+            html += '    </div>\n';
+            html += '</body>\n';
+            html += '</html>\n';
+
+            printWindow.document.write(html);
+            printWindow.document.close();
+            return true;
         }
 
         async function handleImageAnalyzeAndPreview() {

@@ -1,0 +1,14 @@
+\documentclass[12pt]{jlreq}
+\usepackage{pdfpages}
+
+\begin{document}
+
+% ── ここに結合したいPDFファイルを順に指定します ──
+% 各メンバーが個別に作成・ビルドした問題・解答のPDFを、
+% ページ区切りを保ったまま綺麗に1枚のPDFへ結合できます。
+
+\includepdf[pages=-]{exams/2012/B/1/problem.pdf}
+% \includepdf[pages=-]{exams/2012/B/2/problem.pdf}
+% \includepdf[pages=-]{exams/2012/B/3/problem.pdf}
+
+\end{document}

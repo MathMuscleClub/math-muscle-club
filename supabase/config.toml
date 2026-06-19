@@ -1,0 +1,7 @@
+project_id = "tqaebckdmdmhwylluzsf"
+
+[functions.upload-exam-tex]
+verify_jwt = false
+
+[functions.render-exam-pdf]
+verify_jwt = false

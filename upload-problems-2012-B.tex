@@ -1,0 +1,640 @@
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{代数}
+% \examgroup{B}
+% \examnumber{1}
+% \examtitle{平成24年 B 第1問}
+% \examtag{体論}
+% \examtag{ガロア理論}
+% \examtag{有理関数体}
+
+\(L\) を複素数体 \(\C\) 上の \(4\) 変数有理関数体
+\(\C(X_1,X_2,X_3,X_4)\) とする。体 \(L\) の \(2\) つの \(\C\) 自己同型 \(\sigma,\tau\) を
+\[
+  \sigma(X_1)=-X_1,\qquad
+  \sigma(X_i)=X_i\quad (i=2,3,4),
+\]
+\[
+  \tau(X_i)=X_{i+1}\quad (i=1,2,3),\qquad
+  \tau(X_4)=X_1
+\]
+により定め，\(L\) の部分体 \(K\) を
+\[
+  K=\{a\in L\mid \sigma(a)=a,\ \tau(a)=a\}
+\]
+で定義する。
+
+\begin{enumerate}
+  \item \(L\) の \(K\) 上の拡大次数 \([L:K]\) を求めよ。
+  \item 拡大 \(L/K\) の最大部分アーベル拡大を求めよ。
+  \item \(L\) に含まれる \(K\) の \(2\) 次拡大をすべて求め，適当な \(L\) の元 \(\alpha\) を用いて \(K(\alpha)\) の形で表せ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{代数}
+% \examgroup{B}
+% \examnumber{2}
+% \examtitle{平成24年 B 第2問}
+% \examtag{可換環}
+% \examtag{極大イデアル}
+% \examtag{べき零元}
+
+\(a\) を複素数とし，複素数体 \(\C\) 上の可換代数
+\[
+  A=\C[x,y]/(xy,y(y-a))
+\]
+を考える。
+
+\begin{enumerate}
+  \item \(A\) の極大イデアルを全て求めよ。
+  \item \(A\) の各極大イデアル \(\mathfrak m\) に対して \(\dim_{\C}\mathfrak m/\mathfrak m^2\) を計算せよ。
+  \item \(A\) の \(0\) でないべき零元を全て求めよ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{代数}
+% \examgroup{B}
+% \examnumber{3}
+% \examtitle{平成24年 B 第3問}
+% \examtag{群論}
+% \examtag{単純群}
+% \examtag{直積}
+
+\(G\) を非可換単純群とし，\(G\times G\) をその直積群とする。
+\(i=1,2\) に対して群準同型
+\[
+  p_i:G\times G\longrightarrow G,\qquad
+  p_i((g_1,g_2))=g_i
+\]
+と定め，\(H\) を \(G\times G\) の部分群で次の条件 \((*)\) を満たすものとする。
+\[
+  (*)\quad i=1,2\text{ に対して }p_i(H)=G.
+\]
+以下の問いに答えよ。
+
+\begin{enumerate}
+  \item \(H\) は \(G\) または \(G\times G\) に同型であることを示せ。
+  \item \(H\) が \(G\) と同型のとき，\(H\) は \(G\times G\) の正規部分群ではないことを示せ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{代数}
+% \examgroup{B}
+% \examnumber{4}
+% \examtitle{平成24年 B 第4問}
+% \examtag{非可換代数}
+% \examtag{表現論}
+% \examtag{既約表現}
+
+\(A\) を \(2\) 元 \(e,f\) で生成される単位元 \(1\) を持つ複素数体 \(\C\) 上の結合的自由代数とする。
+\(I\) を \(e^2-e,\ f-ef-fe\) で生成される \(A\) の両側イデアルとし，商代数 \(B=A/I\) を考える。
+
+\begin{enumerate}
+  \item \(a_1=ef,\ a_2=(1-e)f\) とするとき，次の等式を示せ。
+  \[
+    a_1e=0,\qquad a_2(1-e)=0.
+  \]
+  \item \(B\) の \(\C\) 上の \(1\) 次元表現を全て求めよ。
+  \item \(B\) の \(\C\) 上の有限次元既約表現を全て求めよ。ただし，\(B\) の表現 \(V\) が既約であるとは，
+  \(V\ne\{0\}\) かつ \(V\) が自分自身と \(\{0\}\) 以外に部分表現を持たないことをいう。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{幾何}
+% \examgroup{B}
+% \examnumber{5}
+% \examtitle{平成24年 B 第5問}
+% \examtag{リーマン幾何}
+% \examtag{体積要素}
+% \examtag{ベクトル場}
+
+開円板 \(D=\{(x,y)\in\R^2\mid x^2+y^2<1\}\) にリーマン計量
+\[
+  ds^2=\frac{4(dx^2+dy^2)}{(1-x^2-y^2)^2}
+\]
+を入れる。
+
+\begin{enumerate}
+  \item このリーマン計量についての体積要素 \(\omega\) を求めよ。
+  \item \(0<s<1\) に対する \(C^\infty\) 関数 \(f(s)\) であって次の条件を満たすものをすべて求めよ：
+  \(D\) から原点 \(O\) を除いた領域 \(D_0\) においてベクトル場 \(X\) を
+  \[
+    X=f(x^2+y^2)\left(x\frac{\partial}{\partial x}+y\frac{\partial}{\partial y}\right)
+  \]
+  によって定める。このとき \(t\ge0\) をパラメータとする \(C^\infty\) 写像の族
+  \(\varphi_t:D_0\to D_0\) が存在し，次を満たす。
+  \[
+  \begin{cases}
+    \varphi_0(p)=p & (p\in D_0),\\
+    \dfrac{d}{dt}\varphi_t(p)=X_{\varphi_t(p)} & (p\in D_0,\ t\ge0),\\
+    \varphi_t^*\omega=\omega & (t\ge0).
+  \end{cases}
+  \]
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{幾何}
+% \examgroup{B}
+% \examnumber{6}
+% \examtitle{平成24年 B 第6問}
+% \examtag{位相幾何}
+% \examtag{ホモロジー}
+% \examtag{商空間}
+
+\(3\) 次元ユークリッド空間 \(\R^3\) において，変換
+\[
+  S:(x,y,z)\mapsto (x+1,-y,z),
+\]
+\[
+  T:(x,y,z)\mapsto (x,y+1,z),
+\]
+\[
+  U:(x,y,z)\mapsto (x,x+y,z+1)
+\]
+を考える。
+
+\begin{enumerate}
+  \item \(S,T\) で生成される群を \(K\) とおく。\(K\) の作用による商空間
+  \(N=\R^3/K\) の整係数ホモロジー群 \(H_*(N;\Z)\) を求めよ。
+  \item \(S,T,U\) で生成される群を \(G\) とおく。\(G\) の作用による商空間
+  \(M=\R^3/G\) の整係数ホモロジー群 \(H_*(M;\Z)\) を求めよ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{幾何}
+% \examgroup{B}
+% \examnumber{7}
+% \examtitle{平成24年 B 第7問}
+% \examtag{微分幾何}
+% \examtag{多様体}
+% \examtag{射影空間}
+
+零行列ではない \(2\) 次の正方行列全体 \(X\) を考える。
+\[
+  X=\left\{
+    A=\begin{pmatrix}a&b\\ c&d\end{pmatrix}
+    \,\middle|\,
+    a,b,c,d\in\R,\ 
+    A\ne \begin{pmatrix}0&0\\0&0\end{pmatrix}
+  \right\}.
+\]
+\(X\) を同値関係 \(A\sim \lambda A\ (\lambda>0)\) で割った商空間を \(P\) とおき，射影を
+\(\pi:X\to P\) とおく。
+\[
+  N=\{A\in X\mid \det A=0\}
+\]
+に対して \(M=\pi(N)\) とおく。\(X\) にはユークリッド空間の部分空間としての位相をいれ，
+\(P\) にはその商位相，\(M\) には \(P\) の部分空間としての位相をいれる。
+
+\begin{enumerate}
+  \item 次の写像
+  \[
+    M\xrightarrow{\iota}P\xleftarrow{\pi}X
+  \]
+  が共に \(C^\infty\) 写像となるように，\(P\) および \(M\) に \(C^\infty\) 多様体の構造が入ることを示せ。
+  ここで \(\iota\) は包含写像である。
+  \item \(M\) 上の任意の \(C^\infty\) 関数は，\(P\) 上の \(C^\infty\) 関数に拡張できることを示せ。
+  \item \(M\) 上の任意の \(C^\infty\) 関数 \(h\) に対し，(2) により \(P\) 上に拡張した \(C^\infty\) 関数の \(1\) つを \(H\) とする。
+  \(H\) の \(\pi\) による引き戻しを \(F\) とおく。\(X\) 上の関数
+  \[
+    \left(\frac{\partial^2}{\partial a\,\partial d}
+      -\frac{\partial^2}{\partial b\,\partial c}\right)F
+  \]
+  の \(N\) への制限は，拡張 \(H\) のとり方によらず \(h\) のみで定まることを示せ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{幾何}
+% \examgroup{B}
+% \examnumber{8}
+% \examtitle{平成24年 B 第8問}
+% \examtag{微分幾何}
+% \examtag{写像}
+% \examtag{ヤコビ行列式}
+
+\(3\) 次元ユークリッド空間 \(\R^3\) の原点を \(O\) とする。
+
+\begin{enumerate}
+  \item 以下の \(3\) つの条件を満たす \(C^\infty\) 写像 \(F:\R^3\to\R^3\) は，ある定数 \(a,b,c\) を用いて
+  \[
+    F(x,y,z)=(ax,by,cz)
+  \]
+  と書けることを示せ。
+  \begin{enumerate}
+    \item[(i)] \(\R^3\) 内の \(x\) 軸に平行な任意の直線は，\(F\) により \(x\) 軸に平行な直線に写される。
+    同様に，\(y\) 軸に平行な任意の直線は \(y\) 軸に平行な直線に，また \(z\) 軸に平行な任意の直線は \(z\) 軸に平行な直線に写される。
+    \item[(ii)] \(F\) のヤコビ行列式は，\(0\) ではない定数値関数である。
+    \item[(iii)] \(F(O)=O\).
+  \end{enumerate}
+  \item 以下の \(4\) つの条件を満たす \(C^\infty\) 写像 \(G:\R^3\to\R^3\) は線形写像に限られることを証明せよ。
+  \begin{enumerate}
+    \item[(o)] \(G\) は単射である。
+    \item[(i)] \(G\) は \(\R^3\) 内の任意の平面を，\(\R^3\) 内の平面に写す。
+    \item[(ii)] \(G\) のヤコビ行列式は，\(0\) ではない定数値関数である。
+    \item[(iii)] \(G(O)=O\).
+  \end{enumerate}
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{解析}
+% \examgroup{B}
+% \examnumber{9}
+% \examtitle{平成24年 B 第9問}
+% \examtag{複素解析}
+% \examtag{正則関数}
+% \examtag{巾級数}
+
+\(i\) を虚数単位とし，複素数係数の巾級数
+\[
+  f(z)=i+\sum_{n=1}^{\infty}a_n z^n
+\]
+を考える。\(f(z)\) は単位円板
+\[
+  D=\{z\in\C\mid |z|<1\}
+\]
+上正則であり，各 \(z\in D\) に対し \(f(z)\in H=\{w\in\C\mid \Impart w>0\}\) であるとする。
+\(f\) の実部を \(u\)，虚部を \(v\) とし，極座標 \(z=re^{i\theta}\ (0\le r<1,\ 0\le \theta\le 2\pi)\) により
+\[
+  f(re^{i\theta})=u(r,\theta)+iv(r,\theta)
+\]
+と表す。このとき次の問いに答えよ。
+
+\begin{enumerate}
+  \item 各 \(n>0\) と任意の \(0<r<1\) に対し
+  \[
+    a_n=\frac{i}{\pi r^n}\int_{0}^{2\pi} v(r,\theta)e^{-in\theta}\,d\theta
+  \]
+  であることを示せ。
+  \item すべての \(n=1,2,\ldots\) に対して \(|a_n|\le2\) を示せ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{解析}
+% \examgroup{B}
+% \examnumber{10}
+% \examtitle{平成24年 B 第10問}
+% \examtag{偏微分方程式}
+% \examtag{熱方程式}
+% \examtag{Burgers方程式}
+
+区間 \((0,1)\) 内に値をとる \(C^\infty\) 級関数
+\(u=u(t,x),\ t>0,\ x\in\R\) が与えられ，任意の \(t>0\) に対し積分
+\[
+  \int_x^\infty u(t,z)\,dz
+\]
+が収束するとする。また，任意の \(T>1\) に対して \(\R\) 上の可積分関数 \(\varphi_T(x)\) が存在し
+\[
+  \left|\frac{\partial u}{\partial t}(t,x)\right|\le \varphi_T(x),
+  \qquad
+  t\in\left[\frac1T,T\right],\ x\in\R
+\]
+を満たすものとする。さらに
+\[
+  f_t(x)=x+\int_x^\infty u(t,z)\,dz,\qquad x\in\R
+\]
+は \(\R\) から \(\R\) への全単射を定めるものとする。関数 \(v=v(t,y)\) を
+\[
+  v(t,y)=\frac{u(t,f_t^{-1}(y))}{1-u(t,f_t^{-1}(y))},
+  \qquad t>0,\ y\in\R
+\]
+で定めるとき，次の問いに答えよ。ただし \(f_t^{-1}\) は \(f_t\) の逆写像を表す。
+
+\begin{enumerate}
+  \item \(u\) が熱方程式
+  \[
+    \frac{\partial u}{\partial t}(t,x)=\frac{\partial^2u}{\partial x^2}(t,x),
+    \qquad t>0,\ x\in\R
+  \]
+  および
+  \[
+    \lim_{x\to\infty}\frac{\partial u}{\partial x}(t,x)=0
+  \]
+  を満たすとき，\(v\) は方程式
+  \[
+    \frac{\partial v}{\partial t}(t,y)
+      =\frac{\partial^2}{\partial y^2}\left\{\frac{v(t,y)}{1+v(t,y)}\right\},
+    \qquad t>0,\ y\in\R
+  \]
+  を満たすことを示せ。
+  \item \(u\) が非粘性 Burgers 方程式
+  \[
+    \frac{\partial u}{\partial t}(t,x)
+      =\frac{\partial}{\partial x}\{u(t,x)(1-u(t,x))\},
+    \qquad t>0,\ x\in\R
+  \]
+  および
+  \[
+    \lim_{x\to\infty}u(t,x)(1-u(t,x))=0
+  \]
+  を満たすとき，\(v\) が満たす \(1\) 階の偏微分方程式を求めよ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{解析}
+% \examgroup{B}
+% \examnumber{11}
+% \examtitle{平成24年 B 第11問}
+% \examtag{測度論}
+% \examtag{可測関数}
+% \examtag{Lebesgue測度}
+
+測度空間 \((X,\mu)\) について次の命題を考える。
+
+\((*)\) \(X\) 上の実数値可測関数 \(f(x)\) で，ほとんどいたるところ \(0\le f(x)<\infty\) であり，
+\[
+  \int_X f(x)\,d\mu=\infty
+\]
+となるものが任意に与えられたときに，次の \(4\) 条件を満たす \(X\) 上の可測関数列
+\(\{f_n\}_{n=1,2,3,\ldots}\) が存在する。
+
+\begin{enumerate}
+  \item[(a)] すべての \(n\) について，ほとんどいたるところ \(0\le f_n(x)\le f(x)\) である。
+  \item[(b)] ほとんどいたるところ \(\lim_{n\to\infty}f_n(x)=0\) となる。
+  \item[(c)] \(\displaystyle \lim_{n\to\infty}\int_X f_n(x)\,d\mu=\infty\) である。
+  \item[(d)] すべての \(n\) について \(\displaystyle \int_X f_n(x)\,d\mu<\infty\) である。
+\end{enumerate}
+
+これについて次の問いに答えよ。
+
+\begin{enumerate}
+  \item \((X,\mu)\) が閉区間 \([0,1]\) とその上の Lebesgue 測度であるとき，上の命題 \((*)\) を証明せよ。
+  \item \((X,\mu)\) が実数全体の集合 \(\R\) とその上の Lebesgue 測度であるとき，上の命題 \((*)\) を証明せよ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{解析}
+% \examgroup{B}
+% \examnumber{12}
+% \examtitle{平成24年 B 第12問}
+% \examtag{Fourier解析}
+% \examtag{周期関数}
+% \examtag{級数}
+
+\(f\) は \([0,+\infty)\) 上の実数値連続関数であり，
+\[
+  f(0)\ne0,\qquad f(x+1)=f(x)\quad (x\in[0,+\infty))
+\]
+をみたす。\(t>0\) に対して
+\[
+  F(t)=\sum_{n=-\infty}^{+\infty}
+  \left|\int_0^t f(x)e^{2\pi i n x}\,dx\right|^2
+\]
+と定義する。ただし \(i=\sqrt{-1}\) である。
+
+\begin{enumerate}
+  \item \(F(t)<+\infty\ (0<t<+\infty)\) であることを証明せよ。
+  \item \(F(t)\) が微分可能となる点 \(t>0\) をすべて求め，その点 \(t\) における \(F'(t)\) を求めよ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{応用}
+% \examgroup{B}
+% \examnumber{13}
+% \examtitle{平成24年 B 第13問}
+% \examtag{確率収束}
+% \examtag{独立確率変数}
+% \examtag{期待値}
+% \examtag{確率}
+
+\((\Omega,\mathcal F,P)\) を確率空間とする。
+\(X_n,\ n=1,2,3,\ldots\) は同じ分布をもつ独立な確率変数の列で，
+\[
+  P(X_1\ge0)=1
+\]
+を満たすとする。また，確率変数 \(Y_n,\ n=1,2,3,\ldots\) を
+\[
+  Y_n=\sum_{k=1}^{n}X_k^k
+\]
+で定める。
+
+\begin{enumerate}
+  \item \(\displaystyle \sum_{k=1}^{\infty}E[X_1^k]<\infty\) ならば，確率変数列
+  \(\{Y_n\}_{n=1}^{\infty}\) は \(n\to\infty\) のとき確率収束することを示せ。
+  \item 確率変数列 \(\{Y_n\}_{n=1}^{\infty}\) が \(n\to\infty\) のとき確率収束するならば，
+  \[
+    \sum_{n=1}^{\infty}P\left(X_1\ge 1-\frac1n\right)<\infty
+  \]
+  となることを示せ。
+  \item 確率変数列 \(\{Y_n\}_{n=1}^{\infty}\) が \(n\to\infty\) のとき確率収束するならば，
+  \[
+    \sum_{k=1}^{\infty}E[X_1^k]<\infty
+  \]
+  となることを示せ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{解析}
+% \examgroup{B}
+% \examnumber{14}
+% \examtitle{平成24年 B 第14問}
+% \examtag{積分}
+% \examtag{無限積}
+% \examtag{ガンマ関数}
+
+\(n\) を正の整数とし，\(z\) を正の実数とする。以下の問いに答えよ。
+
+\begin{enumerate}
+  \item \(\displaystyle \int_0^n \left(1-\frac{t}{n}\right)^n t^{z-1}\,dt\) を求めよ。
+  \item \(t\in[0,n]\) のとき，次の不等式が成り立つことを示せ。
+  \[
+    0\le e^{-t}-\left(1-\frac{t}{n}\right)^n
+      \le e^{-t}\frac{t^2}{n}.
+  \]
+  \item
+  \[
+    \int_0^\infty e^{-t}t^{z-1}\,dt
+      =z^{-1}\prod_{n=1}^{\infty}\frac{\left(1+\frac1n\right)^z}{1+\frac{z}{n}}
+  \]
+  を証明せよ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{代数}
+% \examgroup{B}
+% \examnumber{15}
+% \examtitle{平成24年 B 第15問}
+% \examtag{行列}
+% \examtag{Schur分解}
+% \examtag{ノルム}
+% \examtag{線形代数}
+
+正方行列 \(V\) に対して，\(V^*\) を \(V\) のエルミート共役とし，\(V\) の対角成分の和を
+\(\Tr(V)\) と書いて，
+\[
+  \|V\|=\sqrt{\Tr(VV^*)}
+\]
+と定義する。
+\(A\) を \(n\) 次の複素正方行列，\(A\) の特性方程式の解を重複を込めて
+\(\lambda_1,\lambda_2,\ldots,\lambda_n\) とする。
+\(A\) は，\(A=UTU^*\) の形に分解できる。ただし，\(U\) はユニタリ行列，\(T\) は上三角行列である。
+\(T=D+M\) とし，\(D\) は対角行列で，\(M\) の対角成分はすべて \(0\) であるとする。
+また，\(T^*T-TT^*\) の第 \((i,j)\) 成分を \(\tau_{ij}\) とする。このとき，次の (1)〜(4) に答えよ。
+
+\begin{enumerate}
+  \item \(\displaystyle \|M\|^2=\|A\|^2-\sum_{i=1}^{n}|\lambda_i|^2\) を示せ。
+  \item \(\displaystyle \sum_{i=1}^{n}\tau_{ii}=0\) を示せ。
+  \item 不等式
+  \[
+    \|M\|^2\le \tau_{22}+2\tau_{33}+3\tau_{44}+\cdots+(n-1)\tau_{nn}
+  \]
+  を示せ。
+  \item 不等式
+  \[
+    \|A\|^2-\sum_{i=1}^{n}|\lambda_i|^2
+      \le \sqrt{\frac{n^3-n}{12}}\ \|A^*A-AA^*\|
+  \]
+  を示せ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{応用}
+% \examgroup{B}
+% \examnumber{16}
+% \examtitle{平成24年 B 第16問}
+% \examtag{遷移系}
+% \examtag{不動点}
+% \examtag{集合}
+% \examtag{論理}
+
+遷移系 \((Q,R)\) とは，集合の組であって，\(R\subseteq Q\times Q\) を満たすものとする。
+ただし，各 \(q\in Q\) に対し，\((q,q')\in R\) を満たす \(q'\) の個数は \(1\) 以上で有限であるとする。
+また，\((q,q')\in R\) のかわりに \(q\to q'\) とも書く。
+\(q=q_0\) から始まる無限遷移列 \(\pi:q_0\to q_1\to\cdots\) の集合を \(\Pi(q)\) と書く。
+このとき，\(\pi(n)\) で \(q_n\) を表すことにする。\(Q\) の部分集合 \(X\) の関数
+\[
+  \AF(X)=\{q\in Q\mid \forall \pi\in\Pi(q)\ \exists n\ge0\ \pi(n)\in X\}
+\]
+を考える。
+
+\begin{enumerate}
+  \item 関数 \(F_X:2^Q\to 2^Q\) を
+  \[
+    F_X(Z)=X\cup \AX(Z)
+  \]
+  で定める。ただし
+  \[
+    \AX(Z)=\{q\in Q\mid \forall q'\ ((q,q')\in R\Rightarrow q'\in Z)\}
+  \]
+  とする。いま，集合の列 \(Z_n\) を，\(Z_0=X,\ Z_{n+1}=F_X(Z_n)\) で定義すれば，
+  \[
+    \AF(X)=\bigcup_{n=0}^{\infty}Z_n
+  \]
+  が成り立つことを示せ。
+  \item \(\AF(X)\) は \(F_X\) の不動点であることを示せ。また，\(F_X\) の不動点の中で，包含関係について最小のものであることを示せ。
+  ただし，\(F_X\) の不動点とは，\(F_X(Z)=Z\) を満たす集合 \(Z\) のことである。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{解析}
+% \examgroup{B}
+% \examnumber{17}
+% \examtitle{平成24年 B 第17問}
+% \examtag{常微分方程式}
+% \examtag{周期関数}
+% \examtag{漸近挙動}
+
+次の線形微分方程式を考える。
+\[
+  (*)\qquad
+  \frac{dx(t)}{dt}=\rho(t)x(t)+f(t),\qquad
+  x(0)\ne0,\quad t\in[0,+\infty).
+\]
+ここで，\(\rho(t),f(t)\) は \((-\infty,+\infty)\) で定義された \(\theta>0\) を周期とする連続な周期関数である。
+また
+\[
+  \rho^*=\frac1\theta\int_0^\theta \rho(s)\,ds
+\]
+と定義する。
+
+\begin{enumerate}
+  \item \(\rho^*=0\) である場合，\(f\equiv0\) であれば，解 \(x(t)\) は \(\theta\) を周期とする周期関数であることを示せ。
+  \item \(\rho^*=0\) である場合，解 \(x(t)\) に対して，関数 \(y(t)\) を
+  \[
+    y(t)=e^{-\int_0^t\rho(\zeta)\,d\zeta}x(t)
+  \]
+  と定義する。このとき，
+  \[
+    \lim_{t\to+\infty}\frac{y(t)}{t}
+      =\frac1\theta\int_0^\theta
+      e^{-\int_0^\sigma \rho(\xi)\,d\xi}f(\sigma)\,d\sigma
+  \]
+  となることを示せ。
+  \item \(\rho^*<0\) である場合，関数 \(z(t)\) を以下のように定義する：
+  \[
+    z(t)=\int_0^{+\infty}
+      e^{\rho^*\sigma}\frac{\phi(t)}{\phi(t-\sigma)}f(t-\sigma)\,d\sigma,
+  \]
+  ただし，
+  \[
+    \phi(t)=\exp\left(\int_0^t(\rho(\zeta)-\rho^*)\,d\zeta\right)
+  \]
+  とする。このとき，\(z(t)\) は \(\theta\) を周期とする周期関数で，次を満たすことを示せ。
+  \[
+    \frac{dz(t)}{dt}=\rho(t)z(t)+f(t),\qquad t\in[0,+\infty).
+  \]
+  \item \(\rho^*<0\) と仮定する。 \((*)\) の任意の解 \(x(t)\) について，
+  \[
+    \lim_{t\to+\infty}|x(t)-z(t)|=0
+  \]
+  となることを示せ。
+\end{enumerate}
+
+% \examyear{2012}
+% \examera{平成24年}
+% \examfield{解析}
+% \examgroup{B}
+% \examnumber{18}
+% \examtitle{平成24年 B 第18問}
+% \examtag{固有値問題}
+% \examtag{微分作用素}
+% \examtag{特殊関数}
+
+\(\beta>\frac12\) とする。\(x>0\) の領域で定義された関数に作用する微分作用素
+\[
+  H=-\frac{d^2}{dx^2}+\left(x^2+\frac{\beta(\beta-1)}{x^2}\right)
+\]
+の固有値問題
+\[
+  H\psi(x)=E\psi(x)
+  \tag{*}
+\]
+を考える。
+
+\begin{enumerate}
+  \item \(\psi_0(x)=x^\beta e^{-\frac12x^2}\) が固有値問題 \((*)\) の解であることを示し，対応する固有値 \(E\) を求めよ。
+
+  以下ではこの固有値を \(E_0\) で表すことにする。
+  \item \(\psi(x)=\psi_0(x)\phi(x)\) と置くと，方程式 \((*)\) は \(\phi(x)\) に関する微分方程式
+  \[
+    \phi''(x)+2\left(\frac{\beta}{x}-x\right)\phi'(x)+(E-E_0)\phi(x)=0
+    \tag{**}
+  \]
+  に帰着されることを示せ。
+  \item \(\phi(x)\) が \(x\) の多項式で，恒等的に \(0\) ではなく，かつ微分方程式 \((**)\) の解でもあるという。
+  そのような \(\phi(x)\) を固有値 \(E\) とともにすべて決定せよ。
+\end{enumerate}

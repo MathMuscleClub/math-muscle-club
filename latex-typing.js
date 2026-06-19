@@ -848,7 +848,7 @@ class LaTeXSushidaGame {
             this.plateSpeed = 0.12;
         } else {
             this.timeRemaining = 120.0;
-            this.plateSpeed = 0.15;
+            this.plateSpeed = 0.075;
         }
 
         // Shuffle questions

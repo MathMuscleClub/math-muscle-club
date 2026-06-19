@@ -1991,51 +1991,65 @@ footer p {
 
 .exam-number-checkbox-label .exam-number-chip {
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.4rem 0.75rem;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.8rem;
     border: 1.5px solid var(--line);
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.88rem;
     font-weight: 700;
     background: #ffffff;
     color: var(--text);
-    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+    transition: all 0.2s ease;
     cursor: pointer;
     position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    min-width: 76px;
+    text-align: center;
 }
 
-.exam-number-checkbox-label .exam-number-chip::before {
-    content: "";
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 1.5px solid #cccccc;
-    border-radius: 4px;
-    background: #ffffff;
-    flex-shrink: 0;
-    transition: background 0.15s, border-color 0.15s;
-}
-
+/* 選択（checked）状態のトグルボタンデザイン */
 .exam-number-checkbox-label input[type="checkbox"]:checked + .exam-number-chip {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(47, 111, 78, 0.12);
-}
-
-.exam-number-checkbox-label input[type="checkbox"]:checked + .exam-number-chip::before {
     background: var(--accent);
     border-color: var(--accent);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-size: 10px 10px;
-    background-repeat: no-repeat;
-    background-position: center;
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(47, 111, 78, 0.2);
+    transform: translateY(-1px);
 }
 
 .exam-number-checkbox-label:hover .exam-number-chip {
-    border-color: #b9d8c6;
+    border-color: var(--accent);
     background: var(--accent-soft);
+    color: var(--accent);
+}
+
+/* 選択状態でホバーした時は、選択状態のスタイルを維持 */
+.exam-number-checkbox-label input[type="checkbox"]:checked:hover + .exam-number-chip {
+    background: #24593d;
+    border-color: #24593d;
+    color: #ffffff;
+}
+
+/* 「問題あり」バッジのスタイル */
+.exam-registered-badge {
+    display: inline-block;
+    background-color: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 2px;
+    border: 1px solid #cce2d5;
+    transition: all 0.2s ease;
+}
+
+.exam-number-checkbox-label input[type="checkbox"]:checked + .exam-number-chip .exam-registered-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border-color: transparent;
 }
 
 .exam-pdf-view-container {
