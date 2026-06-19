@@ -7,6 +7,7 @@
     <title>数学科筋トレ部</title>
     <link rel="stylesheet" href="style.css?v=20260614g">
     <link rel="stylesheet" href="latex-typing.css?v=20260616a">
+    <link rel="stylesheet" href="oral-exam.css?v=20260619a">
 </head>
 
 <body>
@@ -25,6 +26,7 @@
             <button class="tab-button" onclick="switchTab('exam-answers')">過去問閲覧</button>
             <button class="tab-button" onclick="switchTab('exam-upload')">解答・問題提出</button>
             <button class="tab-button" onclick="switchTab('latex-typing')">LaTeXタイピング</button>
+            <button class="tab-button" onclick="switchTab('oral-exam')">口頭試問対策</button>
             <button class="tab-button" onclick="switchTab('auth')">ログイン</button>
         </nav>
 
@@ -535,6 +537,109 @@
                     </div>
                 </section>
             </div>
+
+            <!-- タブ: 口頭試問対策 -->
+            <div id="oral-exam" class="tab-content">
+                <section class="oral-exam-section">
+                    <h2>院試口頭試問対策</h2>
+                    <p class="oral-exam-intro">
+                        大学院入試の口頭試問を想定した対話型練習ページです。分野を選択して開始し、出題された問題に回答してください。ヒントが必要な場合は「ヒントを求める」ボタンを使用できます。対話を終えると、AIによる最終評価が出力されます。
+                    </p>
+                    
+                    <div class="oral-exam-container">
+                        <!-- 設定サイドバー -->
+                        <div class="oral-exam-sidebar">
+                            <div class="sidebar-card">
+                                <h3>⚙️ 設定</h3>
+                                <div class="sidebar-field">
+                                    <label for="oe-api-key">Gemini APIキー (任意)</label>
+                                    <input type="password" id="oe-api-key" placeholder="個人用のキーを入力 (任意)">
+                                    <div class="api-key-help">
+                                        ※キー未入力時はSupabase共通API（設定済みキー）で通信します。接続不可の場合は「デモモード」で動作します。<br>
+                                        <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">Google AI Studioで無料キーを取得 ↗</a>
+                                    </div>
+                                </div>
+                                
+                                <div class="sidebar-field">
+                                    <label for="oe-subject">出題分野</label>
+                                    <select id="oe-subject">
+                                        <option value="algebra">代数 (群・環・体、線形代数など)</option>
+                                        <option value="analysis">解析 (微積分、実解析、複素解析など)</option>
+                                        <option value="geometry">幾何 (位相空間、多様体論など)</option>
+                                    </select>
+                                </div>
+
+                                <div class="sidebar-field">
+                                    <label for="oe-character">試験官キャラクター</label>
+                                    <select id="oe-character">
+                                        <option value="euler">オイラー先生 (優しく丁寧、歴史的な視点)</option>
+                                        <option value="cauchy">コーシー先生 (厳密で緻密、定義を重視)</option>
+                                        <option value="gauss">ガウス先生 (静かで鋭い、洞察力を問う)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="sidebar-actions">
+                                    <button id="oe-start-btn" class="oe-btn oe-primary-btn">口頭試問を開始する</button>
+                                    <button id="oe-reset-btn" class="oe-btn oe-secondary-btn" style="display: none;">セッションをリセット</button>
+                                </div>
+                            </div>
+
+                            <!-- ステータス表示 -->
+                            <div class="sidebar-card" id="oe-status-card" style="display: none;">
+                                <h3>📊 現在の状況</h3>
+                                <div class="status-info">
+                                    <p><strong>試験官:</strong> <span id="oe-status-char-name">-</span></p>
+                                    <p><strong>分野:</strong> <span id="oe-status-subject">-</span></p>
+                                    <p><strong>やり取り回数:</strong> <span id="oe-status-turns">0</span> 回</p>
+                                    <p><strong>使用したヒント:</strong> <span id="oe-status-hints">0</span> 回</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- メインチャットエリア -->
+                        <div class="oral-exam-chat-area">
+                            <!-- 未開始時のプレースホルダー -->
+                            <div id="oe-chat-placeholder" class="oe-chat-placeholder">
+                                <div class="placeholder-icon">🎓</div>
+                                <h3>口頭試問シミュレーターへようこそ</h3>
+                                <p>左側の設定パネルから分野と試験官を選択し、「口頭試問を開始する」ボタンを押すと試験がスタートします。</p>
+                                <div class="placeholder-tips">
+                                    <h4>💡 使い方とヒント</h4>
+                                    <ul>
+                                        <li>数式を入力する際は、一般的なLaTeX表記（例： $f(x) = x^2$, $\int e^x dx$ など）を使用すると、綺麗に表示されやすくなります。</li>
+                                        <li>行き詰まったときは、チャット下の「ヒントをもらう」ボタンをいつでも押せます。</li>
+                                        <li>十分に回答した、またはギブアップしたい場合は「終了して評価」を押すことで、解答の解説と採点が得られます。</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- チャットメッセージコンテナ -->
+                            <div id="oe-chat-messages" class="oe-chat-messages" style="display: none;">
+                                <!-- メッセージが動的に挿入される -->
+                            </div>
+                            
+                            <!-- チャット入力欄 (セッション開始時のみ表示) -->
+                            <div id="oe-chat-input-container" class="oe-chat-input-container" style="display: none;">
+                                <div class="oe-chat-quick-actions">
+                                    <button id="oe-hint-btn" class="oe-btn oe-action-btn">💡 ヒントをもらう</button>
+                                    <button id="oe-finish-btn" class="oe-btn oe-danger-btn">🏁 終了して評価</button>
+                                </div>
+                                <div class="oe-input-row">
+                                    <textarea id="oe-user-input" placeholder="回答を入力してください... (Ctrl+Enterで送信)"></textarea>
+                                    <button id="oe-send-btn" class="oe-btn oe-send-btn" aria-label="送信">
+                                        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 評価結果画面 (セッション終了後に表示) -->
+                            <div id="oe-evaluation-screen" class="oe-evaluation-screen" style="display: none;">
+                                <!-- JSで動的に評価結果を表示 -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
 
         <footer>
@@ -547,11 +652,19 @@
     <script src="supabase-config.js"></script>
     <script src="auth.js?v=20260614f"></script>
     <script src="latex-typing.js?v=20260616a"></script>
+    <script src="oral-exam.js?v=20260619a"></script>
     <script>
         function switchTab(tabId) {
             // ゲーム中なら他のタブに切り替えた時に中断する
             if (tabId !== 'latex-typing') {
                 quitLaTeXGame();
+            }
+
+            // 口頭試問中なら他のタブに切り替えた時に警告や一時停止する
+            if (tabId !== 'oral-exam') {
+                if (typeof handleOralExamTabLeave === 'function') {
+                    handleOralExamTabLeave();
+                }
             }
 
             // 全てのタブコンテンツからactiveを取り除く

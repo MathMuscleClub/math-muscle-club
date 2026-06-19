@@ -5,3 +5,7 @@ verify_jwt = false
 
 [functions.render-exam-pdf]
 verify_jwt = false
+
+[functions.oral-exam-chat]
+verify_jwt = false
+
