@@ -9,3 +9,5 @@ supabase/.env*
 *.fdb_latexmk
 *.synctex.gz
 *.pdf
+# ただし exams/ 以下のPDFはGitで管理する（自動ビルド成果物）
+!exams/**/*.pdf

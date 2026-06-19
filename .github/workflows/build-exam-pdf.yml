@@ -1,0 +1,192 @@
+name: TeXファイルをPDFに自動ビルド
+
+on:
+  push:
+    paths:
+      - 'exams/**/problem.tex'
+      - 'exams/**/answer.tex'
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: '全てのTeXファイルを強制的に再ビルドする'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build-pdf:
+    name: LaTeX → PDF コンパイル
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TeX Live セットアップ (TinyTeX + 日本語パッケージ)
+        run: |
+          # TinyTeX をインストール（軽量版 TeX Live）
+          curl -sL "https://yihui.org/tinytex/install-bin-unix.sh" | sh
+          export PATH="$HOME/.TinyTeX/bin/x86_64-linux:$PATH"
+          echo "$HOME/.TinyTeX/bin/x86_64-linux" >> "$GITHUB_PATH"
+
+          # 日本語組版に必要なパッケージを追加インストール
+          tlmgr install \
+            jlreq \
+            luatexja \
+            haranoaji \
+            haranoaji-extra \
+            amsmath \
+            amssymb \
+            amsfonts \
+            lm \
+            lm-math \
+            collection-fontsrecommended \
+            luaotfload
+
+          echo "lualatex バージョン:"
+          lualatex --version
+
+      - name: ビルド対象の TeXファイルを特定
+        id: find-tex
+        run: |
+          if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
+            mapfile -t TEX_ARRAY < <(find exams -name "problem.tex" -o -name "answer.tex" | sort)
+          else
+            BEFORE="${{ github.event.before }}"
+            if git rev-parse --verify "$BEFORE" >/dev/null 2>&1; then
+              mapfile -t TEX_ARRAY < <(
+                git diff --name-only "$BEFORE" "${{ github.sha }}" \
+                  | grep -E '^exams/.*/(problem|answer)\.tex$' \
+                  | sort \
+                  || true
+              )
+            else
+              # 初回コミットや履歴が取れない場合は全ファイルを対象
+              mapfile -t TEX_ARRAY < <(find exams -name "problem.tex" -o -name "answer.tex" | sort)
+            fi
+          fi
+
+          if [ "${#TEX_ARRAY[@]}" -eq 0 ]; then
+            echo "ビルド対象のTeXファイルなし"
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ビルド対象 (${#TEX_ARRAY[@]} 件):"
+            printf '  %s\n' "${TEX_ARRAY[@]}"
+            {
+              echo "tex_files<<EOF"
+              printf '%s\n' "${TEX_ARRAY[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: TeXフラグメントをスタンドアロン文書にラップするスクリプトを配置
+        if: steps.find-tex.outputs.has_files == 'true'
+        run: |
+          cat > /tmp/wrap_tex.py << 'PYEOF'
+          import sys, re
+
+          tex_file = sys.argv[1]
+          standalone_file = sys.argv[2]
+
+          with open(tex_file, 'r', encoding='utf-8') as f:
+              body = f.read()
+
+          # \examXxx{...} 形式のメタデータコマンドをコメントアウト
+          body = re.sub(r'^([ \t]*)(\\exam\w+[^\n]*)', r'\1% \2', body, flags=re.MULTILINE)
+
+          # \documentclass が既にある場合はそのまま使用
+          if r'\documentclass' in body:
+              with open(standalone_file, 'w', encoding='utf-8') as f:
+                  f.write(body)
+              print(f'既存の documentclass を検出: {tex_file}')
+          else:
+              standalone = (
+                  '\\documentclass[12pt]{jlreq}\n'
+                  '\\usepackage{amsmath, amssymb}\n'
+                  '\n'
+                  '\\begin{document}\n'
+                  '\n'
+                  + body.strip()
+                  + '\n\n\\end{document}\n'
+              )
+              with open(standalone_file, 'w', encoding='utf-8') as f:
+                  f.write(standalone)
+              print(f'スタンドアロン文書を生成: {standalone_file}')
+          PYEOF
+
+      - name: PDFをビルド
+        if: steps.find-tex.outputs.has_files == 'true'
+        run: |
+          FAILED=0
+
+          while IFS= read -r tex_file; do
+            [ -z "$tex_file" ] && continue
+            [ ! -f "$tex_file" ] && continue
+
+            DIR=$(dirname "$tex_file")
+            BASENAME=$(basename "$tex_file" .tex)
+            STANDALONE="${DIR}/_standalone_${BASENAME}.tex"
+            OUTPUT_PDF="${DIR}/${BASENAME}.pdf"
+
+            echo "=== ビルド: $tex_file ==="
+
+            # \documentclass なしのフラグメントをスタンドアロン文書にラップ
+            python3 /tmp/wrap_tex.py "$tex_file" "$STANDALONE"
+
+            # lualatex でコンパイル（2回実行して相互参照を解決）
+            lualatex \
+              --interaction=nonstopmode \
+              --output-directory="$DIR" \
+              --jobname="$BASENAME" \
+              "$STANDALONE" 2>&1 | tail -10 || true
+
+            lualatex \
+              --interaction=nonstopmode \
+              --output-directory="$DIR" \
+              --jobname="$BASENAME" \
+              "$STANDALONE" 2>&1 | grep -E "Output written|^!" | head -5 || true
+
+            # 一時ファイルを削除
+            rm -f "$STANDALONE"
+            rm -f "${DIR}/${BASENAME}.aux"
+            rm -f "${DIR}/${BASENAME}.log"
+            rm -f "${DIR}/${BASENAME}.out"
+
+            if [ -f "$OUTPUT_PDF" ]; then
+              SIZE=$(du -sh "$OUTPUT_PDF" | cut -f1)
+              echo "✅ PDF生成成功: $OUTPUT_PDF ($SIZE)"
+            else
+              echo "❌ PDF生成失敗: $tex_file"
+              FAILED=$((FAILED + 1))
+            fi
+
+          done <<< "${{ steps.find-tex.outputs.tex_files }}"
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo ""
+            echo "⚠️ $FAILED 件のPDF生成に失敗しました"
+            exit 1
+          fi
+
+      - name: 生成されたPDFをコミットしてpush
+        if: steps.find-tex.outputs.has_files == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -f 'exams/**/*.pdf'
+
+          if git diff --staged --quiet; then
+            echo "新しいPDFはありません（変更なし）"
+          else
+            CHANGED_FILES=$(git diff --staged --name-only | wc -l | tr -d ' ')
+            git commit -m "🤖 自動ビルド: ${CHANGED_FILES}件のTeXをPDFに変換 [skip ci]"
+            git push
+            echo "✅ PDFをリポジトリにプッシュしました"
+          fi
