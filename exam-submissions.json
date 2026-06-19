@@ -1,5 +1,20 @@
 [
   {
+    "id": "2012-B-20260619043427-user-dfc3468a",
+    "year": 2012,
+    "problemGroup": "B",
+    "problemNumbers": [
+      "4"
+    ],
+    "filePath": "exams/2012/B/submissions/2012-B-20260619043427-user-dfc3468a/answer.tex",
+    "fileType": "tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-19T04:34:27.314Z",
+    "status": "submitted"
+  },
+  {
     "id": "2012-B-20260617074938-user-93d50f52",
     "year": 2012,
     "problemGroup": "B",
