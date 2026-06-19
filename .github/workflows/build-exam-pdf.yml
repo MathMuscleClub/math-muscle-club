@@ -12,6 +12,11 @@ on:
         required: false
         default: 'false'
         type: boolean
+      tex_paths:
+        description: 'ビルド対象のTeXファイルパス（改行区切り、空の場合は変更ファイルを自動検出）'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -54,8 +59,15 @@ jobs:
       - name: ビルド対象の TeXファイルを特定
         id: find-tex
         run: |
-          if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
+          # workflow_dispatch で tex_paths が明示的に指定された場合
+          if [ -n "${{ github.event.inputs.tex_paths }}" ]; then
+            mapfile -t TEX_ARRAY <<< "${{ github.event.inputs.tex_paths }}"
+
+          # force_rebuild が true の場合は全ファイル
+          elif [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
             mapfile -t TEX_ARRAY < <(find exams -name "problem.tex" -o -name "answer.tex" | sort)
+
+          # push イベント: 変更されたファイルのみ
           else
             BEFORE="${{ github.event.before }}"
             if git rev-parse --verify "$BEFORE" >/dev/null 2>&1; then
