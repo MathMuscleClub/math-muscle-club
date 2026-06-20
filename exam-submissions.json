@@ -1,5 +1,23 @@
 [
   {
+    "id": "2013-B-2-problem",
+    "year": 2013,
+    "era": "",
+    "problemGroup": "B",
+    "problemNumber": "2",
+    "field": "代数",
+    "title": "2013年度 B 第2問 問題文",
+    "summary": "",
+    "problemTexPath": "exams/2013/B/2/problem.tex",
+    "uploadedByName": "ほたて(水煮)",
+    "uploadedByEmail": "kotoku-osuke614@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "8df5e05e-7fb2-48a2-a511-fc965794d53d",
+    "uploadedAt": "2026-06-20T13:44:43.900Z",
+    "updatedAt": "2026-06-20T13:44:43.900Z",
+    "tags": [],
+    "status": "problem"
+  },
+  {
     "id": "2013-B-1-problem",
     "year": 2013,
     "era": "",
