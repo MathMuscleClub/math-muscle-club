@@ -2082,7 +2082,7 @@ footer p {
 .exam-image-preview-area {
     margin-top: 1rem;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
     background: var(--surface);
 }
@@ -2094,8 +2094,8 @@ footer p {
     flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
-    background: linear-gradient(90deg, var(--accent-soft), #f0f8f4);
-    border-bottom: 1px solid #cce2d5;
+    background: #f7faf8;
+    border-bottom: 1px solid var(--line-soft);
 }
 
 .exam-image-preview-title {
@@ -2107,14 +2107,16 @@ footer p {
     gap: 0.4rem;
 }
 
-.exam-image-preview-title::before {
-    content: "✨";
-}
-
 .exam-image-preview-actions {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+}
+
+.exam-draft-status {
+    margin: 0.2rem 0 0;
+    font-size: 0.78rem;
+    color: #666666;
 }
 
 .exam-image-preview-tabs {
@@ -2207,7 +2209,7 @@ footer p {
     padding: 1.25rem;
     border: 1px solid var(--line);
     border-radius: 8px;
-    background: var(--surface-soft);
+    background: #ffffff;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -2232,6 +2234,48 @@ footer p {
 .exam-upload-split-card button {
     margin-top: auto;
     width: 100%;
+}
+
+.exam-upload-answer-note {
+    margin: 0 0 1rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    background: #f7faf8;
+    color: #4b5563;
+    font-size: 0.86rem;
+    line-height: 1.6;
+}
+
+.exam-upload-method-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.exam-pdf-preview-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    justify-content: flex-end;
+    background: #f8f9fa;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.exam-pdf-preview-toolbar .auth-secondary-button {
+    font-size: 0.82rem;
+    min-height: 32px;
+    padding: 5px 10px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.exam-draft-pdf-frame {
+    height: 520px;
+    border: none;
+    display: block;
 }
 
 @media (max-width: 640px) {
