@@ -2119,35 +2119,6 @@ footer p {
     color: #666666;
 }
 
-.exam-image-preview-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--line-soft);
-    background: #f8f9fa;
-}
-
-.exam-image-preview-tab {
-    padding: 0.6rem 1rem;
-    font-size: 0.84rem;
-    font-weight: 700;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: #777777;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
-}
-
-.exam-image-preview-tab.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-    background: #ffffff;
-}
-
-.exam-image-preview-tab:hover:not(.active) {
-    color: var(--text);
-    background: #f0f0f0;
-}
-
 .exam-image-preview-body {
     padding: 0.75rem;
 }
@@ -2172,30 +2143,6 @@ footer p {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(47, 111, 78, 0.15);
-}
-
-.exam-image-submit-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    background: #f8fbf9;
-    border-top: 1px solid var(--line-soft);
-    flex-wrap: wrap;
-}
-
-.exam-image-submit-row p {
-    margin: 0;
-    font-size: 0.82rem;
-    color: #666666;
-    flex: 1;
-}
-
-.exam-image-pdf-container {
-    border-radius: 6px;
-    overflow: hidden;
-    background: var(--surface-soft);
-    border: 1px solid var(--line-soft);
 }
 
 .exam-upload-split-container {
@@ -2254,30 +2201,6 @@ footer p {
     margin-top: auto;
 }
 
-.exam-pdf-preview-toolbar {
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    justify-content: flex-end;
-    background: #f8f9fa;
-    border-bottom: 1px solid var(--line-soft);
-}
-
-.exam-pdf-preview-toolbar .auth-secondary-button {
-    font-size: 0.82rem;
-    min-height: 32px;
-    padding: 5px 10px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-}
-
-.exam-draft-pdf-frame {
-    height: 520px;
-    border: none;
-    display: block;
-}
-
 @media (max-width: 640px) {
     .exam-upload-split-container {
         grid-template-columns: 1fr;
@@ -2288,8 +2211,4 @@ footer p {
         width: 100%;
     }
 
-    .exam-image-submit-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
 }
