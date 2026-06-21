@@ -119,6 +119,54 @@ header h1 {
     display: block;
 }
 
+.exam-center-section {
+    display: grid;
+    gap: 18px;
+}
+
+.exam-center-subtabs {
+    background-color: #f5f5f1;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: grid;
+    gap: 4px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 4px;
+}
+
+.exam-center-tab-button {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 800;
+    min-height: 38px;
+    padding: 7px 10px;
+    white-space: nowrap;
+}
+
+.exam-center-tab-button:hover,
+.exam-center-tab-button.active {
+    background-color: var(--surface);
+    box-shadow: 0 1px 5px rgba(17, 24, 39, 0.08);
+    color: var(--text);
+}
+
+.exam-center-panels {
+    min-width: 0;
+}
+
+.exam-subtab-panel {
+    display: none;
+}
+
+.exam-subtab-panel.active {
+    display: block;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -1829,6 +1877,14 @@ footer p {
     .tab-button {
         font-size: 0.9rem;
         padding: 9px 12px;
+    }
+
+    .exam-center-subtabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .exam-center-tab-button {
+        font-size: 0.84rem;
     }
 
     section {

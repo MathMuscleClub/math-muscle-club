@@ -23,10 +23,8 @@
             <button class="tab-button" onclick="switchTab('schedule')">活動予定</button>
             <button class="tab-button" onclick="switchTab('goals')">目標と実績</button>
             <button class="tab-button" onclick="switchTab('diary')">活動日記</button>
-            <button class="tab-button" onclick="switchTab('exam-answers')">過去問閲覧</button>
-            <button class="tab-button" onclick="switchTab('exam-upload')">解答・問題提出</button>
+            <button class="tab-button" onclick="switchTab('exam-center')">院試対策</button>
             <button class="tab-button" onclick="switchTab('latex-typing')">LaTeXタイピング</button>
-            <button class="tab-button" onclick="switchTab('oral-exam')">口頭試問対策</button>
             <button class="tab-button" onclick="switchTab('auth')">ログイン</button>
         </nav>
 
@@ -134,6 +132,29 @@
                     <h2>活動日記</h2>
                     <div id="diary-list" class="diary-list">
                         <p class="loading">読み込み中...</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- タブ: 院試対策 -->
+            <div id="exam-center" class="tab-content">
+                <section class="exam-center-section">
+                    <h2>院試対策</h2>
+                    <div class="exam-center-subtabs" role="tablist" aria-label="院試対策メニュー">
+                        <button class="exam-center-tab-button active" type="button" data-exam-subtab="exam-answers" aria-selected="true">問題閲覧</button>
+                        <button class="exam-center-tab-button" type="button" data-exam-subtab="exam-answer-pdfs" aria-selected="false">解答PDF</button>
+                        <button class="exam-center-tab-button" type="button" data-exam-subtab="exam-upload" aria-selected="false">解答・問題提出</button>
+                        <button class="exam-center-tab-button" type="button" data-exam-subtab="oral-exam" aria-selected="false">口頭試問</button>
+                    </div>
+                    <div id="exam-center-panels" class="exam-center-panels">
+                        <div id="exam-answer-pdfs" class="exam-subtab-panel">
+                            <section>
+                                <h2>解答PDF</h2>
+                                <div id="exam-answer-pdf-list-host">
+                                    <p class="loading">読み込み中...</p>
+                                </div>
+                            </section>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -636,13 +657,27 @@
     <script src="oral-exam.js?v=20260619a"></script>
     <script>
         function switchTab(tabId) {
+            const examSubtabAliases = {
+                'exam-center': activeExamCenterTab || 'exam-answers',
+                'exam-answers': 'exam-answers',
+                'exam-answer-pdfs': 'exam-answer-pdfs',
+                'exam-upload': 'exam-upload',
+                'oral-exam': 'oral-exam'
+            };
+            const nextExamSubtab = examSubtabAliases[tabId] || '';
+            const topTabId = nextExamSubtab ? 'exam-center' : tabId;
+            const nextIsOralExam = topTabId === 'exam-center' && nextExamSubtab === 'oral-exam';
+            const isLeavingVisibleOralExam = document.getElementById('exam-center')?.classList.contains('active')
+                && activeExamCenterTab === 'oral-exam'
+                && !nextIsOralExam;
+
             // ゲーム中なら他のタブに切り替えた時に中断する
-            if (tabId !== 'latex-typing') {
+            if (topTabId !== 'latex-typing') {
                 quitLaTeXGame();
             }
 
             // 口頭試問中なら他のタブに切り替えた時に警告や一時停止する
-            if (tabId !== 'oral-exam') {
+            if (isLeavingVisibleOralExam) {
                 if (typeof handleOralExamTabLeave === 'function') {
                     handleOralExamTabLeave();
                 }
@@ -661,17 +696,71 @@
             });
 
             // 対象のタブコンテンツとボタンをactiveにする
-            const targetContent = document.getElementById(tabId);
+            const targetContent = document.getElementById(topTabId);
             targetContent.classList.add('active');
-            document.body.classList.toggle('is-exam-tab', tabId === 'exam-answers' || tabId === 'exam-upload');
+            document.body.classList.toggle('is-exam-tab', topTabId === 'exam-center');
 
             // クリックされたボタンを特定してactiveにする
-            const clickedButton = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
+            const clickedButton = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(topTabId));
             if (clickedButton) {
                 clickedButton.classList.add('active');
             }
 
-            if (tabId === 'exam-upload') {
+            if (topTabId === 'exam-center') {
+                switchExamCenterSubtab(nextExamSubtab || activeExamCenterTab || 'exam-answers', { skipOralLeave: true });
+            }
+
+            if (topTabId === 'exam-center' && nextExamSubtab === 'exam-upload') {
+                setupExamUploadForm();
+                const activeType = document.querySelector('input[name="uploadType"]:checked')?.value || 'problem';
+                if (activeType === 'answer') {
+                    updateExamUploadYearOptions();
+                    updateExamUploadNumbersChoices();
+                    restoreCurrentAnswerDraft();
+                }
+                updateExamUploadAuthState();
+            }
+        }
+
+        function ensureExamCenterPanelsMounted() {
+            const mount = document.getElementById('exam-center-panels');
+            if (!mount) return;
+
+            ['exam-answers', 'exam-answer-pdfs', 'exam-upload', 'oral-exam'].forEach(panelId => {
+                const panel = document.getElementById(panelId);
+                if (!panel) return;
+                panel.classList.remove('tab-content');
+                panel.classList.add('exam-subtab-panel');
+                mount.appendChild(panel);
+            });
+        }
+
+        function switchExamCenterSubtab(subtabId = 'exam-answers', options = {}) {
+            ensureExamCenterPanelsMounted();
+            const validSubtabs = ['exam-answers', 'exam-answer-pdfs', 'exam-upload', 'oral-exam'];
+            const nextSubtab = validSubtabs.includes(subtabId) ? subtabId : 'exam-answers';
+
+            if (!options.skipOralLeave && activeExamCenterTab === 'oral-exam' && nextSubtab !== 'oral-exam') {
+                if (typeof handleOralExamTabLeave === 'function') {
+                    handleOralExamTabLeave();
+                }
+            }
+
+            activeExamCenterTab = nextSubtab;
+            document.querySelectorAll('.exam-subtab-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.id === nextSubtab);
+            });
+            document.querySelectorAll('.exam-center-tab-button').forEach(button => {
+                const isActive = button.dataset.examSubtab === nextSubtab;
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+
+            if (nextSubtab === 'exam-answers') {
+                renderExamAnswerResults();
+            } else if (nextSubtab === 'exam-answer-pdfs') {
+                renderExamAnswerPdfPanel();
+            } else if (nextSubtab === 'exam-upload') {
                 setupExamUploadForm();
                 const activeType = document.querySelector('input[name="uploadType"]:checked')?.value || 'problem';
                 if (activeType === 'answer') {
@@ -690,6 +779,7 @@
         let examSubmissionsState = [];
         let activeExamTag = '';
         let activeExamMode = 'browse';
+        let activeExamCenterTab = 'exam-answers';
         let examFolderSelection = { year: '', group: '', field: '' };
         let examAnswerPdfSelection = { year: '', group: '', user: '', problemKey: '' };
         let examUploadFormReady = false;
@@ -723,8 +813,19 @@
             const today = new Date();
             currentYear = today.getFullYear();
             currentMonth = today.getMonth();
+            setupExamCenterTabs();
             loadData();
         });
+
+        function setupExamCenterTabs() {
+            document.querySelectorAll('.exam-center-tab-button').forEach(button => {
+                if (button.dataset.ready) return;
+                button.addEventListener('click', () => {
+                    switchTab(button.dataset.examSubtab || 'exam-answers');
+                });
+                button.dataset.ready = 'true';
+            });
+        }
 
         async function loadData() {
             try {
@@ -1010,6 +1111,7 @@
 
             if (submissionSources.length === 0) {
                 container.innerHTML = '<p class="no-data">登録されている過去問解答はありません。</p>';
+                renderExamAnswerPdfPanel();
                 setupExamUploadForm();
                 return;
             }
@@ -1671,7 +1773,7 @@
                 examAnswerPdfSelection.group = '';
                 examAnswerPdfSelection.user = '';
                 examAnswerPdfSelection.problemKey = '';
-                renderExamAnswerResults();
+                renderExamAnswerPdfPanel();
                 scrollToExamAnswerPdfBrowser();
             });
 
@@ -1679,28 +1781,40 @@
                 examAnswerPdfSelection.group = groupSelect.value || '';
                 examAnswerPdfSelection.user = '';
                 examAnswerPdfSelection.problemKey = '';
-                renderExamAnswerResults();
+                renderExamAnswerPdfPanel();
                 scrollToExamAnswerPdfBrowser();
             });
 
             userSelect?.addEventListener('change', () => {
                 examAnswerPdfSelection.user = userSelect.value || '';
-                renderExamAnswerResults();
+                renderExamAnswerPdfPanel();
                 scrollToExamAnswerPdfBrowser();
             });
 
             container.querySelector('.exam-answer-pdf-clear-filter')?.addEventListener('click', () => {
                 examAnswerPdfSelection.problemKey = '';
-                renderExamAnswerResults();
+                renderExamAnswerPdfPanel();
                 scrollToExamAnswerPdfBrowser();
             });
 
             container.querySelectorAll('.exam-answer-pdf-problem-chip').forEach(button => {
                 button.addEventListener('click', () => jumpToExamProblem(button.dataset.problemKey || ''));
             });
+
+            container.querySelectorAll('.exam-answer-delete-button').forEach(button => {
+                button.addEventListener('click', () => handleExamAnswerDelete(button));
+            });
+        }
+
+        function renderExamAnswerPdfPanel() {
+            const host = document.getElementById('exam-answer-pdf-list-host');
+            if (!host) return;
+            host.innerHTML = renderExamAnswerPdfBrowser();
+            setupExamAnswerPdfBrowser(host);
         }
 
         function scrollToExamAnswerPdfBrowser() {
+            switchExamCenterSubtab('exam-answer-pdfs');
             requestAnimationFrame(() => {
                 document.getElementById('exam-answer-pdf-browser')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
@@ -1715,7 +1829,7 @@
                 user: '',
                 problemKey: problem.key
             };
-            renderExamAnswerResults();
+            renderExamAnswerPdfPanel();
             scrollToExamAnswerPdfBrowser();
         }
 
@@ -1874,6 +1988,7 @@
             if (!container) return;
 
             renderExamFolderBrowser();
+            renderExamAnswerPdfPanel();
 
             if (activeExamMode === 'search') {
                 const { matches, hasCondition } = getExamSearchMatches();
@@ -1975,7 +2090,6 @@
 
             container.innerHTML = `
                 <div class="exam-problem-list">${problemCardsHTML}</div>
-                ${renderExamAnswerPdfBrowser()}
             `;
 
             container.querySelectorAll('.exam-tag-chip').forEach(button => {
@@ -2001,8 +2115,6 @@
             container.querySelectorAll('.exam-answer-delete-button').forEach(button => {
                 button.addEventListener('click', () => handleExamAnswerDelete(button));
             });
-
-            setupExamAnswerPdfBrowser(container);
 
             typesetMath(container);
         }
@@ -2039,6 +2151,7 @@
             };
             renderExamFilters(examProblemsState);
             renderExamAnswerResults();
+            switchExamCenterSubtab('exam-answers');
             requestAnimationFrame(() => {
                 const card = document.getElementById(problem.key);
                 if (card) {
