@@ -10,17 +10,6 @@ type GitHubFile = {
   sha: string;
 };
 
-type MacroCopyRule = {
-  name: string;
-  requiredArgs: number;
-  optionalArgs?: boolean;
-  maxOptionalArgs?: number;
-};
-
-type MacroAllowlist = {
-  copyCommands: MacroCopyRule[];
-};
-
 type TexPart = {
   source: string;
   kind: "problem" | "answer";
@@ -58,40 +47,71 @@ type ManifestItem = Record<string, unknown> & {
   status?: string;
 };
 
-const DEFAULT_MACRO_ALLOWLIST: MacroAllowlist = {
-  copyCommands: [
-    { name: "DeclareMathOperator", requiredArgs: 2 },
-    { name: "DeclareMathOperator*", requiredArgs: 2 },
-    { name: "newcommand", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
-    { name: "newcommand*", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
-    { name: "providecommand", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
-    { name: "providecommand*", requiredArgs: 2, optionalArgs: true, maxOptionalArgs: 2 },
-  ],
-};
+const DEFAULT_STANDALONE_PREAMBLE = `\\documentclass[12pt]{jlreq}
+\\usepackage{amsmath, amssymb}`;
+
+const METADATA_COMMAND_ARITIES = [
+  { name: "examyear", arity: 1 },
+  { name: "examera", arity: 1 },
+  { name: "examfield", arity: 1 },
+  { name: "examsubject", arity: 1 },
+  { name: "examgroup", arity: 1 },
+  { name: "examproblemgroup", arity: 1 },
+  { name: "examnumber", arity: 1 },
+  { name: "examproblemnumber", arity: 1 },
+  { name: "examtitle", arity: 1 },
+  { name: "examsummary", arity: 1 },
+  { name: "examkind", arity: 1 },
+  { name: "examtype", arity: 1 },
+  { name: "examtag", arity: 1 },
+  { name: "examrelated", arity: 2 },
+];
 
 function uncommentExamMacros(source: string): string {
   // 行頭にある「%」とそれに続くスペース、そして \exam... コマンドを、% なしの状態にする
   return source.replace(/^%[ \t]*(\\(?:exam\w+)[^\n]*)/gm, "$1");
 }
 
-function commentOutMetadataMacros(source: string): string {
-  // \exam... から始まるメタデータマクロをコメントアウトする
-  return source.replace(/^([ \t]*)(\\(?:exam\w+)[^\n]*)/gm, "$1% $2");
-}
+function buildStandaloneTex(body: string, originalSource = "", sharedDocumentPrefix = ""): string {
+  const preamble = buildStandalonePreamble(originalSource);
+  const content = [sharedDocumentPrefix, body]
+    .map((part) => stripExamMetadataCommands(part).replace(/\\maketitle/g, "").trim())
+    .filter(Boolean)
+    .join("\n\n");
 
-function buildStandaloneTex(body: string, sharedMacros: string): string {
-  const commentedBody = commentOutMetadataMacros(body);
-  const macrosSection = sharedMacros.trim()
-    ? `\n% ── 共通数学マクロ定義 ──\n${sharedMacros.trim()}\n`
-    : "";
-  return `\\documentclass[12pt]{jlreq}
-\\usepackage{amsmath, amssymb}
-${macrosSection}
+  return `${preamble.trim()}
+
 \\begin{document}
 
-${commentedBody.trim()}
+${content}
 
 \\end{document}`;
+}
+
+function buildStandalonePreamble(source: string) {
+  const rawPreamble = stripExternalFileCommands(stripExamMetadataCommands(getDocumentPreamble(source))).trim();
+  if (!rawPreamble) return DEFAULT_STANDALONE_PREAMBLE;
+  if (hasTexCommand(rawPreamble, "documentclass")) return rawPreamble;
+  return `${DEFAULT_STANDALONE_PREAMBLE}\n${rawPreamble}`;
+}
+
+function stripExternalFileCommands(source: string) {
+  return source.replace(/^[ \t]*\\(?:input|include|includeonly)\s*(?:\[[^\]\n]*\])?\s*\{[^}\n]*\}[^\n]*(?:\n|$)/gm, "");
+}
+
+function stripExamMetadataCommands(source: string) {
+  let output = uncommentExamMacros(source).replace(/\r\n?/g, "\n");
+  for (const command of METADATA_COMMAND_ARITIES) {
+    const matches = collectCommandArgs(output, command.name, command.arity);
+    for (let index = matches.length - 1; index >= 0; index--) {
+      const match = matches[index];
+      output = `${output.slice(0, match.start)}${output.slice(match.end)}`;
+    }
+  }
+  return output
+    .replace(/^[ \t]*%?[ \t]*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 Deno.serve(async (request) => {
@@ -142,9 +162,9 @@ Deno.serve(async (request) => {
       return errorResponse("解答TeXには \\examfield, \\examsubject, \\examtag を入れないでください。分野とタグは問題文TeXに入れてください。");
     }
 
-    const macroAllowlist = await readMacroAllowlist();
-    const problemParts = problemSource.trim() ? splitTexParts(problemSource, "problem", macroAllowlist).filter((part) => part.kind === "problem") : [];
-    const answerParts = answerSource.trim() ? splitTexParts(answerSource, "answer", macroAllowlist).filter((part) => part.kind === "answer") : [];
+    const problemFormMetadata = readProblemFormMetadata(formData);
+    const problemParts = problemSource.trim() ? splitProblemTexParts(problemSource, problemFormMetadata).filter((part) => part.kind === "problem") : [];
+    const answerParts = answerSource.trim() ? splitTexParts(answerSource, "answer").filter((part) => part.kind === "answer") : [];
     if (answerSource.trim() && answerParts.length === 0) {
       return errorResponse("解答LaTeXから提出対象を読み取れませんでした。");
     }
@@ -152,15 +172,17 @@ Deno.serve(async (request) => {
       return errorResponse("解答の編集では、解答TeXを1件だけ入力してください。");
     }
 
-    const missingMetadata = [...problemParts, ...answerParts].find((part) => {
+    const missingProblemMetadata = problemParts.find((part) => {
+      return !part.year || !part.problemGroup || !part.problemNumber || !part.field;
+    });
+    if (missingProblemMetadata) {
+      return errorResponse("問題文の年度・問題区分・問題番号・分野を指定してください。");
+    }
+    const missingAnswerMetadata = answerParts.find((part) => {
       return !part.year || !part.problemGroup || !part.problemNumber;
     });
-    if (missingMetadata) {
+    if (missingAnswerMetadata) {
       return errorResponse("\\examyear, \\examgroup, \\examnumber を各問題・解答ブロックに入れてください。");
-    }
-    const missingProblemField = problemParts.find((part) => !part.field);
-    if (missingProblemField) {
-      return errorResponse("問題文TeXには各問題ブロックに \\examfield を入れてください。");
     }
     if (findDuplicateTexPartKeys(problemParts).length > 0) {
       return errorResponse("同じ年度・問題区分・問題番号の問題文が同じアップロード内に複数あります。");
@@ -763,7 +785,7 @@ function sharedProblemEntryId(problemPart: TexPart) {
 }
 
 function sharedProblemTexPath(problemPart: TexPart) {
-  return `exams/${problemPart.year}/${cleanPathPart(problemPart.problemGroup)}/${cleanPathPart(problemPart.problemNumber)}/problem.tex`;
+  return `exam-problems/${problemPart.year}-${cleanPathPart(problemPart.problemGroup)}-${cleanPathPart(problemPart.problemNumber)}.tex`;
 }
 
 function defaultAnswerTexPath(answerPart: TexPart, id: string) {
@@ -889,11 +911,51 @@ function findDuplicateTexPartKeys(parts: TexPart[]) {
   return [...duplicates];
 }
 
-function splitTexParts(source: string, defaultKind: "problem" | "answer", macroAllowlist: MacroAllowlist): TexPart[] {
+function readProblemFormMetadata(formData: FormData): Omit<TexPart, "source" | "kind"> {
+  const year = cleanYear(formData.get("problemYear"));
+  const problemGroup = cleanProblemGroup(formData.get("problemGroupForProblem") || formData.get("problemGroup"));
+  const problemNumber = cleanProblemNumber(formData.get("problemNumber"));
+  const field = cleanTextValue(formData.get("problemField"), 40);
+  const title = cleanTextValue(formData.get("problemTitle"), 120);
+
+  return {
+    year,
+    era: cleanTextValue(formData.get("problemEra"), 20),
+    problemGroup,
+    problemNumber,
+    field,
+    title,
+    summary: cleanTextValue(formData.get("problemSummary"), 500),
+    tags: uniqueValues(String(formData.get("problemTags") || "").split(",").map((tag) => cleanTextValue(tag, 40))),
+  };
+}
+
+function hasCompleteProblemMetadata(metadata: Omit<TexPart, "source" | "kind">) {
+  return Boolean(metadata.year && metadata.problemGroup && metadata.problemNumber && metadata.field);
+}
+
+function splitProblemTexParts(source: string, formMetadata: Omit<TexPart, "source" | "kind">): TexPart[] {
   const uncommented = uncommentExamMacros(source);
   const body = getDocumentBody(uncommented).replace(/\\maketitle/g, "").trim();
   const starts = findMetadataBlockStarts(body);
-  const sharedMacros = extractSharedMacroPrefix(uncommented, body, starts, macroAllowlist);
+
+  if (hasCompleteProblemMetadata(formMetadata) && starts.length <= 1) {
+    return [{
+      kind: "problem",
+      ...formMetadata,
+      title: formMetadata.title || `${formMetadata.year}年度 ${formMetadata.problemGroup} 第${formMetadata.problemNumber}問 問題文`,
+      source: buildStandaloneTex(body, uncommented),
+    }];
+  }
+
+  return splitTexParts(uncommented, "problem");
+}
+
+function splitTexParts(source: string, defaultKind: "problem" | "answer"): TexPart[] {
+  const uncommented = uncommentExamMacros(source);
+  const body = getDocumentBody(uncommented).replace(/\\maketitle/g, "").trim();
+  const starts = findMetadataBlockStarts(body);
+  const sharedDocumentPrefix = extractSharedDocumentPrefix(body, starts);
   const ranges = starts.length > 0
     ? starts.map((start, index) => ({ start, end: starts[index + 1] ?? body.length }))
     : [{ start: 0, end: body.length }];
@@ -901,7 +963,7 @@ function splitTexParts(source: string, defaultKind: "problem" | "answer", macroA
   return ranges.map(({ start, end }) => {
     const partBody = body.slice(start, end).trim();
     const metadata = parseExamMetadata(partBody, defaultKind);
-    const partSource = buildStandaloneTex(partBody, sharedMacros);
+    const partSource = buildStandaloneTex(partBody, uncommented, sharedDocumentPrefix);
     return {
       ...metadata,
       source: partSource,
@@ -909,130 +971,17 @@ function splitTexParts(source: string, defaultKind: "problem" | "answer", macroA
   }).filter((part) => part.source);
 }
 
-function extractSharedMacroPrefix(
-  originalSource: string,
-  body: string,
-  starts: number[],
-  macroAllowlist: MacroAllowlist,
-) {
-  const candidates = [
-    getDocumentPreamble(originalSource),
-    starts.length > 0 ? body.slice(0, starts[0]) : "",
-  ].filter(Boolean);
-  const declarations = candidates.flatMap((candidate) => collectAllowedMacroDeclarations(candidate, macroAllowlist));
-  return uniqueMacroDeclarations(declarations).join("\n");
-}
-
-function prependSharedMacros(partSource: string, sharedMacros: string) {
-  const source = partSource.trim();
-  const macros = sharedMacros.trim();
-  if (!source || !macros) return source;
-  return `${macros}\n\n${source}`;
-}
-
-function collectAllowedMacroDeclarations(source: string, macroAllowlist: MacroAllowlist) {
-  const rules = macroAllowlist.copyCommands
-    .filter((rule) => rule.name && rule.requiredArgs > 0)
-    .sort((a, b) => b.name.length - a.name.length);
-  const declarations: Array<{ start: number; end: number; text: string }> = [];
-
-  for (const rule of rules) {
-    const needle = `\\${rule.name}`;
-    let index = 0;
-    while ((index = source.indexOf(needle, index)) !== -1) {
-      const next = source[index + needle.length] || "";
-      if (/[A-Za-z]/.test(next) || (!rule.name.endsWith("*") && next === "*")) {
-        index += needle.length;
-        continue;
-      }
-
-      const declaration = readAllowedMacroDeclaration(source, index, rule);
-      if (declaration) {
-        declarations.push({ start: index, end: index + declaration.length, text: declaration });
-        index += declaration.length;
-      } else {
-        index += needle.length;
-      }
-    }
-  }
-
-  return removeNestedMacroDeclarations(declarations.sort((a, b) => a.start - b.start))
-    .map((item) => item.text);
-}
-
-function removeNestedMacroDeclarations(declarations: Array<{ start: number; end: number; text: string }>) {
-  const selected: Array<{ start: number; end: number; text: string }> = [];
-  for (const declaration of declarations) {
-    const isNested = selected.some((item) => declaration.start >= item.start && declaration.end <= item.end);
-    if (!isNested) selected.push(declaration);
-  }
-  return selected;
-}
-
-function readAllowedMacroDeclaration(source: string, start: number, rule: MacroCopyRule) {
-  let cursor = start + rule.name.length + 1;
-  let requiredRead = 0;
-  let optionalRead = 0;
-  const maxOptionalArgs = Math.max(0, rule.maxOptionalArgs ?? 0);
-
-  while (cursor < source.length) {
-    cursor = skipInlineSpace(source, cursor);
-
-    if (rule.optionalArgs && optionalRead < maxOptionalArgs && source[cursor] === "[") {
-      const bracketed = readBracketed(source, cursor);
-      if (!bracketed) return "";
-      cursor = bracketed.end;
-      optionalRead++;
-      continue;
-    }
-
-    if (source[cursor] === "{") {
-      const braced = readBraced(source, cursor);
-      if (!braced) return "";
-      cursor = braced.end;
-      requiredRead++;
-      if (requiredRead >= rule.requiredArgs) break;
-      continue;
-    }
-
-    return "";
-  }
-
-  if (requiredRead < rule.requiredArgs) return "";
-  return source.slice(start, cursor).trim();
-}
-
-function skipInlineSpace(source: string, start: number) {
-  let cursor = start;
-  while (/[ \t\r\n]/.test(source[cursor] || "")) cursor++;
-  return cursor;
-}
-
-function readBracketed(source: string, start: number) {
-  let depth = 0;
-
-  for (let index = start; index < source.length; index++) {
-    const char = source[index];
-    const escaped = index > 0 && source[index - 1] === "\\";
-
-    if (char === "[" && !escaped) {
-      depth++;
-    } else if (char === "]" && !escaped) {
-      depth--;
-      if (depth === 0) {
-        return {
-          value: source.slice(start + 1, index),
-          end: index + 1,
-        };
-      }
-    }
-  }
-
-  return null;
-}
-
-function uniqueMacroDeclarations(values: string[]) {
-  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+function extractSharedDocumentPrefix(body: string, starts: number[]) {
+  if (starts.length === 0) return "";
+  const prefix = body.slice(0, starts[0]).trim();
+  if (!prefix) return "";
+  const declarationLines = prefix
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => {
+      return /^\\(?:newcommand\*?|renewcommand\*?|providecommand\*?|DeclareMathOperator\*?|newenvironment|renewenvironment|theoremstyle|newtheorem|numberwithin|setcounter|allowdisplaybreaks)\b/.test(line);
+    });
+  return declarationLines.join("\n");
 }
 
 function findMetadataBlockStarts(source: string) {
@@ -1185,39 +1134,6 @@ function findMatchingProblemPart(problemParts: TexPart[], answerPart: TexPart) {
       && problemPart.problemGroup === answerPart.problemGroup
       && problemPart.problemNumber === answerPart.problemNumber;
   });
-}
-
-async function readMacroAllowlist(): Promise<MacroAllowlist> {
-  const path = Deno.env.get("EXAM_MACRO_ALLOWLIST_PATH") || "exam-macro-allowlist.json";
-  const file = await maybeGetGitHubFile(path);
-  if (!file) return DEFAULT_MACRO_ALLOWLIST;
-
-  const parsed = JSON.parse(decodeBase64(file.content));
-  const copyCommands = Array.isArray(parsed?.copyCommands)
-    ? parsed.copyCommands.map(normalizeMacroCopyRule).filter((rule: MacroCopyRule | null): rule is MacroCopyRule => Boolean(rule))
-    : [];
-  if (copyCommands.length === 0) {
-    throw new Error(`${path} に copyCommands を1件以上設定してください。`);
-  }
-  return { copyCommands };
-}
-
-function normalizeMacroCopyRule(rule: unknown): MacroCopyRule | null {
-  if (!rule || typeof rule !== "object") return null;
-  const item = rule as Record<string, unknown>;
-  const name = String(item.name || "").replace(/^\\/, "").trim();
-  const requiredArgs = Number(item.requiredArgs);
-  if (!/^[A-Za-z]+\*?$/.test(name) || !Number.isInteger(requiredArgs) || requiredArgs <= 0 || requiredArgs > 9) {
-    return null;
-  }
-
-  const maxOptionalArgs = Number(item.maxOptionalArgs ?? 0);
-  return {
-    name,
-    requiredArgs,
-    optionalArgs: Boolean(item.optionalArgs),
-    maxOptionalArgs: Number.isInteger(maxOptionalArgs) && maxOptionalArgs > 0 ? Math.min(maxOptionalArgs, 9) : 0,
-  };
 }
 
 async function readManifest(): Promise<{ items: ManifestItem[]; sha?: string }> {

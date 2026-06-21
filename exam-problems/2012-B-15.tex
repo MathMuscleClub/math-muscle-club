@@ -1,0 +1,43 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\begin{document}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+
+正方行列 \(V\) に対して，\(V^*\) を \(V\) のエルミート共役とし，\(V\) の対角成分の和を
+\(\Tr(V)\) と書いて，
+\[
+  \|V\|=\sqrt{\Tr(VV^*)}
+\]
+と定義する。
+\(A\) を \(n\) 次の複素正方行列，\(A\) の特性方程式の解を重複を込めて
+\(\lambda_1,\lambda_2,\ldots,\lambda_n\) とする。
+\(A\) は，\(A=UTU^*\) の形に分解できる。ただし，\(U\) はユニタリ行列，\(T\) は上三角行列である。
+\(T=D+M\) とし，\(D\) は対角行列で，\(M\) の対角成分はすべて \(0\) であるとする。
+また，\(T^*T-TT^*\) の第 \((i,j)\) 成分を \(\tau_{ij}\) とする。このとき，次の (1)〜(4) に答えよ。
+
+\begin{enumerate}
+  \item \(\displaystyle \|M\|^2=\|A\|^2-\sum_{i=1}^{n}|\lambda_i|^2\) を示せ。
+  \item \(\displaystyle \sum_{i=1}^{n}\tau_{ii}=0\) を示せ。
+  \item 不等式
+  \[
+    \|M\|^2\le \tau_{22}+2\tau_{33}+3\tau_{44}+\cdots+(n-1)\tau_{nn}
+  \]
+  を示せ。
+  \item 不等式
+  \[
+    \|A\|^2-\sum_{i=1}^{n}|\lambda_i|^2
+      \le \sqrt{\frac{n^3-n}{12}}\ \|A^*A-AA^*\|
+  \]
+  を示せ。
+\end{enumerate}
+
+\end{document}

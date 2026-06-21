@@ -747,6 +747,13 @@ details.exam-tool-panel form {
     grid-template-columns: minmax(0, 1fr);
 }
 
+.exam-problem-meta-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 14px;
+}
+
 .exam-search-label {
     color: var(--text);
     font-size: 0.84rem;
@@ -1084,6 +1091,12 @@ details.exam-tool-panel form {
     font-weight: 800;
     line-height: 1;
     padding: 8px 10px;
+    text-decoration: none;
+}
+
+a.exam-inline-button {
+    align-items: center;
+    display: inline-flex;
 }
 
 .exam-inline-button:hover {
@@ -2282,7 +2295,8 @@ footer p {
 
 @media (max-width: 640px) {
     .exam-answer-pdf-controls,
-    .exam-upload-type-selector {
+    .exam-upload-type-selector,
+    .exam-problem-meta-grid {
         grid-template-columns: 1fr;
     }
 

@@ -1,0 +1,32 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\begin{document}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+
+\(n\) を正の整数とし，\(z\) を正の実数とする。以下の問いに答えよ。
+
+\begin{enumerate}
+  \item \(\displaystyle \int_0^n \left(1-\frac{t}{n}\right)^n t^{z-1}\,dt\) を求めよ。
+  \item \(t\in[0,n]\) のとき，次の不等式が成り立つことを示せ。
+  \[
+    0\le e^{-t}-\left(1-\frac{t}{n}\right)^n
+      \le e^{-t}\frac{t^2}{n}.
+  \]
+  \item
+  \[
+    \int_0^\infty e^{-t}t^{z-1}\,dt
+      =z^{-1}\prod_{n=1}^{\infty}\frac{\left(1+\frac1n\right)^z}{1+\frac{z}{n}}
+  \]
+  を証明せよ。
+\end{enumerate}
+
+\end{document}
