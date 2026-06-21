@@ -1,5 +1,6 @@
 supabase/.temp/
 supabase/.env*
+.DS_Store
 
 # LaTeX temporary files
 *.aux
