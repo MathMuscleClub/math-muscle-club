@@ -1,5 +1,92 @@
 [
   {
+    "id": "2004-B-4-problem",
+    "year": 2004,
+    "era": "平成16年",
+    "problemGroup": "B",
+    "problemNumber": "4",
+    "field": "代数",
+    "title": "平成16年 B 第4問",
+    "summary": "",
+    "problemTexPath": "exam-problems/2004-B-4.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-21T22:40:44.760Z",
+    "updatedAt": "2026-06-21T22:40:44.760Z",
+    "tags": [
+      "可換環",
+      "単元群",
+      "有限群"
+    ],
+    "status": "problem"
+  },
+  {
+    "id": "2004-B-3-problem",
+    "year": 2004,
+    "era": "平成16年",
+    "problemGroup": "B",
+    "problemNumber": "3",
+    "field": "代数",
+    "title": "平成16年 B 第3問",
+    "summary": "",
+    "problemTexPath": "exam-problems/2004-B-3.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-21T22:40:44.760Z",
+    "updatedAt": "2026-06-21T22:40:44.760Z",
+    "tags": [
+      "群作用",
+      "行列",
+      "軌道"
+    ],
+    "status": "problem"
+  },
+  {
+    "id": "2004-B-2-problem",
+    "year": 2004,
+    "era": "平成16年",
+    "problemGroup": "B",
+    "problemNumber": "2",
+    "field": "代数",
+    "title": "平成16年 B 第2問",
+    "summary": "",
+    "problemTexPath": "exam-problems/2004-B-2.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-21T22:40:44.760Z",
+    "updatedAt": "2026-06-21T22:40:44.760Z",
+    "tags": [
+      "体論",
+      "群作用",
+      "不変体"
+    ],
+    "status": "problem"
+  },
+  {
+    "id": "2004-B-1-problem",
+    "year": 2004,
+    "era": "平成16年",
+    "problemGroup": "B",
+    "problemNumber": "1",
+    "field": "代数",
+    "title": "平成16年 B 第1問",
+    "summary": "",
+    "problemTexPath": "exam-problems/2004-B-1.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-21T22:40:44.760Z",
+    "updatedAt": "2026-06-21T22:40:44.760Z",
+    "tags": [
+      "線形代数",
+      "線形写像"
+    ],
+    "status": "problem"
+  },
+  {
     "id": "2012-B-18-problem",
     "year": 2012,
     "era": "平成24年",
