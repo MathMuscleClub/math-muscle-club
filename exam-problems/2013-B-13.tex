@@ -1,0 +1,45 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+次の連立常微分方程式を考える。
+\[
+  \begin{cases} \dfrac{dx(t)}{dt} = \lambda - \mu x(t) - (\beta_1 y(t) + \beta_2 z(t)) x(t) \\ \dfrac{dy(t)}{dt} = (\beta_1 y(t) + \beta_2 z(t)) x(t) - \gamma y(t) \\ \dfrac{dz(t)}{dt} = \delta y(t) - \epsilon z(t) \end{cases}
+\]
+ただし，$\lambda, \mu, \beta_1, \beta_2, \gamma, \delta, \epsilon$ はすべて正の実数であり，$\gamma > \mu$ と仮定する。$\mathbb{R}^3$ の集合 $\Omega$ を
+\[
+  \Omega = \left\{ (x,y,z) \in \mathbb{R}^3 \,\middle|\, x \ge 0,\ y \ge 0,\ x + y \le \frac{\lambda}{\mu},\ 0 \le z \le \frac{\delta\lambda}{\mu\epsilon} \right\}
+\]
+と定義する。$(x(0), y(0), z(0)) \in \Omega$ と仮定する。以下では $t \ge 0$ においてこの微分方程式の初期値問題の解が一意的に存在することを仮定してよい。
+
+\begin{enumerate}
+  \item 任意の $t > 0$ で $(x(t), y(t), z(t)) \in \Omega$ となることを示せ。
+  \item パラメータ $R_0$ を
+  \[
+    R_0 = \frac{\lambda}{\mu}\left(\frac{\beta_1}{\gamma} + \frac{\delta\beta_2}{\epsilon\gamma}\right)
+  \]
+  と定義するとき，$R_0 > 1$ であれば，$\Omega$ の内部に含まれる平衡点がただ一つ存在することを示せ。
+  \item $R_0 < 1$ であれば，$\Omega$ の境界上にただ一つの平衡点が存在して，それが局所漸近安定であることを示せ。
+  \item $R_0 < 1$ であれば，
+  \[
+    \lim_{t \to \infty} y(t) = 0,\quad \lim_{t \to \infty} z(t) = 0
+  \]
+  となることを示せ。
+\end{enumerate}
+
+\end{document}
