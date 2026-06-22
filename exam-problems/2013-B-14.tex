@@ -1,0 +1,42 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+遷移系 $(Q, R)$ とは有限集合の組であって，$R \subseteq Q \times Q$ を満たすものとする。ただし，各 $q \in Q$ に対し，$(q, q') \in R$ を満たす $q'$ が少なくとも一つ存在するものとする。また，$(q, q') \in R$ のかわりに $q \to q'$ とも書く。状態 $q = q_0$ から始まる無限遷移列 $\pi : q_0 \to q_1 \to \cdots$ 全体の集合を $\Pi(q)$ と書く。またこのとき，$\pi(n)$ で状態 $q_n$ を表すことにする。$Q$ の部分集合 $X$ が与えられたとき，
+\[
+  \AF(X) = \{ q \in Q \mid \forall \pi \in \Pi(q)\ \exists n \ge 0\ \pi(n) \in X \}
+\]
+\[
+  \EG(X) = \{ q \in Q \mid \exists \pi \in \Pi(q)\ \forall n \ge 0\ \pi(n) \in X \}
+\]
+とする。
+次に定義する遷移系 $(Q, R)$ を考える。状態集合は $Q = (\mathbb{Z}/4\mathbb{Z}) \times (\mathbb{Z}/4\mathbb{Z})$ とし，遷移 $R \subseteq Q \times Q$ は次のように定める (整数 $m, n$ は $4$ を法として考える)。
+\[
+  (m,n) \to \begin{cases} (m, n+1) & \text{$m$ が偶数のとき} \\ (m, n-1) & \text{$m$ が奇数のとき} \end{cases}
+\]
+\[
+  (m,n) \to \begin{cases} (m+1, n) & \text{$n$ が偶数のとき} \\ (m-1, n) & \text{$n$ が奇数のとき} \end{cases}
+\]
+上のいずれかの規則により，$q \to q'$ となるとき，$(q, q') \in R$ とする。有限集合 $X$ の元の個数を $|X|$ と表す。
+
+\begin{enumerate}
+  \item $\AF(X) = Q$ となるような $X$ 全体の集合を $\mathcal{S}_1$ とする。$m_1 = \min\{ |X| \mid X \in \mathcal{S}_1 \}$ とするとき，$m_1$ の値を求めよ。
+  \item $\EG(\AF(X)) = \emptyset$ となるような $X$ 全体の集合を $\mathcal{S}_2$ とする。$m_2 = \max\{ |X| \mid X \in \mathcal{S}_2 \}$ とするとき，$m_2 \ge 8$ を示せ。
+\end{enumerate}
+
+\end{document}
