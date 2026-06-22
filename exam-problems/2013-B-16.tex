@@ -1,0 +1,49 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+$\mathbf{N} = \{1, 2, \dots\}$, $\mathbf{Z}_{\ge0} = \{0, 1, \dots\}$ とする。確率変数 $X_j$ ($j \in \mathbf{Z}_{\ge0}$) が同一の分布に従い，
+\[
+  |X_0| \le 1,\quad E[X_0] = 0
+\]
+を満たすものとする。$v = E[X_0^2]$ とおく。さらに，確率変数 $N_j^n$ ($j \in \mathbf{N}, n \in \mathbf{N}$) の分布が
+\[
+  P[N_j^n = m] = (1 - q_n)q_n^m \quad (m \in \mathbf{Z}_{\ge0})
+\]
+であるとする。ここで $0 < q_n < 1$ である。確率変数 $Y_n$ を
+\[
+  Y_n = \frac{1}{\sqrt{n}} \sum_{j=1}^n X_j X_{N_j^n}
+\]
+で定める。各 $n \in \mathbf{N}$ に対して，確率変数の族 $\{X_j, N_k^n \mid j \in \mathbf{Z}_{\ge0}, k \in \mathbf{N}\}$ が独立であるとき，以下の問に答えよ。
+
+\begin{enumerate}
+  \item $j, k \in \mathbf{N}, j \ne k$ のとき，期待値
+  \[
+    E\left[X_j X_{N_j^n} X_k X_{N_k^n} 1_{\{N_j^n \ne 0, N_k^n \ne 0\}}\right]
+  \]
+  を $j, k, v, q_n$ で表せ。
+  \item $\lim_{n \to \infty} q_n = 0$ とする。$n \to \infty$ のとき，$Y_n$ の分布が収束することを示せ。
+  \item $q_n = 1 - n^{-3}$ とする。
+  \[
+    \lim_{n \to \infty} P\left[\min_{j=1,\dots,n} N_j^n \le n\right] = 0
+  \]
+  となることを示せ。
+  \item (3) の $q_n$ に対して，$n \to \infty$ のとき，$Y_n$ の分布が収束することを示せ。
+\end{enumerate}
+
+\end{document}
