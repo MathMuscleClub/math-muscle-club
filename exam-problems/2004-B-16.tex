@@ -1,0 +1,28 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$(\Omega, \mathcal{F}, P)$ を確率空間とする。$X_n$ ($n=1,2,\dots$) は $\Omega$ 上で定義された，同じ分布を持つ独立な確率変数の列とし，
+\[
+  Y_n = \sum_{k=1}^n X_k,\quad Z_n = \sum_{k=1}^n 2^{-k} X_k
+\]
+とおく。
+
+\begin{enumerate}
+  \item $n\to\infty$ のとき $Y_n$ が概収束するための必要十分条件を $X_1$ の分布を用いて表せ。
+  \item $X_1$ が可積分ならば，$n\to\infty$ のとき $Z_n$ は概収束することを示せ。
+  \item $n\to\infty$ のとき $Z_n$ が概収束しないような $X_1$ の例を与え，そのことを証明せよ。
+\end{enumerate}
+
+\end{document}
