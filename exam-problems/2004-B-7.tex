@@ -1,0 +1,31 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$S_1, S_2, S_3$ をそれぞれ $\R^3$ 内の原点を中心とする半径 $3, 4, 5$ の球面とする。写像 $F : S_1 \times S_2 \times S_3 \to \R^3$ を
+\[
+  F(\mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3) = \mathbf{x}_1 + \mathbf{x}_2 + \mathbf{x}_3,\quad \mathbf{x}_i \in S_i \ (i=1,2,3)
+\]
+により定める。次の問いに答えよ。
+
+\begin{enumerate}
+  \item $F$ の正則値全体の集合を求めよ。
+  \item 点 $(1,0,0) \in \R^3$ を $P$ と書くとき，$F^{-1}(P)$ は $3$ 次特殊直交群
+  \[
+    SO(3) = \{ A \in M_3(\R) \mid {}^tAA = E_3,\ \det A = 1 \}
+  \]
+  と同相であることを証明せよ。ただし $M_3(\R)$ は実 $3$ 次正方行列全体の集合，$E_3 \in M_3(\R)$ は単位行列，そして ${}^tA, \det A$ はそれぞれ $A$ の転置行列，行列式を表す。
+\end{enumerate}
+
+\end{document}
