@@ -754,6 +754,17 @@ details.exam-tool-panel form {
     margin-bottom: 14px;
 }
 
+.exam-problem-detail-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 14px;
+}
+
+.exam-problem-summary-field {
+    grid-column: 1 / -1;
+}
+
 .exam-search-label {
     color: var(--text);
     font-size: 0.84rem;
@@ -1315,6 +1326,12 @@ ul.exam-source-list {
 .exam-detected-chip strong {
     color: var(--text);
     font-size: 0.88rem;
+}
+
+.exam-detected-chip small {
+    color: var(--text-muted);
+    flex-basis: 100%;
+    font-size: 0.78rem;
 }
 
 /* ==========================================
@@ -2296,7 +2313,8 @@ footer p {
 @media (max-width: 640px) {
     .exam-answer-pdf-controls,
     .exam-upload-type-selector,
-    .exam-problem-meta-grid {
+    .exam-problem-meta-grid,
+    .exam-problem-detail-grid {
         grid-template-columns: 1fr;
     }
 

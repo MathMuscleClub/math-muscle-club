@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学科筋トレ部</title>
-    <link rel="stylesheet" href="style.css?v=20260614g">
+    <link rel="stylesheet" href="style.css?v=20260622a">
     <link rel="stylesheet" href="latex-typing.css?v=20260616a">
     <link rel="stylesheet" href="oral-exam.css?v=20260619a">
 </head>
@@ -235,8 +235,9 @@
                                     <div class="auth-field">
                                         <label for="exam-upload-problem-group">問題区分</label>
                                         <select id="exam-upload-problem-group" name="problemGroupForProblem">
+                                            <option value="" selected>TeXから自動</option>
                                             <option value="A">A問題</option>
-                                            <option value="B" selected>B問題</option>
+                                            <option value="B">B問題</option>
                                         </select>
                                     </div>
                                     <div class="auth-field">
@@ -248,13 +249,27 @@
                                         <select id="exam-upload-problem-field" name="problemField"></select>
                                     </div>
                                 </div>
+                                <div class="exam-problem-detail-grid">
+                                    <div class="auth-field">
+                                        <label for="exam-upload-problem-title">タイトル</label>
+                                        <input id="exam-upload-problem-title" name="problemTitle" type="text" placeholder="未入力なら自動生成">
+                                    </div>
+                                    <div class="auth-field">
+                                        <label for="exam-upload-problem-tags">タグ</label>
+                                        <input id="exam-upload-problem-tags" name="problemTags" type="text" placeholder="線形代数, 表現論">
+                                    </div>
+                                    <div class="auth-field exam-problem-summary-field">
+                                        <label for="exam-upload-problem-summary">概要</label>
+                                        <textarea id="exam-upload-problem-summary" name="problemSummary" rows="2" placeholder="検索用の短いメモ"></textarea>
+                                    </div>
+                                </div>
                                 <div class="exam-editor-shell">
                                     <div class="exam-editor-header">
                                         <div>
                                             <span class="exam-editor-kicker">問題文TeX</span>
                                             <h4>単体で完結するTeXを編集</h4>
                                         </div>
-                                        <span class="exam-editor-meta">メタ情報はフォームで管理</span>
+                                        <span class="exam-editor-meta">TeXマクロ優先</span>
                                     </div>
                                     <div class="auth-field">
                                         <label for="exam-upload-problem-file">TeXファイル</label>
@@ -1427,7 +1442,8 @@
 
         function ensureExamProblem(problemMap, key, submission, section, problemGroup, problemNumber) {
             if (!problemMap.has(key)) {
-                const title = `${section.era || submission.era ? `${section.era || submission.era} ` : ''}${problemGroup}問題 第${problemNumber}問`;
+                const defaultTitle = `${section.era || submission.era ? `${section.era || submission.era} ` : ''}${problemGroup}問題 第${problemNumber}問`;
+                const title = section.title || submission.title || defaultTitle;
                 problemMap.set(key, {
                     key,
                     year: section.year || submission.year,
@@ -1439,6 +1455,7 @@
                     statementHTML: '',
                     statementTitle: '',
                     statementPlainText: '',
+                    summary: section.summary || submission.summary || '',
                     answers: [],
                     tags: [],
                     references: []
@@ -1452,6 +1469,7 @@
             problem.problemNumber = problem.problemNumber || problemNumber;
             problem.field = problem.field || (section.kind === 'problem' ? section.field || submission.field || '' : getProblemFieldFromSubmission(submission));
             problem.title = problem.title || section.title || submission.title || key;
+            problem.summary = problem.summary || section.summary || submission.summary || '';
             return problem;
         }
 
@@ -2075,7 +2093,7 @@
                 const statementActionsHTML = canEditProblemStatement
                     ? `<div class="exam-statement-actions">
                         <button type="button" class="exam-inline-button exam-problem-edit-button" data-problem-key="${escapeAttribute(problem.key)}">
-                            ${problem.statementTexPath ? '問題文を編集' : '問題文を登録'}
+                            ${problem.statementTexPath ? '問題文・情報を編集' : '問題文・情報を登録'}
                         </button>
                         ${statementDownloadHTML}
                     </div>`
@@ -2376,9 +2394,14 @@
                 'exam-upload-problem-year',
                 'exam-upload-problem-group',
                 'exam-upload-problem-number',
-                'exam-upload-problem-field'
+                'exam-upload-problem-field',
+                'exam-upload-problem-title',
+                'exam-upload-problem-tags',
+                'exam-upload-problem-summary'
             ].forEach(id => {
-                document.getElementById(id)?.addEventListener('change', previewExamUploadFiles);
+                const control = document.getElementById(id);
+                control?.addEventListener('change', previewExamUploadFiles);
+                control?.addEventListener('input', previewExamUploadFiles);
             });
         }
 
@@ -2387,27 +2410,42 @@
             const numberSelect = document.getElementById('exam-upload-problem-number');
             const fieldSelect = document.getElementById('exam-upload-problem-field');
             const groupSelect = document.getElementById('exam-upload-problem-group');
-            const currentYearValue = String(defaults.year || yearSelect?.value || new Date().getFullYear());
-            const currentNumberValue = String(defaults.problemNumber || numberSelect?.value || '1');
-            const currentFieldValue = normalizeExamFieldId(defaults.field || fieldSelect?.value || 'algebra') || 'algebra';
-            const currentGroupValue = String(defaults.problemGroup || groupSelect?.value || 'B');
+            const titleInput = document.getElementById('exam-upload-problem-title');
+            const tagsInput = document.getElementById('exam-upload-problem-tags');
+            const summaryInput = document.getElementById('exam-upload-problem-summary');
+            const hasDefault = key => Object.prototype.hasOwnProperty.call(defaults, key);
+            const currentYearValue = String(hasDefault('year') ? defaults.year || '' : yearSelect?.value || '');
+            const currentNumberValue = String(hasDefault('problemNumber') ? defaults.problemNumber || '' : numberSelect?.value || '');
+            const currentFieldValue = normalizeExamFieldId(hasDefault('field') ? defaults.field || '' : fieldSelect?.value || '');
+            const currentGroupValue = String(hasDefault('problemGroup') ? defaults.problemGroup || '' : groupSelect?.value || '');
+            const currentTitleValue = String(hasDefault('title') ? defaults.title || '' : titleInput?.value || '');
+            const currentTagsValue = hasDefault('tags')
+                ? (Array.isArray(defaults.tags) ? defaults.tags.join(', ') : String(defaults.tags || ''))
+                : tagsInput?.value || '';
+            const currentSummaryValue = String(hasDefault('summary') ? defaults.summary || '' : summaryInput?.value || '');
 
             if (yearSelect) {
                 const currentYear = new Date().getFullYear();
                 const years = [];
                 for (let y = currentYear; y >= 2000; y--) years.push(String(y));
-                yearSelect.innerHTML = years.map(year => `<option value="${escapeAttribute(year)}">${escapeHTML(year)}年度</option>`).join('');
-                yearSelect.value = years.includes(currentYearValue) ? currentYearValue : years[0] || '';
+                yearSelect.innerHTML = [
+                    '<option value="">TeXから自動</option>',
+                    ...years.map(year => `<option value="${escapeAttribute(year)}">${escapeHTML(year)}年度</option>`)
+                ].join('');
+                yearSelect.value = years.includes(currentYearValue) ? currentYearValue : '';
             }
 
             if (groupSelect) {
-                groupSelect.value = ['A', 'B'].includes(currentGroupValue) ? currentGroupValue : 'B';
+                groupSelect.value = ['A', 'B'].includes(currentGroupValue) ? currentGroupValue : '';
             }
 
             if (numberSelect) {
                 const numbers = Array.from({ length: 30 }, (_, index) => String(index + 1));
-                numberSelect.innerHTML = numbers.map(number => `<option value="${escapeAttribute(number)}">第${escapeHTML(number)}問</option>`).join('');
-                numberSelect.value = numbers.includes(currentNumberValue) ? currentNumberValue : '1';
+                numberSelect.innerHTML = [
+                    '<option value="">TeXから自動</option>',
+                    ...numbers.map(number => `<option value="${escapeAttribute(number)}">第${escapeHTML(number)}問</option>`)
+                ].join('');
+                numberSelect.value = numbers.includes(currentNumberValue) ? currentNumberValue : '';
             }
 
             if (fieldSelect) {
@@ -2415,9 +2453,16 @@
                     ...EXAM_FIELDS,
                     { id: 'other', label: 'その他' }
                 ];
-                fieldSelect.innerHTML = fields.map(field => `<option value="${escapeAttribute(field.id)}">${escapeHTML(field.label)}</option>`).join('');
-                fieldSelect.value = fields.some(field => field.id === currentFieldValue) ? currentFieldValue : 'other';
+                fieldSelect.innerHTML = [
+                    '<option value="">TeXから自動</option>',
+                    ...fields.map(field => `<option value="${escapeAttribute(field.id)}">${escapeHTML(field.label)}</option>`)
+                ].join('');
+                fieldSelect.value = fields.some(field => field.id === currentFieldValue) ? currentFieldValue : '';
             }
+
+            if (titleInput) titleInput.value = currentTitleValue;
+            if (tagsInput) tagsInput.value = currentTagsValue;
+            if (summaryInput) summaryInput.value = currentSummaryValue;
         }
 
         function setProblemMetadataFields(problem = {}) {
@@ -2425,7 +2470,10 @@
                 year: problem.year,
                 problemGroup: problem.problemGroup,
                 problemNumber: problem.problemNumber,
-                field: problem.field
+                field: problem.field,
+                title: problem.statementTitle || problem.title,
+                summary: problem.summary,
+                tags: problem.tags || []
             });
         }
 
@@ -2435,8 +2483,15 @@
                 year: String(formData.get('problemYear') || '').trim(),
                 problemGroup: String(formData.get('problemGroupForProblem') || '').trim(),
                 problemNumber: String(formData.get('problemNumber') || '').trim(),
-                field: String(formData.get('problemField') || '').trim()
+                field: String(formData.get('problemField') || '').trim(),
+                title: String(formData.get('problemTitle') || '').trim(),
+                summary: String(formData.get('problemSummary') || '').trim(),
+                tags: splitProblemTagsInput(formData.get('problemTags'))
             };
+        }
+
+        function splitProblemTagsInput(value) {
+            return uniqueValues(String(value || '').split(/[,、\n]/));
         }
 
         function cleanProblemEditorSource(source) {
@@ -2652,7 +2707,7 @@
 
             // 提出用コントロールをログイン状態に合わせて無効化
             const uploadControls = form?.querySelectorAll(
-                'input[type="file"], textarea, #exam-upload-problem-year, #exam-upload-problem-group, #exam-upload-problem-number, #exam-upload-problem-field, button[type="submit"], #exam-upload-submit-pdf, #exam-upload-analyze-image, #exam-image-download-tex'
+                'input[type="file"], textarea, #exam-upload-problem-year, #exam-upload-problem-group, #exam-upload-problem-number, #exam-upload-problem-field, #exam-upload-problem-title, #exam-upload-problem-tags, #exam-upload-problem-summary, button[type="submit"], #exam-upload-submit-pdf, #exam-upload-analyze-image, #exam-image-download-tex'
             );
             uploadControls?.forEach(control => {
                 control.disabled = !canUpload;
@@ -3117,11 +3172,7 @@
             const uploadType = String(formData.get('uploadType') || 'problem');
             const problemMetadata = readProblemMetadataFromForm(formData);
             const problemParts = uploadType === 'problem' && problemSource.trim()
-                ? [{
-                    ...problemMetadata,
-                    title: `${problemMetadata.year || '?'}年度 ${problemMetadata.problemGroup || '?'} 第${problemMetadata.problemNumber || '?'}問 問題文`,
-                    source: problemSource
-                }]
+                ? window.ExamMacros.splitSubmission(problemSource, problemMetadata, 'problem')
                 : problemSource
                     ? window.ExamMacros.splitSubmission(problemSource, {}, 'problem')
                     : [];
@@ -3144,7 +3195,7 @@
                 if (missingProblem) {
                     return {
                         ok: false,
-                        message: '問題文の年度・問題区分・問題番号・分野を指定してください。'
+                        message: '問題文の年度・問題区分・問題番号・分野を、TeXマクロまたはフォームで指定してください。'
                     };
                 }
                 if (detected.duplicateProblemKeys?.length > 0) {
@@ -3169,7 +3220,7 @@
             if (missing) {
                 return {
                     ok: false,
-                    message: '\\examyear, \\examgroup, \\examnumber を各問題・解答ブロックに入れてください。'
+                    message: '\\examyear, \\examgroup, \\examnumber を各問題・解答ブロックに入れるか、問題文フォームで補ってください。'
                 };
             }
 
@@ -3238,10 +3289,14 @@
                     const fieldLabel = part.label === '問題文'
                         ? ` ${part.field ? getExamFieldLabel(part.field) : '分野未指定'}`
                         : '';
+                    const tagLabel = part.label === '問題文' && Array.isArray(part.tags) && part.tags.length > 0
+                        ? `<small>タグ: ${escapeHTML(part.tags.join(', '))}</small>`
+                        : '';
                     return `
                         <div class="exam-detected-chip">
                             <span>${escapeHTML(part.label)}</span>
                             <strong>${escapeHTML(part.year || '?')}年度 ${escapeHTML(part.problemGroup || '?')}${escapeHTML(fieldLabel)} 第${escapeHTML(part.problemNumber || '?')}問</strong>
+                            ${tagLabel}
                         </div>
                     `;
                 }).join('') : ''}

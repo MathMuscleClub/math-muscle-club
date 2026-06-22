@@ -176,7 +176,7 @@ Deno.serve(async (request) => {
       return !part.year || !part.problemGroup || !part.problemNumber || !part.field;
     });
     if (missingProblemMetadata) {
-      return errorResponse("問題文の年度・問題区分・問題番号・分野を指定してください。");
+      return errorResponse("問題文の年度・問題区分・問題番号・分野を、TeXマクロまたはフォームで指定してください。");
     }
     const missingAnswerMetadata = answerParts.find((part) => {
       return !part.year || !part.problemGroup || !part.problemNumber;
@@ -682,7 +682,7 @@ async function saveSharedProblemPart(
     uploadedByUserId: user.id || "",
     uploadedAt: existing?.uploadedAt || uploadedAt,
     updatedAt: uploadedAt,
-    tags: uniqueValues([...(existing?.tags || []), ...(problemPart.tags || [])]),
+    tags: uniqueValues(problemPart.tags || []),
     status: "problem",
   };
 }
@@ -926,33 +926,22 @@ function readProblemFormMetadata(formData: FormData): Omit<TexPart, "source" | "
     field,
     title,
     summary: cleanTextValue(formData.get("problemSummary"), 500),
-    tags: uniqueValues(String(formData.get("problemTags") || "").split(",").map((tag) => cleanTextValue(tag, 40))),
+    tags: uniqueValues(String(formData.get("problemTags") || "").split(/[,、\n]/).map((tag) => cleanTextValue(tag, 40))),
   };
-}
-
-function hasCompleteProblemMetadata(metadata: Omit<TexPart, "source" | "kind">) {
-  return Boolean(metadata.year && metadata.problemGroup && metadata.problemNumber && metadata.field);
 }
 
 function splitProblemTexParts(source: string, formMetadata: Omit<TexPart, "source" | "kind">): TexPart[] {
   const uncommented = uncommentExamMacros(source);
-  const body = getDocumentBody(uncommented).replace(/\\maketitle/g, "").trim();
-  const starts = findMetadataBlockStarts(body);
-
-  if (hasCompleteProblemMetadata(formMetadata) && starts.length <= 1) {
-    return [{
-      kind: "problem",
-      ...formMetadata,
-      title: formMetadata.title || `${formMetadata.year}年度 ${formMetadata.problemGroup} 第${formMetadata.problemNumber}問 問題文`,
-      source: buildStandaloneTex(body, uncommented),
-    }];
-  }
-
-  return splitTexParts(uncommented, "problem");
+  return splitTexParts(uncommented, "problem", formMetadata);
 }
 
-function splitTexParts(source: string, defaultKind: "problem" | "answer"): TexPart[] {
+function splitTexParts(
+  source: string,
+  defaultKind: "problem" | "answer",
+  defaults: Partial<Omit<TexPart, "source" | "kind">> = {},
+): TexPart[] {
   const uncommented = uncommentExamMacros(source);
+  const fileMetadata = parseExamMetadata(uncommented, defaultKind, defaults);
   const body = getDocumentBody(uncommented).replace(/\\maketitle/g, "").trim();
   const starts = findMetadataBlockStarts(body);
   const sharedDocumentPrefix = extractSharedDocumentPrefix(body, starts);
@@ -962,7 +951,7 @@ function splitTexParts(source: string, defaultKind: "problem" | "answer"): TexPa
 
   return ranges.map(({ start, end }) => {
     const partBody = body.slice(start, end).trim();
-    const metadata = parseExamMetadata(partBody, defaultKind);
+    const metadata = parseExamMetadata(partBody, defaultKind, fileMetadata);
     const partSource = buildStandaloneTex(partBody, uncommented, sharedDocumentPrefix);
     return {
       ...metadata,
@@ -1001,7 +990,11 @@ function findMetadataBlockStarts(source: string) {
   return [commands[0].start];
 }
 
-function parseExamMetadata(source: string, defaultKind: "problem" | "answer"): Omit<TexPart, "source"> {
+function parseExamMetadata(
+  source: string,
+  defaultKind: "problem" | "answer",
+  defaults: Partial<Omit<TexPart, "source" | "kind">> = {},
+): Omit<TexPart, "source"> {
   const read = (...names: string[]) => {
     for (const name of names) {
       const values = collectCommandArgs(source, name, 1);
@@ -1011,18 +1004,22 @@ function parseExamMetadata(source: string, defaultKind: "problem" | "answer"): O
   };
   const kind = defaultKind;
   const isProblem = kind === "problem";
+  const defaultTags = Array.isArray(defaults.tags) ? defaults.tags : [];
 
   return {
     kind,
-    year: cleanYear(read("examyear")),
-    era: cleanTextValue(read("examera"), 20),
-    field: isProblem ? cleanTextValue(read("examfield", "examsubject"), 40) : "",
-    problemGroup: cleanProblemGroup(read("examgroup", "examproblemgroup")),
-    problemNumber: cleanProblemNumber(read("examnumber", "examproblemnumber")),
-    title: cleanTextValue(read("examtitle"), 120),
-    summary: cleanTextValue(read("examsummary"), 500),
+    year: cleanYear(read("examyear") || defaults.year || ""),
+    era: cleanTextValue(read("examera") || defaults.era || "", 20),
+    field: isProblem ? cleanTextValue(read("examfield", "examsubject") || defaults.field || "", 40) : "",
+    problemGroup: cleanProblemGroup(read("examgroup", "examproblemgroup") || defaults.problemGroup || ""),
+    problemNumber: cleanProblemNumber(read("examnumber", "examproblemnumber") || defaults.problemNumber || ""),
+    title: cleanTextValue(read("examtitle") || defaults.title || "", 120),
+    summary: cleanTextValue(read("examsummary") || defaults.summary || "", 500),
     tags: isProblem
-      ? uniqueValues(collectCommandArgs(source, "examtag", 1).map((item) => cleanTextValue(item.args[0], 40)))
+      ? uniqueValues([
+        ...defaultTags,
+        ...collectCommandArgs(source, "examtag", 1).map((item) => cleanTextValue(item.args[0], 40)),
+      ])
       : [],
   };
 }
