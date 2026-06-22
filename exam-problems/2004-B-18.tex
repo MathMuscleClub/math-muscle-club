@@ -1,0 +1,49 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+一次元空間に分布した個体群における伝染病伝播のモデルとして以下の微分積分方程式系を考察する。
+\[
+  \begin{cases} \dfrac{\partial u(x,t)}{\partial t} = -\beta\sigma u(x,t) \int_{-\infty}^\infty \lambda(x-y)v(y,t) \, dy, \\ \dfrac{\partial v(x,t)}{\partial t} = -\gamma v(x,t) + \beta\sigma u(x,t) \int_{-\infty}^\infty \lambda(x-y)v(y,t) \, dy, \\ \dfrac{\partial w(x,t)}{\partial t} = \gamma v(x,t). \end{cases}
+\]
+ここで $\beta$ は感染率，$\sigma$ は個体群密度，$\gamma$ は回復率で，いずれも正の定数とする。$u(x,t)$ は位置 $x$ における感受性個体群割合，$v(x,t)$ は位置 $x$ における感染個体群割合，$w(x,t)$ は位置 $x$ における，感染から回復した個体群の割合とする。また $\lambda(z)$ は距離 $|z|$ の感染個体と感受性個体の間の接触率であり，非負有界連続関数で，$\int_{-\infty}^\infty \lambda(z) \, dz = 1$, $\lambda(z) = \lambda(-z)$ であると仮定する。初期条件を
+\[
+  u(x,0) = 1 - \epsilon(x),\quad v(x,0) = \epsilon(x),\quad w(x,0) = 0
+\]
+として与える。ただし，$\epsilon(x)$ は
+\[
+  \epsilon(x) = \begin{cases} \alpha & (|x| \le a) \\ 0 & (|x| > a) \end{cases}
+\]
+ここで $\alpha, a$ は正の定数で，$0 < \alpha < 1$ である。以下では与えられた初期条件に対して，このシステムは一意的で大域的な解をもつことを前提にして考えてよいものとする。またパラメータ $R_0$ を $R_0 = \beta\sigma/\gamma$ と定義しておく。
+
+\begin{enumerate}
+  \item 上記の初期条件のもとで，任意の $t > 0, x \in (-\infty,\infty)$ で解は
+  \[
+    0 \le u(x,t) \le 1,\quad 0 \le v(x,t) \le 1,\quad 0 \le w(x,t) \le 1
+  \]
+  をみたすことを示せ。
+  \item $W(x,t) := \int_{-\infty}^\infty \lambda(x-y)w(y,t) \, dy$ とおくとき，初期条件と $W(x,t)$ を用いて，$u(x,t)$ を表せ。
+  \item $w(x,t)$ は以下の方程式を満たすことを示せ。
+  \[
+    \frac{1}{\gamma} \frac{\partial w(x,t)}{\partial t} + w(x,t) = 1 - (1-\epsilon(x))e^{-R_0 W(x,t)}
+  \]
+  \item 各点 $x$ において，$u_\infty(x) = \lim_{t\to\infty} u(x,t)$, $v_\infty(x) = \lim_{t\to\infty} v(x,t)$, $w_\infty(x) = \lim_{t\to\infty} w(x,t)$ が存在して，
+  \[
+    u_\infty(x) > 0,\quad v_\infty(x) = 0,\quad w_\infty(x) > 0
+  \]
+  であることを示せ。
+  \item $R_0 > 1$ と仮定する。方程式 $x = 1 - e^{-R_0 x}$ はただ一つの正根を持つことを示せ。その正根を $p$ とすれば，$\inf_{x \in \R} w_\infty(x) \ge p$ であることを示せ。
+\end{enumerate}
+
+\end{document}
