@@ -1,8 +1,30 @@
 \documentclass[12pt]{jlreq}
 \usepackage{amsmath, amssymb}
 
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
 \begin{document}
 
-% ここに問題文を入力
+$\mathbb{C}$ を複素数体とし，$L = \mathbb{C}(X,Y,Z)$ を $\mathbb{C}$ 上の $3$ 変数有理関数体，$\omega = \frac{-1 + \sqrt{-3}}{2}$ を $1$ の原始 $3$ 乗根とする。$L$ の $\mathbb{C}$ 上の自己同型 $\sigma, \tau$ を，$\sigma(X) = Y, \sigma(Y) = Z, \sigma(Z) = X$ と $\tau(X) = X, \tau(Y) = \omega Y, \tau(Z) = \omega^2 Z$ で定義する。
+$L$ の $\sigma, \tau$ による固定部分体を $K = \{ x \in L \mid \sigma(x) = \tau(x) = x \}$ とする。
+
+\begin{enumerate}
+  \item $X$ の $K$ 上の最小多項式を求め，拡大次数 $[K(X): K]$ を求めよ。
+  \item 拡大次数 $[L: K]$ を求めよ。
+  \item $K$ のアーベル拡大体である中間体 $K \subset M \subset L$ で最大のものの $K$ 上の拡大次数を求めよ。
+  \item $[L: M] = 3$ となる中間体の，$K$ 上の共役による同値類の個数を求めよ。
+\end{enumerate}
 
 \end{document}
