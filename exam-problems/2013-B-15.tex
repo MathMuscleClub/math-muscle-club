@@ -1,0 +1,52 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+$N$ を正の整数とし，正の実数 $w_0, w_1, \dots, w_N$ が
+\[
+  \sum_{k=0}^N w_k = 1
+\]
+を満たすとする。$A_0 = 1$ とし，正の整数 $n$ に対して
+\[
+  A_n = \sum_{k=0}^N k^n w_k
+\]
+とおく。行列式 $\Delta_n$ を次のように定義する。
+\[
+  \Delta_n = \begin{vmatrix} A_0 & A_1 & \cdots & A_n \\ A_1 & A_2 & \cdots & A_{n+1} \\ \vdots & \vdots & \ddots & \vdots \\ A_n & A_{n+1} & \cdots & A_{2n} \end{vmatrix}
+\]
+$\mathcal{P}$ を実係数多項式全体の集合とし，写像 $\langle \cdot, \cdot \rangle : \mathcal{P} \times \mathcal{P} \to \mathbb{R}$ を
+\[
+  \langle p, q \rangle = \sum_{k=0}^N p(k)q(k)w_k \quad (p(x), q(x) \in \mathcal{P})
+\]
+と定める。さらに，非負の整数 $n$ に対して，多項式 $Q_n(x) \in \mathcal{P}$ を次のように定義する。
+\[
+  Q_0(x) = 1,\quad Q_n(x) = \begin{vmatrix} A_0 & A_1 & \cdots & A_{n-1} & 1 \\ A_1 & A_2 & \cdots & A_n & x \\ \vdots & \vdots & \ddots & \vdots & \vdots \\ A_n & A_{n+1} & \cdots & A_{2n-1} & x^n \end{vmatrix} \quad (n = 1, 2, \dots)
+\]
+以下の問に答えよ。
+
+\begin{enumerate}
+  \item $m < l$ のとき，$\langle Q_l(x), x^m \rangle = 0$ を示せ。
+  \item $\langle Q_l(x), Q_l(x) \rangle$ ($l = 0, 1, \dots, N$) を行列式 $\Delta_n$ で表せ。
+  \item 次の漸化式が成り立つような $\alpha_n, \beta_n, \gamma_n \in \mathbb{R}$ が存在することを示せ。さらに，$\gamma_n$ を求めよ。
+  \[
+    xQ_n(x) = \alpha_n Q_{n+1}(x) + \beta_n Q_n(x) + \gamma_n Q_{n-1}(x) \quad (n = 1, 2, \dots, N)
+  \]
+  \item 各 $l = 1, 2, \dots$ に対して，$Q_{N+l}(x) = 0$ を満たす $x$ をすべて求めよ。
+\end{enumerate}
+
+\end{document}
