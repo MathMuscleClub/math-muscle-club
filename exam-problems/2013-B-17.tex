@@ -1,0 +1,49 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+$\mathbf{Z}_{>0} = \{1, 2, \dots\}$ とする。$2$ つのパラメータ $a, b \in \mathbb{C}$ が条件
+\[
+  a \ne 0,\quad b \ne 0,\quad a \ne 1,\quad b \ne 1,\quad a \ne b
+\]
+を満たしているとする。$2$ 変数の有理式 $\lambda(x, y)$ を
+\[
+  \lambda(x, y) = \frac{(x - by)(bx - ay)}{(x - y)(x - ay)} = \lambda(ay, x)
+\]
+と定める。有理式 $f(x_1, \dots, x_n) \in \mathbb{C}(x_1, \dots, x_n)$ ($n \in \mathbf{Z}_{>0}$) に対して，その対称化 $\operatorname{Sym}_n f$ を
+\[
+  \operatorname{Sym}_n f = \frac{1}{n!} \sum_{\sigma \in S_n} f(x_{\sigma(1)}, \dots, x_{\sigma(n)})
+\]
+と定める。ここに $S_n$ は $n$ 次対称群を表す。$m + n$ 変数の対称な有理式 $h_{m,n}(x_1, \dots, x_{m+n})$ ($m, n \in \mathbf{Z}_{>0}$) を
+\[
+  h_{m,n}(x_1, \dots, x_{m+n}) = \operatorname{Sym}_{m+n} \left[ \prod_{\substack{1 \le i \le m \\ m+1 \le j \le m+n}} \lambda(x_i, x_j) \right]
+\]
+と定める。
+
+\begin{enumerate}
+  \item 次の等式を示せ。
+  \[
+    h_{m,n}(x_1, \dots, x_{m+n}) = \frac{m!n!}{(m+n)!} \sum_{\substack{I \cup J = \{1, 2, \dots, m+n\} \\ |I| = m, |J| = n}} \prod_{i \in I, j \in J} \lambda(x_i, x_j)
+  \]
+  ここで右辺の和は，$\{1, 2, \dots, m+n\}$ の |I| = m, |J| = n, I \cap J = \emptyset となるような部分集合 $I, J$ への分割全体にわたるものとする。
+  \item 有理関数 $h_{1,2}(x_1, x_2, x_3) - h_{2,1}(x_1, x_2, x_3)$ は恒等的に零であることを示せ。
+  \item $n = 3, 4, \dots$ に対して $h_{1,n}(x_1, \dots, x_{n+1}) = h_{n,1}(x_1, \dots, x_{n+1})$ となることを示せ。
+  \item 任意の $m, n \in \mathbf{Z}_{>0}$ に対して $h_{m,n}(x_1, \dots, x_{m+n}) = h_{n,m}(x_1, \dots, x_{m+n})$ となることを示せ。
+\end{enumerate}
+
+\end{document}
