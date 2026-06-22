@@ -1,0 +1,39 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+$2$ 次の実正方行列全体を $M_2(\mathbb{R})$ とし，ユークリッド空間 $\mathbb{R}^4$ と同一視する。また，$2$ 次の実正方行列 $g$ で $\det g = 1$ となるもの全体を $SL_2(\mathbb{R})$ と表す。
+$M_2(\mathbb{R})$ の部分集合 $X$ を次で定める。
+\[
+  X = \{ A \in M_2(\mathbb{R}) \mid \Tr A = 0,\ \det A = -1 \}
+\]
+このとき，以下の問に答えよ。
+
+\begin{enumerate}
+  \item $X$ は $M_2(\mathbb{R})$ の部分多様体になることを示せ。
+  \item 行列 $g \in SL_2(\mathbb{R})$ および $A \in X$ に対して $f_g(A) = gAg^{-1}$ とすると，$f_g$ は多様体 $X$ からそれ自身への微分同相写像を定めることを示せ。
+  \item 多様体 $X$ の接ベクトル束 $TX$ からそれ自身への写像 $J : TX \to TX$ であって，次の性質 (I)(II)(III) をすべて満たすものは存在しないことを示せ。
+  \begin{enumerate}
+    \item[(I)] 各 $A \in X$ に対して，$J$ の $T_A X$ への制限は，線形写像 $J_A : T_A X \to T_A X$ を定める。
+    \item[(II)] 任意の $A \in X$ に対して $J_A \circ J_A = -\operatorname{Id}_{T_A X}$ である。
+    \item[(III)] 任意の $g \in SL_2(\mathbb{R})$ と $A \in X$ に対して $df_g \circ J_A = J_{f_g(A)} \circ df_g$ である。
+  \end{enumerate}
+  ただし，$T_A X$ は多様体 $X$ の点 $A$ における接ベクトル空間であり，$\operatorname{Id}_{T_A X}$ は $T_A X$ からそれ自身への恒等写像である。
+\end{enumerate}
+
+\end{document}
