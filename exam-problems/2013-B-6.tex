@@ -1,0 +1,36 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+$C^\infty$ 級関数 $f : \mathbb{R} \to (0, \infty)$ のグラフを $x$ 軸のまわりに回転して得られるユークリッド空間 $\mathbb{R}^3$ 内の回転面を次のようにおく。
+\[
+  M = \{ (x,y,z) \in \mathbb{R}^3 \mid f(x)^2 = y^2 + z^2 \}
+\]
+曲面 $M$ 上の $C^\infty$ 級の曲線 $c : \mathbb{R} \to M$ であって，すべての $t \in \mathbb{R}$ においてベクトル $c'(t) = \frac{d}{dt}c(t)$ が零にならないようなものを考える。そのような曲線 $c$ であって，すべての $t \in \mathbb{R}$ において次の条件 (G) が成立するものを $M$ の測地線と呼ぶ。
+\begin{itemize}
+  \item[(G)] ベクトル $\frac{d}{dt} \frac{c'(t)}{\|c'(t)\|}$ は点 $c(t)$ における $M$ の接平面に垂直である。
+\end{itemize}
+このとき，以下の問に答えよ。
+
+\begin{enumerate}
+  \item 曲線 $c$ が $c(t) = (t, f(t)\cos\alpha, f(t)\sin\alpha)$ によって与えられるとき，$c$ は $M$ の測地線であることを確かめよ。ただし，$\alpha$ は定数である。
+  \item $c : \mathbb{R} \to M$ を $M$ の測地線とする。その各点 $c(t)$ と $x$ 軸との距離を $r(t)$ とおき，ベクトル $c'(t)$ と $M$ の子午線が $c(t)$ においてなす角を $\omega(t)$ とおく。ただし，子午線とは，回転軸である $x$ 軸を含む平面と曲面 $M$ の交わりとして得られる曲線である。このとき，$r(t)\sin\omega(t)$ は $t$ によらず一定であることを示せ。
+  \item 特に $f(x) = e^x$ であるとき，$M$ の測地線 $c$ 上の点の $x$ 座標の取り得る値が下に有界でないのは，測地線 $c$ が，パラメータの取り替えを除いて (1) の形の測地線またはその一部であるときに限ることを示せ。
+\end{enumerate}
+
+\end{document}
