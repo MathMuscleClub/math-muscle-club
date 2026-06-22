@@ -1,0 +1,32 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$M$ をユークリッド空間 $\R^N$ の滑らかな連結コンパクト部分多様体とし，$f : M \to M$ を $C^\infty$ 級微分同相写像とする。$M$ 上の任意の点 $x$ に対して，$x$ における $M$ の接空間を $T_xM$ で表し，写像 $f$ の $x$ における微分を $df_x : T_xM \to T_{f(x)}M$ で表す。以下，自然な同型 $T_x\R^N \cong \R^N$ により $T_xM$ を $\R^N$ の部分ベクトル空間とみなす。$\R^N$ の内積を一つ固定し，それから定まる $\R^N$ のノルムを $\|\cdot\|$ とする。
+$M$ 上の $1$ 点 $p$ と，$p$ を含まない $M$ のコンパクト部分集合 $D$ を固定する。正の数 $\epsilon$ と $K$ に対して，以下の条件をみたす線型同型写像 $G : T_pM \to T_{f(p)}M$ を与える：
+任意の $v \in T_pM$ に対して，
+\[
+  \|G(v) - df_p(v)\| \le \frac{\epsilon}{K} \|v\|
+\]
+$K$ が十分大きいならば，次の性質 (a), (b), (c) をみたす $C^\infty$ 級微分同相写像 $g : M \to M$ が存在することを証明せよ。
+\begin{enumerate}
+  \item[(a)] $dg_p = G$.
+  \item[(b)] 任意の $x \in D$ に対し，$f(x) = g(x)$.
+  \item[(c)] 任意の $x \in M$ と任意の $v \in T_xM$ に対して，
+  \[
+    \|f(x) - g(x)\| \le \epsilon \quad \text{かつ} \quad \|df_x(v) - dg_x(v)\| \le \epsilon \|v\|
+  \]
+\end{enumerate}
+
+\end{document}
