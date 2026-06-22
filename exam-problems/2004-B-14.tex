@@ -1,0 +1,38 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$\R^2 \times \C$ 上の複素数値関数
+\[
+  \varphi : ((x,y), \lambda) \in \R^2 \times \C \longrightarrow \varphi(x,y; \lambda) \in \C
+\]
+で，次の条件 (a), (b), (c) を同時にみたすものを求めよ。
+\begin{enumerate}
+  \item[(a)] $p, q$ を $p \ne q$ をみたす与えられた実数とし，
+  \[
+    \tau(x,y) = 1 + \exp\left[ (p-q)x + (p^2-q^2)y \right],\quad u(x,y) = \frac{\partial^2}{\partial x^2} \log\tau(x,y)
+  \]
+  とすると，$\varphi$ は平面 $\R^2$ で定義された偏微分方程式
+  \[
+    \frac{\partial\varphi(x,y;\lambda)}{\partial y} = \frac{\partial^2\varphi(x,y;\lambda)}{\partial x^2} + 2u(x,y)\varphi(x,y;\lambda) + 2\lambda \frac{\partial\varphi(x,y;\lambda)}{\partial x}
+  \]
+  の解になる。
+  \item[(b)] 任意の $(x,y) \in \R^2$ に対して，
+  \[
+    \lim_{\lambda\to\infty} \varphi(x,y; \lambda) = 1
+  \]
+  \item[(c)] $(x,y) \in \R^2$ を任意に固定すると，$\varphi$ は $\lambda$ に関する有理関数であって，複素平面 $\C$ 上の特異点は一位の極ひとつのみであり，その極の位置は $(x,y)$ に依存しない。
+\end{enumerate}
+
+\end{document}
