@@ -1,0 +1,54 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+半線形熱方程式の初期値境界値問題
+\[
+  (*) \quad \begin{cases} \dfrac{\partial u(x,t)}{\partial t} = \dfrac{\partial^2 u(x,t)}{\partial x^2} + u(x,t)^2 & (0 < x < 1,\ t > 0), \\ u(0,t) = u(1,t) = 0 & (t \ge 0), \\ u(x,0) = a(x) & (0 \le x \le 1) \end{cases}
+\]
+の解を差分法で近似計算することを考える。ここで，$a(x)$ は，$a(0) = a(1) = 0$ を満たす十分滑らかな関数である。正の整数 $N$ に対して，$h = 1/(N+1)$, $x_i = ih$ ($0 \le i \le N+1$) と定義する。さらに，$0 < \lambda \le 1/2$ を固定して，$\tau = \lambda h^2$, $t_k = k\tau$ ($k \ge 0$) と定義する。そして，$u(x_i, t_k)$ の近似値 $U_{i,k}$ を，差分スキーム
+\[
+  \frac{U_{i,k+1} - U_{i,k}}{\tau} = \frac{U_{i-1,k} - 2U_{i,k} + U_{i+1,k}}{h^2} + U_{i,k}^2 \quad (1 \le i \le N,\ k \ge 0),
+\]
+\[
+  U_{0,k} = U_{N+1,k} = 0 \quad (k \ge 0),\quad U_{i,0} = a(x_i) \quad (1 \le i \le N)
+\]
+で求める。なお，$(*)$ には，$Q = [0,1] \times [0,T]$ において十分滑らかな解 $u(x,t)$ が存在すると仮定して，
+\[
+  K = \max_{(x,t) \in Q} |u(x,t)|,\quad R = \frac{\lambda}{2}\max_{(x,t) \in Q}\left|\frac{\partial^2 u(x,t)}{\partial t^2}\right| + \frac{1}{12}\max_{(x,t) \in Q}\left|\frac{\partial^4 u(x,t)}{\partial x^4}\right|
+\]
+おく。ただし，$T$ は正の定数である。さらに，$e_{i,k} = U_{i,k} - u(x_i, t_k)$, $E_k = \max_{1 \le i \le N} |e_{i,k}|$ と定義する。また，正の整数 $M$ は，$t_M \le T$, $t_{M+1} > T$ を満たすものとする。
+
+\begin{enumerate}
+  \item $E_k$ ($0 \le k \le M$) が，次の式を満たすことを示せ。
+  \[
+    E_{k+1} \le E_k + \tau E_k (E_k + 2K) + \tau h^2 R,\quad E_0 = 0
+  \]
+  \item 条件 $e^{2KT} h^2 R < K^2$ の下で，常微分方程式
+  \[
+    (**) \quad \frac{dy(t)}{dt} = y(t)[y(t) + 2K] + h^2 R,\quad y(0) = 0
+  \]
+  は $0 < t < T$ の範囲で一意的な解をもつことを示せ。
+  \item $y(t)$ を常微分方程式 $(**)$ の解とするとき，$E_k \le y(t_k)$ ($0 \le k \le M$) が成り立つことを示せ。
+  \item 次が成り立つことを示せ。
+  \[
+    \lim_{h \to 0} \max_{\substack{1 \le i \le N \\ 1 \le k \le M}} |e_{i,k}| = 0
+  \]
+\end{enumerate}
+
+\end{document}
