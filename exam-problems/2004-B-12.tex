@@ -1,0 +1,32 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$D$ は $\R^n$ 内の有界閉集合，$\varphi$ は $\R$ 上の下半連続な非負値関数とし，ルベーグ可測関数 $f : D \to \R$ に対して
+\[
+  \Phi(f) = \int_D \varphi(f(x)) \, dx
+\]
+とおく。$\Phi(f)$ は $+\infty$ の値をとることも許すものとする。このとき，次を示せ。
+
+\begin{enumerate}
+  \item $\Phi$ は $C(D)$ 上で下半連続である。
+  \item $\Phi$ は $L^p(D)$ 上で下半連続である。ただし $1 \le p < \infty$ とする。
+\end{enumerate}
+ここで $C(D)$, $L^p(D)$ は，それぞれノルム
+\[
+  \|f\|_\infty = \sup_{x \in D} |f(x)|,\quad \|f\|_p = \left( \int_D |f(x)|^p \, dx \right)^{\frac{1}{p}}
+\]
+から決まる位相をもつ $D$ 上の関数空間である。
+
+\end{document}
