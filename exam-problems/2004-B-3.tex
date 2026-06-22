@@ -2,30 +2,31 @@
 \usepackage{amsmath, amssymb}
 
 \newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
 \newcommand{\Hom}{\operatorname{Hom}}
 \newcommand{\GL}{\operatorname{GL}}
 \newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
 
 \begin{document}
 
-複素 \(2\times2\) 行列の全体を \(M_2(\C)\) で表す。
+複素 $2\times2$ 行列の全体を $M_2(\C)$ で表す。
 \[
-  X=\{(A,B)\in M_2(\C)\times M_2(\C)
-    \mid A^2=B^4=I,\ AB=B^3A\}
+  X=\{(A,B)\in M_2(\C)\times M_2(\C) \mid A^2=B^4=I,\ AB=B^3A\}
 \]
-とおき，\(H=\GL(2,\C)\) の \(X\) への作用を
+とおき，$H=\GL(2,\C)$ の $X$ への作用を
 \[
-  h(A,B)=(hAh^{-1},hBh^{-1}),
-  \qquad h\in H,\ (A,B)\in X
+  h(A,B)=(hAh^{-1},hBh^{-1}), \qquad h\in H,\ (A,B)\in X
 \]
 で定義する。
 
 \begin{enumerate}
-  \item \(X\) の中の \(H\) 軌道の個数を求めよ。
-  \item \(X\) の中の各 \(H\) 軌道は
-  \(M_2(\C)\times M_2(\C)\simeq \C^8\) の閉部分集合であることを示せ。
-  ただし \(\C^8\) には \(16\) 次元ユークリッド空間としての位相を入れておく。
-  \item 上記の各 \(H\) 軌道に対し，その一点 \((A,B)\) の固定群
+  \item $X$ の中の $H$ 軌道の個数を求めよ。
+  \item $X$ の中の各 $H$ 軌道は $M_2(\C)\times M_2(\C)\simeq \C^8$ の閉部分集合であることを示せ。ただし $\C^8$ には $16$ 次元ユークリッド空間としての位相を入れておく。
+  \item 上記の各 $H$ 軌道に対し，その一点 $(A,B)$ の固定群
   \[
     \{h\in H\mid h(A,B)=(A,B)\}
   \]
