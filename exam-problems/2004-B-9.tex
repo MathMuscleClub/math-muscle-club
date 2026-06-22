@@ -1,0 +1,29 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$\R$ 上の実数値を取る連続な可積分関数 $f(x)$ が次の $2$ 条件をみたすとする。このような $f(x)$ をすべて求めよ。
+\begin{enumerate}
+  \item 任意の正の整数 $k$ に対し，
+  \[
+    k \cdot (\underbrace{f * f * \dots * f}_{k \text{個}})(x) = f\left(\frac{x}{k}\right)
+  \]
+  が成り立つ。ただし，$*$ は関数の畳み込み (convolution) を表し，次式で定義される。
+  \[
+    (f_1 * f_2)(x) = \int_{-\infty}^\infty f_1(x-y)f_2(y) \, dy
+  \]
+  \item $f(x) = f(-x)$.
+\end{enumerate}
+
+\end{document}
