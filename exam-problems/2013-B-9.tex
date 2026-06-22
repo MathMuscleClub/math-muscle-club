@@ -1,0 +1,37 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+$\Delta$ を複素平面内の単位開円板，$f : \Delta \to \mathbb{C}$ を単射正則関数とする。以下の問に答えよ。
+
+\begin{enumerate}
+  \item 正則関数 $g : \Delta \to \mathbb{C}$ で $g^2 = f'$ を満たすものが存在することを示せ。
+  \item 実数 $s \in (0,1)$ に対して曲線 $\gamma_s : [0,2\pi] \to \mathbb{C}$ を
+  \[
+    \gamma_s(t) = f(se^{it})
+  \]
+  により定義する。$\gamma_s$ の長さ $L(s)$ をテイラー展開 $g(z) = \sum_{n=0}^\infty a_n z^n$ の係数 $\{a_n\}$ および $s$ を用いて表せ。
+  \item $L(s)$ は $s$ の狭義単調増加関数であることを示せ。
+  \item $h$ を $\Delta$ 上の正則関数とする。$0 < \delta < 1$ を満たす $\delta$ が存在して，$0 < r < \delta$ を満たす任意の $r$ に対して
+  \[
+    |h(0)| = \frac{1}{2\pi} \int_0^{2\pi} |h(re^{i\theta})| \, d\theta
+  \]
+  が成り立つとする。このとき $h$ は定数であることを示せ。
+\end{enumerate}
+
+\end{document}
