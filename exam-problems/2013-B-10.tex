@@ -1,0 +1,40 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+$X$ を区間 $[-1,1]$ で $C^1$ 級の実数値関数全体の作る線形空間とし，
+\[
+  X_0 = \{ u \in X \mid u(-1) = u(1) = 0 \},\quad \lambda = (e + e^{-1})/2
+\]
+とおく。写像 $F : X_0 \to \mathbb{R}$ を
+\[
+  F[u] = \int_{-1}^1 (u(x) + \lambda)\sqrt{1 + (u'(x))^2} \, dx
+\]
+で定義する。以下の問に答えよ。
+
+\begin{enumerate}
+  \item $u, \varphi \in X_0$ に対して実数 $h$ に関する極限 $\lim_{h \to 0} (F[u + h\varphi] - F[u])/h$ が存在することを示し，その極限を求めよ。
+  \item $u \in X_0$ は $[-1,1]$ で $C^2$ 級の関数とする。このとき任意の $\varphi \in X_0$ に対して
+  \[
+    \lim_{h \to 0} (F[u + h\varphi] - F[u])/h = 0
+  \]
+  であるために $u$ が満たすべき $2$ 階常微分方程式を求めよ。
+  \item (2) の条件を満たす $u \in X_0$ を $1$ つ求めよ。
+\end{enumerate}
+
+\end{document}
