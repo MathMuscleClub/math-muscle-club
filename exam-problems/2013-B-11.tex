@@ -1,0 +1,42 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\AF}{\operatorname{AF}}
+\newcommand{\EG}{\operatorname{EG}}
+\newcommand{\AX}{\operatorname{AX}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Sym}{\operatorname{Sym}}
+
+\begin{document}
+
+平面内の長方形領域 $D = \{ (x,y) \in \mathbb{R}^2 \mid 0 < x < 1,\ 0 < y < b \}$ の境界を $\Gamma$ とおく。ただし $b$ は正の数で，$b^2$ は無理数であるとする。$D$ 上で次の境界値問題を考える。
+\[
+  (*) \quad \begin{cases} -\Delta u = \lambda u, & (x,y) \in D \\ u = 0, & (x,y) \in \Gamma \end{cases}
+\]
+ここで $\lambda$ は実数の定数である。また，$\Delta$ は $D$ 上の $C^2$ 級関数 $f(x,y)$ に対して
+\[
+  (\Delta f)(x,y) = \frac{\partial^2 f}{\partial x^2}(x,y) + \frac{\partial^2 f}{\partial y^2}(x,y)
+\]
+で定められる偏微分作用素とする。実数 $\lambda$ に対して以下の $3$ つの条件 (i), (ii), (iii) を満たす実数値関数 $u$ が存在するとき，$\lambda$ は $(*)$ の固有値であるという。
+\begin{enumerate}
+  \item[(i)] 関数 $u$ は，$D$ 上 $C^2$ 級で，$D \cup \Gamma$ 上連続である。
+  \item[(ii)] 関数 $u$ は $D$ で恒等的に $0$ ではない。
+  \item[(iii)] $\lambda$ に対して関数 $u$ は $(*)$ を満たす。
+\end{enumerate}
+そのとき，$u$ は $(*)$ の固有関数であるという。以下の問に答えよ。
+
+\begin{enumerate}
+  \item $u(x,y) = v(x)w(y)$ という変数分離型で表される $(*)$ の固有関数，およびそれに対応する固有値をすべて求めよ。
+  \item $(*)$ の固有値と固有関数は，(1) で与えたもので尽くされることを示せ。
+  \item 実数 $\mu > 0$ に対し，$\lambda \le \mu$ を満たす $(*)$ の固有値の個数を $N(\mu)$ と表すことにする。$N(\mu)/\mu^\alpha$ が $\mu \to \infty$ のとき $0$ でない有限の値に収束するように実数 $\alpha$ を定めよ。また，そのときの極限値を求めよ。
+\end{enumerate}
+
+\end{document}
