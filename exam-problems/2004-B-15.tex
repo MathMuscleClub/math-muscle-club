@@ -1,0 +1,29 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$N$ を $2$ 以上の整数，また $\theta, \lambda$ を $0 \le \theta \le 1$ および $\lambda > 0$ をみたすすべての定数とする。$\varphi_1, \varphi_2, \dots, \varphi_{N-1}$，$\varphi_0 = \varphi_N = 0$ を与えたとき，$u_{i,j}$ ($i, j$ は $0 \le i \le N, j \ge 0$ なる整数) は，次の差分方程式（熱方程式の差分近似方程式）をみたすとする。
+\[
+  \begin{cases} u_{i,j+1} - u_{i,j} = \lambda(1-\theta)(u_{i-1,j} - 2u_{i,j} + u_{i+1,j}) \\ \quad\quad\quad\quad\quad\quad\quad + \lambda\theta(u_{i-1,j+1} - 2u_{i,j+1} + u_{i+1,j+1}), \\ u_{i,0} = \varphi_i \ (0 \le i \le N),\quad u_{0,j} = u_{N,j} = 0 \ (j \ge 0). \end{cases}
+\]
+$0 \le \theta < 1$ のときは $0 < \lambda < \frac{1}{2(1-\theta)}$，$\theta = 1$ のときは $\lambda > 0$ となる $\lambda$ について，各 $j \ge 0$ に対し，次式が成立することを示せ。
+\[
+  \max_{0 \le i \le N} u_{i,j} \le \max_{0 \le i \le N} \varphi_i
+\]
+\[
+  \min_{0 \le i \le N} u_{i,j} \ge \min_{0 \le i \le N} \varphi_i
+\]
+また，$\{u_{i,j}\}_{0 \le i \le N, j \ge 0}$ は一意に存在することを示せ。
+
+\end{document}
