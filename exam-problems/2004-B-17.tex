@@ -1,0 +1,36 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+束 $(L, \le, \wedge, \vee)$ に関する次の性質 (C) を考える：
+\begin{enumerate}
+  \item[(C)] 任意の $a, b, c, d, x \in L$ に対して，$a \le b \vee x$ かつ $x \wedge c \le d$ ならば，$a \wedge c \le b \vee d$.
+\end{enumerate}
+次の問いに答えよ。
+
+\begin{enumerate}
+  \item $L$ が分配束ならば，束 $L$ は性質 (C) をみたすことを示せ。
+  \item $L, M$ を束とし，写像 $f$ を $L$ から $M$ の上への束の準同型とする。このとき，$L$ が性質 (C) をみたすならば，$M$ も性質 (C) をみたすことを示せ。
+\end{enumerate}
+また，次の性質 (C') を考える：
+\begin{enumerate}
+  \item[(C')] 任意の $a, b, c, d, x \in L$ に対して，$a \le b \vee x$ かつ $x \wedge c \le d$ かつ $b \le c$ ならば，$a \wedge c \le b \vee d$.
+\end{enumerate}
+
+\begin{enumerate}
+  \setcounter{enumi}{2}
+  \item $L, M$ を束とし，写像 $f$ を $L$ から $M$ の上への束の準同型とする。$L$ が性質 (C') をみたすならば，$M$ も性質 (C') をみたすことを示せ。
+\end{enumerate}
+
+\end{document}
