@@ -951,7 +951,10 @@ function splitTexParts(
 
   return ranges.map(({ start, end }) => {
     const partBody = body.slice(start, end).trim();
-    const metadata = parseExamMetadata(partBody, defaultKind, fileMetadata);
+    const blockDefaults = ranges.length > 1
+      ? { ...fileMetadata, tags: [] }
+      : fileMetadata;
+    const metadata = parseExamMetadata(partBody, defaultKind, blockDefaults);
     const partSource = buildStandaloneTex(partBody, uncommented, sharedDocumentPrefix);
     return {
       ...metadata,

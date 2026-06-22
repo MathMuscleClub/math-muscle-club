@@ -81,6 +81,10 @@
             const kind = normalizeExamKind(defaultKind || parsed.kind);
             const isProblem = kind === 'problem';
             const sectionBody = body.slice(heading.end, next ? next.start : body.length).trim();
+            const sectionDefaults = headings.length > 1
+                ? { ...fileMetadata, tags: [] }
+                : fileMetadata;
+            const sectionMetadata = parseExamMetadata(sectionBody, sectionDefaults, defaultKind);
             const enrichedSectionBody = rawMacros ? `${rawMacros}\n\n${sectionBody}` : sectionBody;
 
             return {
@@ -93,7 +97,7 @@
                 problemGroup: parsed.problemGroup,
                 problemNumber: parsed.problemNumber,
                 summary: normalizeSpace(fileMetadata.summary),
-                tags: isProblem && Array.isArray(fileMetadata.tags) ? fileMetadata.tags : [],
+                tags: isProblem && Array.isArray(sectionMetadata.tags) ? sectionMetadata.tags : [],
                 html: renderLatexFragment(enrichedSectionBody),
                 plainText: latexToPlainText(enrichedSectionBody),
                 source: sectionBody
@@ -108,7 +112,10 @@
         return starts.map((start, index) => {
             const end = starts[index + 1] ?? body.length;
             const source = body.slice(start, end).trim();
-            const parsed = parseExamMetadata(source, metadata, defaultKind);
+            const blockDefaults = starts.length > 1
+                ? { ...metadata, tags: [] }
+                : metadata;
+            const parsed = parseExamMetadata(source, blockDefaults, defaultKind);
             const content = stripExamMetadataCommands(source).trim();
             const enrichedContent = rawMacros ? `${rawMacros}\n\n${content}` : content;
 
