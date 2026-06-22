@@ -1,0 +1,32 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$\R$ 上定義されたコンパクト台をもつ無限回微分可能な関数 $f(x)$ に対して
+\[
+  (Hf)(x) = \frac{1}{\pi i} \lim_{\epsilon\downarrow0} \int_\epsilon^\infty \frac{f(x+t) - f(x-t)}{t} \, dt
+\]
+\[
+  (M_\lambda f)(x) = e^{i\lambda x} f(x) \quad (\lambda \in \R)
+\]
+と定める。このとき，任意の $x \in \R$ に対して，
+\[
+  \lim_{\lambda\to\infty} (M_\lambda \circ H \circ M_\lambda^{-1} f)(x) = -f(x)
+\]
+\[
+  \lim_{\lambda\to-\infty} (M_\lambda \circ H \circ M_\lambda^{-1} f)(x) = f(x)
+\]
+を示せ。
+
+\end{document}
