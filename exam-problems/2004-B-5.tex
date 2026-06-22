@@ -1,0 +1,39 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Ker}{\operatorname{Ker}}
+
+\begin{document}
+
+$C$ を $\R^2$ の領域 $U = \{ (x,y) \in \R^2 \mid x > 0 \}$ に含まれる $C^\infty$ 級単純閉曲線とする。すなわち，$\R^2$ 上の $C^\infty$ 級実関数 $f(x,y)$ が存在し，次の条件 (a), (b) をみたすとする。
+\begin{enumerate}
+  \item[(a)] $C = \{ (x,y) \in \R^2 \mid f(x,y) = 0 \}$ は $U$ に含まれ，$\R^2$ の単位円周に微分同相である。
+  \item[(b)] 任意の $(x,y) \in C$ に対して，
+  \[
+    \left(\frac{\partial f}{\partial x}(x,y)\right)^2 + \left(\frac{\partial f}{\partial y}(x,y)\right)^2 > 0
+  \]
+\end{enumerate}
+空間 $\R^3$ 内の集合 $S$ を以下のように定める。
+\[
+  S = \{ (x,y,z) \in \R^3 \mid (\sqrt{x^2+z^2}, y) \in C \}
+\]
+次の問いに答えよ。
+
+\begin{enumerate}
+  \item $f(x,y) = (x-2)^2 + y^2 - 1$ の場合に $S$ の概形を描け。
+  \item $f(x,y)$ が条件 (a), (b) をみたす一般の $C^\infty$ 級関数である場合に，$S$ が連結コンパクトで向き付け可能な $2$ 次元微分可能多様体であることを証明せよ。
+  \item 次の値を求めよ。
+  \[
+    \left| \frac{\int_S x \, dy \wedge dz}{\int_C x^2 \, dy} \right|
+  \]
+\end{enumerate}
+
+\end{document}
