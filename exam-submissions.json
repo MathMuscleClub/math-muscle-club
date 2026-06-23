@@ -1,5 +1,21 @@
 [
   {
+    "id": "2013-B-20260623105619-user-c81435e6",
+    "year": 2013,
+    "problemGroup": "B",
+    "problemNumbers": [
+      "2",
+      "3"
+    ],
+    "filePath": "exams/2013/B/submissions/2013-B-20260623105619-user-c81435e6/answer.pdf",
+    "fileType": "pdf",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-23T10:56:19.408Z",
+    "status": "submitted"
+  },
+  {
     "id": "2004-B-18-problem",
     "year": 2004,
     "era": "平成16年",
