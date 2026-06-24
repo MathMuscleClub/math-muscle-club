@@ -591,15 +591,6 @@
                             <div class="sidebar-card">
                                 <h3>⚙️ 設定</h3>
                                 <div class="sidebar-field">
-                                    <label for="oe-api-key">Gemini APIキー (任意)</label>
-                                    <input type="password" id="oe-api-key" placeholder="個人用のキーを入力 (任意)">
-                                    <div class="api-key-help">
-                                        ※キー未入力時はSupabase共通API（設定済みキー）で通信します。接続不可の場合は「デモモード」で動作します。<br>
-                                        <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">Google AI Studioで無料キーを取得 ↗</a>
-                                    </div>
-                                </div>
-                                
-                                <div class="sidebar-field">
                                     <label for="oe-subject">出題分野</label>
                                     <select id="oe-subject">
                                         <option value="algebra">代数 (群・環・体、線形代数など)</option>
@@ -691,7 +682,7 @@
     <script src="supabase-config.js"></script>
     <script src="auth.js?v=20260614f"></script>
     <script src="latex-typing.js?v=20260616a"></script>
-    <script src="oral-exam.js?v=20260619a"></script>
+    <script src="oral-exam.js?v=20260624a"></script>
     <script>
         function switchTab(tabId) {
             const examSubtabAliases = {

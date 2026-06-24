@@ -7,7 +7,6 @@
 // 口頭試問のステート管理
 const OralExamState = {
     sessionActive: false,
-    apiKey: '',
     subject: 'algebra',
     character: 'euler',
     chatHistory: [], // Gemini形式の対話履歴 [{role: "user"|"model", parts: [{text: "..."}]}]
@@ -361,23 +360,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initOralExam() {
-    // APIキーの読み込み
-    const savedApiKey = localStorage.getItem('oe_gemini_api_key');
-    const apiKeyInput = document.getElementById('oe-api-key');
-    if (savedApiKey && apiKeyInput) {
-        apiKeyInput.value = savedApiKey;
-        OralExamState.apiKey = savedApiKey;
-    }
-
-    // APIキー入力時の保存イベント
-    if (apiKeyInput) {
-        apiKeyInput.addEventListener('change', (e) => {
-            const val = e.target.value.trim();
-            localStorage.setItem('oe_gemini_api_key', val);
-            OralExamState.apiKey = val;
-        });
-    }
-
     // 各種ボタンのイベント登録
     const startBtn = document.getElementById('oe-start-btn');
     if (startBtn) startBtn.addEventListener('click', startOralExamSession);
@@ -447,9 +429,9 @@ async function startOralExamSession() {
     const randomIndex = Math.floor(Math.random() * problemsList.length);
     OralExamState.currentProblem = problemsList[randomIndex];
 
-    // APIキーがない場合は、まずSupabase Edge Functionを試す。それもダメならデモ（モック）モードにする。
-    // Edge Functionが使えるかどうかは、後続の通信時に判定します。
-    OralExamState.isDemoMode = !OralExamState.apiKey;
+    // 口頭試問も解答提出と同じサーバー側Gemini設定を使う。
+    // Edge Functionが使えない場合のみデモ（モック）モードに切り替える。
+    OralExamState.isDemoMode = false;
 
     // UIの切り替え
     document.getElementById('oe-chat-placeholder').style.display = 'none';
@@ -460,8 +442,6 @@ async function startOralExamSession() {
     // 設定変更UIを無効化
     if (subjectSelect) subjectSelect.disabled = true;
     if (characterSelect) characterSelect.disabled = true;
-    const apiKeyInput = document.getElementById('oe-api-key');
-    if (apiKeyInput) apiKeyInput.disabled = true;
     document.getElementById('oe-start-btn').style.display = 'none';
     document.getElementById('oe-reset-btn').style.display = 'block';
 
@@ -480,15 +460,7 @@ async function startOralExamSession() {
 
     addSystemMessage("口頭試問セッションを開始しました。");
     
-    if (OralExamState.isDemoMode) {
-        // APIキー入力がない場合、Supabase Edge Functions の有無をテストするために一度空リクエストしてみる
-        // または、直接AI応答処理を呼び出し、失敗したらデモモードとして処理する設計にします。
-        // ここでは、読み込みを表示して通信を試みます。
-        await fetchAIResponse(true);
-    } else {
-        // APIキーがある場合は直接呼び出し
-        await fetchAIResponse(true);
-    }
+    await fetchAIResponse(true);
 }
 
 // セッションリセット
@@ -513,8 +485,6 @@ function resetOralExamSession() {
     const characterSelect = document.getElementById('oe-character');
     if (subjectSelect) subjectSelect.disabled = false;
     if (characterSelect) characterSelect.disabled = false;
-    const apiKeyInput = document.getElementById('oe-api-key');
-    if (apiKeyInput) apiKeyInput.disabled = false;
     
     document.getElementById('oe-start-btn').style.display = 'block';
     document.getElementById('oe-reset-btn').style.display = 'none';
@@ -633,7 +603,7 @@ async function requestHint() {
     }
 }
 
-// Gemini API または Supabase Edge Function 経由で応答を取得する
+// Supabase Edge Function経由で応答を取得する
 async function fetchAIResponse(isInitial = false) {
     OralExamState.isAILoading = true;
     showLoadingBubble();
@@ -668,45 +638,11 @@ ${char.persona}
         });
     }
 
-    // 1. フロントエンドにAPIキーがある場合：直接Gemini APIを叩く
-    if (OralExamState.apiKey) {
-        try {
-            const model = 'gemini-2.5-flash';
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${OralExamState.apiKey}`;
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: OralExamState.chatHistory,
-                    systemInstruction: { parts: [{ text: systemPrompt }] },
-                    generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
-                })
-            });
-
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error?.message || `HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
-            const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!replyText) throw new Error("応答データが空でした。");
-
-            handleSuccessfulAIResponse(replyText);
-            return;
-        } catch (error) {
-            console.error("Direct API Call Failed, trying Supabase Edge Function fallback...", error);
-            // 直接呼び出しが失敗した場合は、Supabase呼び出しにフォールバック
-        }
-    }
-
-    // 2. フロントにAPIキーがない、または直接呼び出しが失敗した場合：Supabase Edge Functionの呼び出しを試みる
     try {
         const config = window.SUPABASE_CONFIG;
-        const baseUrl = config?.functionsBaseUrl 
+        const baseUrl = config?.functionsBaseUrl
             || (config?.url ? `${String(config.url).replace(/\/$/, '')}/functions/v1` : '');
-        
+
         if (!baseUrl) {
             throw new Error("Supabase config is not initialized.");
         }
@@ -892,66 +828,40 @@ JSON構造：
 
             let responseJsonText = "";
 
-            if (OralExamState.apiKey) {
-                // 1. APIキーがある場合は直接
-                const model = 'gemini-2.5-flash';
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${OralExamState.apiKey}`;
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: OralExamState.chatHistory,
-                        generationConfig: {
-                            temperature: 0.2,
-                            responseMimeType: "application/json"
-                        }
-                    })
-                });
+            const config = window.SUPABASE_CONFIG;
+            const baseUrl = config?.functionsBaseUrl
+                || (config?.url ? `${String(config.url).replace(/\/$/, '')}/functions/v1` : '');
 
-                if (response.ok) {
-                    const data = await response.json();
-                    responseJsonText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                }
+            if (!baseUrl) throw new Error("Supabase config is not loaded.");
+
+            const url = `${baseUrl}/oral-exam-chat`;
+            const headers = { 'Content-Type': 'application/json' };
+
+            const sbSession = getSupabaseSession();
+            if (sbSession?.access_token) {
+                headers['Authorization'] = `Bearer ${sbSession.access_token}`;
+            }
+            if (config?.anonKey) {
+                headers['apikey'] = config.anonKey;
             }
 
-            // 2. 直接呼び出しがない、または失敗した場合は Edge Function を経由
-            if (!responseJsonText) {
-                const config = window.SUPABASE_CONFIG;
-                const baseUrl = config?.functionsBaseUrl 
-                    || (config?.url ? `${String(config.url).replace(/\/$/, '')}/functions/v1` : '');
-                
-                if (!baseUrl) throw new Error("Supabase config is not loaded.");
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    chatHistory: OralExamState.chatHistory,
+                    temperature: 0.2,
+                    responseMimeType: "application/json"
+                })
+            });
 
-                const url = `${baseUrl}/oral-exam-chat`;
-                const headers = { 'Content-Type': 'application/json' };
-
-                const sbSession = getSupabaseSession();
-                if (sbSession?.access_token) {
-                    headers['Authorization'] = `Bearer ${sbSession.access_token}`;
-                }
-                if (config?.anonKey) {
-                    headers['apikey'] = config.anonKey;
-                }
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify({
-                        chatHistory: OralExamState.chatHistory,
-                        temperature: 0.2,
-                        responseMimeType: "application/json"
-                    })
-                });
-
-                if (!response.ok) {
-                    const err = await response.text().catch(() => "");
-                    throw new Error(`Edge Function Eval Error: ${err}`);
-                }
-
-                const data = await response.json();
-                responseJsonText = data.text || "";
+            if (!response.ok) {
+                const err = await response.text().catch(() => "");
+                throw new Error(`Edge Function Eval Error: ${err}`);
             }
+
+            const data = await response.json();
+            responseJsonText = data.text || "";
 
             if (!responseJsonText) {
                 throw new Error("評価レスポンスが空でした。");
