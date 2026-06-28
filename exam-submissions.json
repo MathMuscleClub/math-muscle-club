@@ -1,5 +1,23 @@
 [
   {
+    "id": "2012-B-20260628223838-user-f2421e37",
+    "year": 2012,
+    "problemGroup": "B",
+    "problemNumbers": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "filePath": "exams/2012/B/submissions/2012-B-20260628223838-user-f2421e37/answer.pdf",
+    "fileType": "pdf",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-06-28T22:38:38.642Z",
+    "status": "submitted"
+  },
+  {
     "id": "2013-B-20260623105619-user-c81435e6",
     "year": 2013,
     "problemGroup": "B",
@@ -1253,36 +1271,6 @@
     "uploadedByEmail": "kotoku-osuke614@g.ecc.u-tokyo.ac.jp",
     "uploadedByUserId": "8df5e05e-7fb2-48a2-a511-fc965794d53d",
     "uploadedAt": "2026-06-20T13:24:55.457Z",
-    "status": "submitted"
-  },
-  {
-    "id": "2012-B-20260619043427-user-dfc3468a",
-    "year": 2012,
-    "problemGroup": "B",
-    "problemNumbers": [
-      "4"
-    ],
-    "filePath": "exams/2012/B/submissions/2012-B-20260619043427-user-dfc3468a/answer.tex",
-    "fileType": "tex",
-    "uploadedByName": "わらびもち",
-    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
-    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
-    "uploadedAt": "2026-06-19T04:34:27.314Z",
-    "status": "submitted"
-  },
-  {
-    "id": "2012-B-20260617074938-user-93d50f52",
-    "year": 2012,
-    "problemGroup": "B",
-    "problemNumbers": [
-      "1"
-    ],
-    "filePath": "exams/2012/B/submissions/2012-B-20260617074938-user-93d50f52/answer.tex",
-    "fileType": "tex",
-    "uploadedByName": "わらびもち",
-    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
-    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
-    "uploadedAt": "2026-06-17T07:49:38.141Z",
     "status": "submitted"
   }
 ]
