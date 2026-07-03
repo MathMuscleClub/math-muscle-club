@@ -1,0 +1,47 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(i=\sqrt{-1}\) とする。
+
+\begin{enumerate}
+  \item \(f\) を \(\R\) 上の周期 \(2\pi\) の関数で，
+  \[
+    f(x)=x^3e^{-ix/2},\qquad -\pi\le x<\pi
+  \]
+  で与えられるとする。このとき，\(f\) のフーリエ級数 \(\displaystyle\sum_{k=-\infty}^{\infty}c_ke^{ikx}\) を求め，\(\displaystyle\sum_{k=-\infty}^{\infty}|c_k|\) を求めよ。
+  \item \(N\) を正の整数とし，
+  \[
+    P_N=\left\{\sum_{n=-N}^{N}\alpha_ne^{inx}\ \middle|\ \alpha_n\in\C,\ n=-N,-N+1,\ldots,N\right\}
+  \]
+  とする。\(F\in P_N\) に対して
+  \[
+    \frac{d^3F}{dx^3}(x)=\frac{N^3}{i\pi^3}\sum_{k=-\infty}^{\infty}
+    c_kF\left(\left(k+\frac12\right)\frac{\pi}{N}+x\right),\qquad -\pi\le x<\pi
+  \]
+  と表せることを示せ。
+  \item \(\R\) 上の周期 \(2\pi\) の連続関数 \(g\) に対して，
+  \[
+    \|g\|=(2\pi)^{-1}\int_{-\pi}^{\pi}|g(x)|\dd x
+  \]
+  とする。このとき
+  \[
+    \sup\left\{\left\|\frac{d^3F}{dx^3}\right\|\ \middle|\ F\in P_N,\ \|F\|\le1\right\}
+  \]
+  を求めよ。
+\end{enumerate}
+
+\end{document}
