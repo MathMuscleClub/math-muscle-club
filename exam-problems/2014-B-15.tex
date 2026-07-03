@@ -1,0 +1,77 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(q\) を \(0<|q|<1\) をみたす複素数とする。\([0]:=1,\ [0]!:=1\)，正の整数 \(n\) に対して
+\[
+  [n]:=\frac{1-q^n}{1-q},\qquad
+  [n]!:=[n][n-1]\cdots[1],\qquad
+  \begin{bmatrix}n\\ k\end{bmatrix}:=\frac{[n]!}{[n-k]![k]!}
+\]
+と定義する。また，複素平面内の領域 \(X:=\{x\in\C\mid |x|<d\}\ (d>0)\) で定義された関数 \(f(x)\) に対して，
+\[
+  Bf(x):=
+  \begin{cases}
+    \dfrac{f(x)-f(qx)}{(1-q)x} & (x\ne0),\\
+    0 & (x=0),
+  \end{cases}
+\]
+\[
+  B^0f(x):=f(x),\qquad
+  B^{k+1}f(x):=B(B^kf(x))\qquad (k=0,1,2,\ldots)
+\]
+とする。
+
+次に，\(a_k,\ b_k\ (k=0,1,2,\ldots)\) を複素定数とし，べき級数
+\[
+  \psi(x):=\sum_{k=0}^{\infty}b_kx^k,\qquad
+  \Omega(x):=\sum_{k=0}^{\infty}a_kb_kx^k
+\]
+はともに，\(X\) で絶対収束するものとする。そして，\(\{a_k\}_{k=0}^{\infty}\) に作用する演算 \(E\) および \(D_r\ (r=0,1,2,\ldots)\) を
+\[
+  Ea_k=a_{k+1}\qquad (k=0,1,2,\ldots),
+\]
+\[
+  D_0:=1,\qquad
+  D_r:=(E-1)(E-q)\cdots(E-q^{r-1})\qquad (r=1,2,3,\ldots)
+\]
+によって定義する。たとえば
+\[
+  D_0a_0=a_0,\qquad
+  D_1a_0=a_1-a_0,\qquad
+  D_2a_0=a_2-(1+q)a_1+qa_0
+\]
+である。以下の問に答えよ。
+
+\begin{enumerate}
+  \item 任意の正整数 \(k\) に対して，
+  \[
+    E^k=\sum_{j=0}^{k}\begin{bmatrix}k\\ j\end{bmatrix}D_j
+  \]
+  が成り立つことを示せ。
+  \item \(x\in X\) に対して，次の等式が成り立つことを示せ。ただし，右辺の級数の収束は仮定してよい。
+  \[
+    \Omega(x)=\sum_{k=0}^{\infty}\frac{(D_ka_0)x^k}{[k]!}B^k\psi(x).
+  \]
+  \item \(\displaystyle\psi(x)=\frac{1}{(1-x)(1-qx)}\) を考えることによって，\(|x|<1\) であるとき，
+  \[
+    \sum_{k=0}^{\infty}[k+1]^2x^k=
+    \frac{1+qx}{(1-x)(1-qx)(1-q^2x)}
+  \]
+  であることを示せ。
+\end{enumerate}
+
+\end{document}
