@@ -1,0 +1,33 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(\R\) 上の実数値関数列 \(f_n,\ n=1,2,\ldots,\) と実数値関数 \(f\) が与えられ，次の \(3\) 条件をみたすとする。
+
+\begin{enumerate}
+  \item[(a)] 各 \(f_n\) は単調非減少，すなわち \(x<y\) ならば \(f_n(x)\le f_n(y)\) である。
+  \item[(b)] \(f\) は \(\R\) 上の連続関数である。
+  \item[(c)] 任意の \(\varphi\in C_0(\R)\) に対して
+  \[
+    \lim_{n\to\infty}\int_{\R}f_n(x)\varphi(x)\dd x
+    =\int_{\R}f(x)\varphi(x)\dd x
+  \]
+  が成立する。ただし \(C_0(\R)\) はコンパクトな台をもつ \(\R\) 上の連続関数全体を表す。
+\end{enumerate}
+
+このとき，\(n\to\infty\) とすれば，\(f_n\) は \(f\) に \(\R\) 上広義一様収束することを示せ。また，条件 (b), (c) を満たし結論が成立しないような関数列 \(f_n\) と関数 \(f\) の例をあげよ。
+
+\end{document}
