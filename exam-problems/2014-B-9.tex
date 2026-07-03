@@ -1,0 +1,38 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(x>0\) に対し \(\Gamma(x)=\displaystyle\int_0^\infty e^{-t}t^{x-1}\dd t\) とおく。
+
+\begin{enumerate}
+  \item 正則関数 \(f(w)=e^{-tw}w^{x-1}\) の領域
+  \[
+    D_\varepsilon=\left\{w\in\C\ \middle|\ \operatorname{Re}w>0,\ \operatorname{Im}w>0,\ \varepsilon<|w|<\frac1\varepsilon\right\},\qquad \varepsilon>0,
+  \]
+  の境界での積分を考えることにより
+  \[
+    \int_0^\infty \sin t\cdot t^{x-1}\dd t
+    =\Gamma(x)\sin\left(\frac{\pi x}{2}\right),\qquad 0<x<1,
+  \]
+  を示せ。
+  \item
+  \[
+    \int_0^\infty \frac{\sin t}{t^{3/2}}\dd t=\sqrt{2\pi}
+  \]
+  を示せ。必要であれば，\(\Gamma(1/2)=\sqrt{\pi}\) を用いてもよい。
+\end{enumerate}
+
+\end{document}
