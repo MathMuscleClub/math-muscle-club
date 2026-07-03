@@ -1,0 +1,83 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+ベクトル \(\lvert+\rangle,\lvert-\rangle\) を基底とする \(2\) 次元複素線形空間を
+\[
+  V=\C\lvert+\rangle\oplus\C\lvert-\rangle
+\]
+とする。正の整数 \(n\) と線形変換 \(X:V\to V\) に対し，
+\[
+  W_n=V^{\otimes n}=\underbrace{V\otimes\cdots\otimes V}_{n}
+\]
+の線形変換 \(\Delta(X)\) を
+\[
+  \Delta(X)=\sum_{i=1}^{n}X_i,\qquad
+  X_i=1\otimes\cdots\otimes1\otimes X\otimes1\otimes\cdots\otimes1
+\]
+と定義する。ただし，\(1\) は \(V\) の恒等変換を表す。また，\(1\le i,j\le n,\ i\ne j\) に対し，\(W_n\) の線形変換 \(P_{i,j}\) を，成分の互換
+\[
+  P_{i,j}(v_1\otimes\cdots\otimes v_i\otimes\cdots\otimes v_j\otimes\cdots\otimes v_n)
+  =
+  v_1\otimes\cdots\otimes v_j\otimes\cdots\otimes v_i\otimes\cdots\otimes v_n
+\]
+で定義する。以下の問いに答えよ。
+
+\begin{enumerate}
+  \item \(V\) の線形変換 \(X,Y\) に対し，
+  \[
+    [\Delta(X),\Delta(Y)]=\Delta([X,Y])
+  \]
+  が成り立つことを示せ。ただし，\([X,Y]=X\circ Y-Y\circ X\) は交換子を表す。
+  \item \(U=P_{1,2}+P_{2,3}+\cdots+P_{n-1,n}+P_{n,1}\) および \(T=P_{n-1,n}\circ\cdots\circ P_{2,3}\circ P_{1,2}\) とおく。交換関係
+  \[
+    [T,U]=0,\qquad [U,\Delta(X)]=0,\qquad [T,\Delta(X)]=0
+  \]
+  が成り立つことを示せ。ただし，\(X\) は \(V\) の任意の線形変換とする。
+\end{enumerate}
+
+\(V\) の線形変換 \(E,F,H\) を
+\[
+  H\lvert+\rangle=\lvert+\rangle,\quad
+  H\lvert-\rangle=-\lvert-\rangle,\quad
+  E\lvert+\rangle=F\lvert-\rangle=0,\quad
+  F\lvert+\rangle=\lvert-\rangle,\quad
+  E\lvert-\rangle=\lvert+\rangle
+\]
+で定義すると，これらは Lie 代数 \(\mathfrak{sl}_2\) の交換関係
+\[
+  [H,E]=2E,\qquad [H,F]=-2F,\qquad [E,F]=H
+\]
+をみたす。また，(1) より \(\Delta(E),\Delta(F),\Delta(H)\) を通して，\(W_n\) を Lie 代数 \(\mathfrak{sl}_2\) の表現空間と見なすことができる。
+
+以下，\(n=4\) の場合を考える。また，簡単のため
+\[
+  \lvert+\rangle\otimes\lvert-\rangle\otimes\lvert+\rangle\otimes\lvert+\rangle\in W_4
+\]
+を \(\lvert+-++\rangle\) のように略記する。
+
+\begin{enumerate}
+  \item[(3)] \(W_4\) を \(\mathfrak{sl}_2\) の既約表現の直和に分解したときに現れる既約表現の次元および各既約表現の重複度を求めよ。
+  \item[(4)] \(\lvert++++\rangle\in W_4\) は \(T,U\) の同時固有ベクトルとなることを示し，その固有値をそれぞれ求めよ。また，\(\lvert++++\rangle\) を含む \(\mathfrak{sl}_2\) の既約表現の次元と基底を求めよ。
+  \item[(5)] \(W_4\) の元 \(\xi\) で，以下の条件 (a), (b), (c) をみたすものをすべて求めよ。
+  \begin{enumerate}
+    \item \(\Delta(H)\xi=2\xi\)。
+    \item \(\Delta(E)\xi=0\)。
+    \item \(\xi\) は \(T,U\) の同時固有ベクトルである。
+  \end{enumerate}
+\end{enumerate}
+
+\end{document}
