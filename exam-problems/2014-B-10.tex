@@ -1,0 +1,38 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\begin{enumerate}
+  \item 次の条件をすべてみたす区間 \([0,1]\) 上の実数値ルベーグ可測関数 \(f(x)\) の例を構成せよ。
+  \begin{enumerate}
+    \item \(\displaystyle\int_0^1 |f(x)|\dd x<\infty\)。
+    \item 任意の正の実数 \(a\le1\) に対し，
+    \[
+      \int_0^a |f(x)|^2\dd x=\infty.
+    \]
+  \end{enumerate}
+  \item 次の条件をすべてみたす実数軸上の実数値ルベーグ可測関数 \(g(x)\) の例を構成せよ。
+  \begin{enumerate}
+    \item \(\displaystyle\int_{-\infty}^{\infty}|g(x)|\dd x<\infty\)。
+    \item 任意の実数 \(a,b\) で \(a<b\) となるものに対し，
+    \[
+      \int_a^b |g(x)|^2\dd x=\infty.
+    \]
+    \item 集合 \(\{x\mid g(x)\ne0\}\) のルベーグ測度は \(1\) 以下である。
+  \end{enumerate}
+\end{enumerate}
+
+\end{document}
