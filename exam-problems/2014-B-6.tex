@@ -1,0 +1,46 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+射影 \(\pi:\R^3\to\R^2\) を \(\pi(x,y,z)=(x,y)\) とする。\(\R^3\) 上の微分形式 \(\omega\) を
+\[
+  \omega=-x\,dy+dz
+\]
+で定める。\(\gamma:[0,1]\to\R^2\) を連続かつ区分的 \(C^\infty\) 級曲線とする。連続かつ区分的 \(C^\infty\) 級曲線 \(\widetilde{\gamma}:[0,1]\to\R^3\) が \(\gamma\) のリフトであるとは，次の条件 (a), (b) をみたすこととする。
+\begin{enumerate}
+  \item[(a)] すべての \(t\in[0,1]\) に対して，
+  \[
+    (\pi\circ\widetilde{\gamma})(t)=\gamma(t)
+  \]
+  となる。
+  \item[(b)] \(t\in[0,1]\) に対して，速度ベクトル \(\widetilde{\gamma}'(t)\) が定義されるならば，つねに
+  \[
+    \omega(\widetilde{\gamma}'(t))=0
+  \]
+  をみたす。
+\end{enumerate}
+
+\begin{enumerate}
+  \item \(\pi(p)=\gamma(0)\) となるような \(p\in\R^3\) について，\(\widetilde{\gamma}(0)=p\) をみたす \(\gamma\) のリフト \(\widetilde{\gamma}\) が一意に存在することを示せ。
+  \item \(\gamma\) を単位円周
+  \[
+    \gamma(t)=(\cos 2\pi t,\sin 2\pi t),\qquad 0\le t\le 1
+  \]
+  とするとき，\(\gamma\) のリフト \(\widetilde{\gamma}\) に対して，\(\|\widetilde{\gamma}(1)-\widetilde{\gamma}(0)\|\) を求めよ。
+  \item 連続かつ区分的 \(C^\infty\) 級である閉曲線 \(\gamma\) で，\(\widetilde{\gamma}(0)=\widetilde{\gamma}(1)\) をみたし，速度ベクトル \(\gamma'(t)\) が定義される \(t\in[0,1]\) に対して \(\gamma'(t)\ne0\) であるような例をあげよ。
+\end{enumerate}
+
+\end{document}
