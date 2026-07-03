@@ -1,0 +1,46 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(\R\) 上で定義された \(C^2\) 級の関数 \(f\) について，\(a=f(a)\) と \(0<|f'(a)|<1\) を満たす \(a\in\R\) の存在を仮定する。\(a\) の値を数値的に計算するために，反復法
+\[
+  x_{k+1}=f(x_k)\qquad (k\ge0)
+\]
+を考える。\(x_0\in\R\) は与えられた初期推定値である。この反復列について，\(x_k\ne a\ (k\ge0)\) と \(x_k\to a\ (k\to\infty)\) を仮定する。平均値の定理により，各 \(k\ge0\) に対して，
+\[
+  f(x_k)-f(a)=f'(t_k)(x_k-a)
+\]
+を満たすような \(t_k\in\R\) が \(x_k\) と \(a\) の間に存在する。もし，このような \(t_k\) が複数存在する場合には，その中から任意に一つを選ぶことにする。そして，
+\[
+  r_k=\frac{|f'(t_k)|}{|f'(a)|}\qquad (k\ge0)
+\]
+と定める。このとき，次の問に答えよ。
+
+\begin{enumerate}
+  \item \(k\) には依存しない整数 \(m\ge0\) と定数 \(C>0,\ 0<\lambda<1\) で，不等式
+  \[
+    |r_k-1|\le C\lambda^k\qquad (k\ge m)
+  \]
+  を満たすようなものが存在することを示せ。
+  \item \(|x|\le1/2\) のとき，不等式 \(|\log(1+x)|\le2|x|\) が成立することを示せ。
+  \item 極限
+  \[
+    \lim_{k\to\infty}\frac{|x_k-a|}{|f'(a)|^k}
+  \]
+  が存在することを示せ。
+\end{enumerate}
+
+\end{document}
