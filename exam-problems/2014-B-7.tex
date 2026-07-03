@@ -1,0 +1,48 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(2\) 次元単位球面
+\[
+  S^2=\{(x,y,z)\in\R^3\mid x^2+y^2+z^2=1\}
+\]
+上のいたるところでゼロでない \(C^\infty\) 級 \(2\)-形式
+\[
+  \omega=x\,dy\wedge dz+y\,dz\wedge dx+z\,dx\wedge dy
+\]
+と，\(S^2\) 上の \(C^\infty\) 級関数
+\[
+  H(x,y,z)=x^2+2y^2+3z^2
+\]
+を考える。\(S^2\) の \(C^\infty\) 級ベクトル場 \(X\) を
+\[
+  (dH)(Y)=\omega(X,Y),\qquad Y\in TS^2,
+\]
+で定義し，それが生成する \(1\)-径数微分同相群を \(\phi_t\) とする。
+
+\begin{enumerate}
+  \item 関数 \(H\) が \(\phi_t\) で不変であることを示せ。
+  \item \(S^2\) の点を \(\phi_t\) によって次の \(3\) 種類に分類する。
+  \begin{enumerate}
+    \item 停留点，すなわち，すべての \(t\in\R\) に対し \(\phi_t(P)=P\) となる点 \(P\)。
+    \item 周期点，すなわち，停留点ではないが，ある \(T>0\) に対し \(\phi_T(P)=P\) をみたす点 \(P\)。
+    \item 停留点でも周期点でもない点。
+  \end{enumerate}
+  球面 \(S^2\) のおのおのの点が，(a), (b), (c) のいずれであるかを理由とともに答えよ。
+  \item 停留点でも周期点でもない点 \(P\) に対し，\(\displaystyle\lim_{t\to\infty}\phi_t(P)\) および \(\displaystyle\lim_{t\to-\infty}\phi_t(P)\) を決定せよ。
+\end{enumerate}
+
+\end{document}
