@@ -1,0 +1,37 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+正の整数 \(n\) について，\(\zeta=\exp(2\pi i/n)\) とする。
+\[
+  S^3=\{(z_1,z_2)\in\C^2\mid |z_1|^2+|z_2|^2=1\}
+\]
+とみなす。 \((z_1,z_2)\) と \((z'_1,z'_2)\in S^3\) について，ある整数 \(a\in\Z\) が存在して
+\[
+  (z'_1,z'_2)=(\zeta^a z_1,\zeta^a z_2)
+\]
+となるとき，\((z_1,z_2)\sim(z'_1,z'_2)\) と定める。この同値関係 \(\sim\) による \(S^3\) の商空間 \(S^3/\sim\) への商写像を \(\pi:S^3\to S^3/\sim\) とする。\(S^3\) の部分空間
+\[
+  A=\{(z_1,z_2)\in S^3\mid z_2\in\R\}
+\]
+の \(\pi\) による像 \(\pi(A)\) を考える。
+
+\begin{enumerate}
+  \item 位相空間 \(\pi(A)\) の整係数ホモロジー群 \(H_*(\pi(A);\Z)\) を求めよ。
+  \item \(n=3\) のとき，連続写像 \(r:S^3/\sim\to\pi(A)\) であって，\(\pi(A)\) への制限が恒等写像となるものは存在するかどうか，理由をつけて答えよ。
+\end{enumerate}
+
+\end{document}
