@@ -1,0 +1,63 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+以下のような未知関数 \(v(t,a),\ Q(t)\) に関する微分方程式を領域 \(t\ge0,\ a\ge0\) で考える:
+\[
+  \frac{\partial v(t,a)}{\partial t}+\frac{\partial v(t,a)}{\partial a}
+  =-\bigl(\mu(a)+f_1(P(t))+f_2(Q(t))\bigr)v(t,a),
+\]
+\[
+  v(t,0)=\int_0^\infty \beta(a)v(t,a)\dd a,
+\]
+\[
+  P(t)=\int_0^\infty v(t,a)\dd a,
+\]
+\[
+  \frac{dQ(t)}{dt}=-bQ(t)+g(P(t))Q(t).
+\]
+ここで，\(b\) は正の定数，\(\beta(a),\ \mu(a)\) は恒等的にはゼロではない非負の有界連続関数で，\(\beta\) は区間 \([0,\infty)\) で可積分であるとする。\(f_1(x),\ f_2(x),\ g(x)\) はいずれも \(x\in[0,\infty)\) で定義された非負狭義単調増大な連続関数で，\(f_1(0)=f_2(0)=g(0)=0\) である。また関数 \(\ell(a)\) を
+\[
+  \ell(a)=\exp\left(-\int_0^a\mu(\sigma)\dd\sigma\right)
+\]
+と定義するとき，
+\[
+  \int_0^\infty \beta(a)\ell(a)\dd a>1
+\]
+であると仮定する。また初期条件は正であると仮定する:
+\[
+  v(0,a)>0,\qquad Q(0)>0.
+\]
+以下では上記のシステムが \(t>0\) で非負解をもち，すべての \(t>0\) で \(v(t,\cdot)\in L^1(0,\infty)\)，\(\lim_{a\to\infty}v(t,a)=0\) であり，さらに以下が成り立つことを仮定してよい。
+\[
+  \frac{\partial}{\partial t}\int_0^\infty v(t,a)\dd a
+  =
+  \int_0^\infty \frac{\partial v(t,a)}{\partial t}\dd a.
+\]
+
+\begin{enumerate}
+  \item 任意の \(t>0\) に関して，\(P(t)>0\) であることを示せ。
+  \item 関数 \(w(t,a)\) を
+  \[
+    w(t,a)=\frac{v(t,a)}{P(t)}
+  \]
+  と定義する。このとき \(w(t,a)\) が，パラメータとして \(\beta,\mu\) のみを含むような偏微分方程式と境界条件をみたすことを示せ。
+  \item (2) で求めた偏微分方程式が，ただ一つの正の平衡解を持つことを示し，その平衡値をもとめよ。
+  \item (3) で求めた平衡解を \(w^*(a)\) とする。\(v(t,a)=P(t)w^*(a)\) であるとき，\(P(t),Q(t)\) のみをすべき常微分方程式システムを求めよ。
+  \item (4) で求めた常微分方程式システムが，正の平衡解を持つための必要十分条件を求めよ。
+\end{enumerate}
+
+\end{document}
