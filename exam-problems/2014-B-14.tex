@@ -1,0 +1,46 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(\N=\{1,2,\ldots\}\) とする。\(X_j\ (j\in\N)\) を同一の分布に従う独立な確率変数列とし，
+\[
+  \Prob[X_1\le x]=1-e^{-x}\qquad (x>0)
+\]
+であるとする。各 \(n\in\N\) に対して，
+\[
+  Y_k^{(n)}=\frac{X_k}{\sum_{j=1}^{n}X_j}\qquad (k=1,2,\ldots,n)
+\]
+とする。このとき以下の問に答えよ。
+
+\begin{enumerate}
+  \item 正数 \(\lambda\) に対して，
+  \[
+    L(\lambda)=\Exp[e^{-\lambda X_1}]
+  \]
+  を求めよ。
+  \item 任意の正数 \(\varepsilon\) に対して，
+  \[
+    \limsup_{n\to\infty}\frac1n\log\Prob\left[\max_{k=1,\ldots,n}Y_k^{(n)}\ge\varepsilon\right]<0
+  \]
+  であることを示せ。
+  \item 確率変数列
+  \[
+    Z_n=\sqrt n\left(\sum_{k=1}^{n}Y_k^{(2n)}-\frac12\right)\qquad (n\in\N)
+  \]
+  が \(n\to\infty\) のとき法則収束することを示し，極限分布を求めよ。
+\end{enumerate}
+
+\end{document}
