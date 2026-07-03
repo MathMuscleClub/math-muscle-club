@@ -1,0 +1,36 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(\#A\) で集合 \(A\) の元の個数を表す。群 \(G\) とその部分群 \(H\) および \(L\) に対して，次のように定める。
+\[
+  HgL=\{hg\ell\mid h\in H,\ \ell\in L\}\quad (g\in G),
+\]
+\[
+  H\backslash G/L=\{HgL\mid g\in G\}.
+\]
+\(2\) 以上の正整数 \(n\) に対して \(n\) 次対称群 \(\mathfrak S_n\) を考える。さらに整数 \(1\le k\le n\) に対して，
+\[
+  H_k=\{\sigma\in\mathfrak S_n\mid \sigma(i)\in\{1,\ldots,k\}\ (1\le i\le k)\}
+\]
+と定めると，\(H_k\) は \(\mathfrak S_n\) の部分群になる。以下の問に答えよ。
+
+\begin{enumerate}
+  \item \(\max\{\#H_1gH_1\mid g\in\mathfrak S_n\}\) を求めよ。
+  \item \(1\le p,q\le n\) なる整数 \(p,q\) に対して \(\#H_p\backslash\mathfrak S_n/H_q\) を求めよ。
+\end{enumerate}
+
+\end{document}
