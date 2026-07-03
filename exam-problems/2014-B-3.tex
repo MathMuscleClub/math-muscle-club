@@ -1,0 +1,47 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\[
+  A:=\C[x],\qquad
+  B:=\C[x,y,z]/(y(xy-z^2),\,z(xy-z^2))
+\]
+を可換環とする。環準同型 \(f:A\to B\) を，単射準同型
+\[
+  \iota:\C[x]\longrightarrow \C[x,y,z],\qquad f(x)\longmapsto f(x)
+\]
+と，\(\C[x,y,z]\) のイデアル \((y(xy-z^2),\,z(xy-z^2))\) によって引き起こされる商準同型
+\[
+  \pi:\C[x,y,z]\longrightarrow
+  \C[x,y,z]/(y(xy-z^2),\,z(xy-z^2))
+\]
+の合成で，\(f=\pi\circ\iota\) と定める。
+
+\begin{enumerate}
+  \item \(A\) の極大イデアルをすべて求めよ。説明も書くこと。
+  \item \(B\) を \(f\) によって \(A\)-加群と見なすとき，\(A\) の各極大イデアル \(\mathfrak m\) に対して，
+  \[
+    C^{\mathfrak m}:=B\otimes_A A/\mathfrak m
+  \]
+  とおく。\(C^{\mathfrak m}\) を \(\C\) 上の \(2\) 変数多項式環の商環の形で書け。
+  \item \(C^{\mathfrak m}\) の各極大イデアル \(\mathfrak n\) による局所化を \(C^{\mathfrak m}_{\mathfrak n}\) とおく。\(C^{\mathfrak m}_{\mathfrak n}\) の極大イデアル \(\overline{\mathfrak n}\) に対して
+  \[
+    \dim_{\C}\overline{\mathfrak n}^2/\overline{\mathfrak n}^3
+  \]
+  を計算せよ。
+\end{enumerate}
+
+\end{document}
