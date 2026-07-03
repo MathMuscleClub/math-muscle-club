@@ -1,0 +1,45 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+次で定義される遷移系 \((Q,\to)\) を考える。状態集合 \(Q\) は，\(x,y,z\in\{-1,0,1\}\) であり，\(3\) 成分のうちちょうど一つが \(0\) であるような三つ組 \((x,y,z)\) 全体の集合である。遷移に関しては，\(x,y,z\in\{\pm1\}\) として，\(xyz=1\) のときと \(xyz=-1\) のときに応じて，それぞれ，
+\[
+  (0,y,z)\to(x,y,0)\to(x,0,z)\to(0,y,z)\qquad (xyz=1),
+\]
+\[
+  (x,y,0)\to(0,y,z)\to(x,0,z)\to(x,y,0)\qquad (xyz=-1)
+\]
+であるとする。これらで定まる \(24\) 通り以外には，遷移は存在しないとする。無限遷移列
+\[
+  \pi(0)\to\pi(1)\to\pi(2)\to\cdots
+\]
+のうちで，最初の状態 \(\pi(0)\) が \(q\in Q\) に等しいもの全体を \(\Pi(q)\) と書くことにする。集合 \(X\subseteq Q\) に対して，
+\[
+  EG(X)=\{q\in Q\mid \exists\pi\in\Pi(q)\ \forall n\ge0\ \pi(n)\in X\},
+\]
+\[
+  AF(X)=\{q\in Q\mid \forall\pi\in\Pi(q)\ \exists n\ge0\ \pi(n)\in X\}
+\]
+と定める。また \(|X|\) で \(X\) の元の個数を表すとする。
+
+\begin{enumerate}
+  \item \(\max\{|X|\mid EG(X)=\emptyset\}\) を求めよ。
+  \item \(\max\{|X|\mid EG(AF(X))=\emptyset\}\) を求めよ。
+\end{enumerate}
+
+ここで遷移系 \((Q,\to)\) とは有限集合の組であって，\(\to\subseteq Q\times Q\) をみたすものとする。また，\((q,q')\in\to\) のかわりに \(q\to q'\) と書く。
+
+\end{document}
