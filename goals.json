@@ -21,6 +21,20 @@
         }
       ]
     }
+    "monthlyGoals": [
+    {
+      "period": "2026年7月",
+      "items": [
+        {
+          "text": "懸垂広めで5回できるようにする",
+          "status": "pending"
+        },
+        {
+          "text": "ベンチプレス\nはぎたつ　ゆーが 55kg x 10回　65kg x 1回\n ksk　40kg x 10回 50kg x 1回\nOizumi_Ryo 30kg x 10回　40kg x 1回",
+          "status": "pending"
+        }
+      ]
+    }
   ],
   "achievements": [
     "ノボロック初段クリア!"
