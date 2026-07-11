@@ -29,7 +29,7 @@
           "status": "pending"
         },
         {
-          "text": "ベンチプレス\nはぎたつ　ゆーが 55kg x 10回　65kg x 1回\n ksk　40kg x 10回 50kg x 1回\nOizumi_Ryo 30kg x 10回　40kg x 1回",
+          "text": "ベンチプレス+10kg",
           "status": "pending"
         }
       ]
@@ -42,8 +42,7 @@
         {
           "period": "2026年7月",
           "items": [
-            { "text": "スクワット100kg達成", "status": "pending" },
-            { "text": "毎朝ストレッチ5分", "status": "pending" }
+            { "text": "ベンチプレス 45kg x 10回 50kg x 1回", "status": "pending" }
           ]
         }
       ]
@@ -54,7 +53,7 @@
         {
           "period": "2026年7月",
           "items": [
-            { "text": "ベンチプレス55kgに更新", "status": "pending" },
+            { "text": "ベンチプレス 55kg x 10回 70kg x 1回", "status": "pending" },
             { "text": "プロテインを毎日飲む", "status": "pending" }
           ]
         }
@@ -66,7 +65,30 @@
         {
           "period": "2026年7月",
           "items": [
-            { "text": "デッドリフト70kgに更新", "status": "pending" }
+            { "text": "ベンチプレス 55kg x 10回 70kg x 1回", "status": "pending" },
+            { "text": "スクワッド 80kg x 10回: "pending" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Oizumi_Ryo",
+      "months": [
+        {
+          "period": "2026年7月",
+          "items": [
+            { "text": "ベンチプレス 30kg x 10回 45kg x 1回", "status": "pending" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ほたて(水煮)",
+      "months": [
+        {
+          "period": "2026年7月",
+          "items": [
+            { "text": "ベンチプレス 45kg x 10回 55kg x 1回", "status": "pending" }
           ]
         }
       ]
