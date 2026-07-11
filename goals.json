@@ -20,9 +20,7 @@
           "status": "pending"
         }
       ]
-    }
-  ],
-    "monthlyGoals": [
+    },
     {
       "period": "2026年7月",
       "items": [
@@ -37,7 +35,44 @@
       ]
     }
   ],
+  "personalGoals": [
+    {
+      "name": "ksk",
+      "months": [
+        {
+          "period": "2026年7月",
+          "items": [
+            { "text": "スクワット100kg達成", "status": "pending" },
+            { "text": "毎朝ストレッチ5分", "status": "pending" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "はぎたつ",
+      "months": [
+        {
+          "period": "2026年7月",
+          "items": [
+            { "text": "ベンチプレス55kgに更新", "status": "pending" },
+            { "text": "プロテインを毎日飲む", "status": "pending" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ゆーが",
+      "months": [
+        {
+          "period": "2026年7月",
+          "items": [
+            { "text": "デッドリフト70kgに更新", "status": "pending" }
+          ]
+        }
+      ]
+    }
+  ],
   "achievements": [
     "ノボロック初段クリア!"
   ]
-    }
+}

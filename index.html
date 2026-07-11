@@ -107,13 +107,16 @@
                         <li class="loading">読み込み中...</li>
                     </ul>
 
-                    <h3 id="current-goals-header">今月の目標</h3>
-                    <ul id="current-goals-list">
-                        <li class="loading">読み込み中...</li>
-                    </ul>
+                    <h3>月間目標</h3>
+                    <div id="monthly-goals-container">
+                        <p class="loading">読み込み中...</p>
+                    </div>
+                </section>
 
-                    <h3>過去の目標と達成状況</h3>
-                    <div id="past-goals-container">
+                <section>
+                    <h2>個人目標</h2>
+                    <p class="personal-goals-description">メンバーそれぞれの月間目標です。</p>
+                    <div id="personal-goals-container">
                         <p class="loading">読み込み中...</p>
                     </div>
                 </section>
@@ -130,6 +133,7 @@
             <div id="diary" class="tab-content">
                 <section>
                     <h2>活動日記</h2>
+                    <div id="diary-period-selector" class="personal-goals-period-selector"></div>
                     <div id="diary-list" class="diary-list">
                         <p class="loading">読み込み中...</p>
                     </div>
@@ -890,6 +894,7 @@
                 renderYearlyGoals(goals.yearlyGoals);
                 renderMonthlyGoals(goals.monthlyGoals);
                 renderAchievements(goals.achievements);
+                renderPersonalGoals(goals.personalGoals);
                 renderDiary(diary);
                 await renderExamAnswers(examAnswers, examSubmissions);
                 renderCalendar(currentYear, currentMonth);
@@ -1003,74 +1008,67 @@
         }
 
         function renderMonthlyGoals(monthlyGoals) {
-            const currentList = document.getElementById('current-goals-list');
-            const pastContainer = document.getElementById('past-goals-container');
-            const currentHeader = document.getElementById('current-goals-header');
-
-            currentList.innerHTML = '';
-            pastContainer.innerHTML = '';
+            const container = document.getElementById('monthly-goals-container');
+            if (!container) return;
+            container.innerHTML = '';
 
             if (!monthlyGoals || monthlyGoals.length === 0) {
-                currentList.innerHTML = '<li>今月の目標はありません。</li>';
-                pastContainer.innerHTML = '<p class="no-data">過去の目標履歴はありません。</p>';
+                container.innerHTML = '<p class="no-data">月間目標はありません。</p>';
                 return;
             }
 
-            // 配列の最後の要素を「今月の最新目標」とする
-            const latestGoalIndex = monthlyGoals.length - 1;
-            const latestGoal = monthlyGoals[latestGoalIndex];
+            // 降順に並べる（最新月が先頭）
+            const sorted = monthlyGoals.slice().reverse();
 
-            // 今月の目標を描画
-            if (latestGoal) {
-                currentHeader.textContent = `今月の目標（${latestGoal.period}）`;
-
-                latestGoal.items.forEach(item => {
-                    const li = document.createElement('li');
-
-                    const textSpan = document.createElement('span');
-                    textSpan.innerHTML = `<strong>${escapeHTML(item.text)}</strong>`;
-                    li.appendChild(textSpan);
-
-                    if (item.status && item.status !== 'pending') {
-                        const badge = createBadge(item.status);
-                        li.appendChild(badge);
-                    }
-                    currentList.appendChild(li);
+            // 月セレクタ
+            const periodSelector = document.createElement('div');
+            periodSelector.className = 'personal-goals-period-selector';
+            sorted.forEach((month, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'personal-goals-period-btn' + (index === 0 ? ' active' : '');
+                btn.textContent = month.period;
+                btn.addEventListener('click', () => {
+                    periodSelector.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    showMonthlyGoalItems(contentArea, month);
                 });
-            }
-
-            // 過去の目標を描画 (最新の目標以外の過去データを降順で表示)
-            const pastGoals = monthlyGoals.slice(0, latestGoalIndex).reverse();
-            if (pastGoals.length === 0) {
-                pastContainer.innerHTML = '<p class="no-data">過去の目標履歴はありません。</p>';
-                return;
-            }
-
-            pastGoals.forEach(month => {
-                const monthSec = document.createElement('div');
-                monthSec.className = 'past-month-section';
-
-                const h4 = document.createElement('h4');
-                h4.className = 'past-month-title';
-                h4.textContent = month.period;
-                monthSec.appendChild(h4);
-
-                const ul = document.createElement('ul');
-                month.items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'past-goal-item';
-
-                    const textSpan = document.createElement('span');
-                    textSpan.textContent = item.text;
-                    li.appendChild(textSpan);
-
-                    const badge = createBadge(item.status);
-                    li.appendChild(badge);
-                    ul.appendChild(li);
-                });
-                monthSec.appendChild(ul);
-                pastContainer.appendChild(monthSec);
+                periodSelector.appendChild(btn);
             });
+            container.appendChild(periodSelector);
+
+            // コンテンツエリア
+            const contentArea = document.createElement('div');
+            contentArea.className = 'monthly-goals-content';
+            container.appendChild(contentArea);
+
+            // 最新月を表示
+            showMonthlyGoalItems(contentArea, sorted[0]);
+        }
+
+        function showMonthlyGoalItems(contentArea, monthData) {
+            contentArea.innerHTML = '';
+
+            if (!monthData || !monthData.items || monthData.items.length === 0) {
+                contentArea.innerHTML = '<p class="no-data">この月の目標はありません。</p>';
+                return;
+            }
+
+            const ul = document.createElement('ul');
+            ul.className = 'monthly-goal-list';
+            monthData.items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'monthly-goal-item';
+
+                const textSpan = document.createElement('span');
+                textSpan.innerHTML = `<strong>${escapeHTML(item.text)}</strong>`;
+                li.appendChild(textSpan);
+
+                const badge = createBadge(item.status || 'pending');
+                li.appendChild(badge);
+
+                ul.appendChild(li);
+            });
+            contentArea.appendChild(ul);
         }
 
         function createBadge(status) {
@@ -1100,15 +1098,198 @@
             });
         }
 
+        function renderPersonalGoals(personalGoals) {
+            const container = document.getElementById('personal-goals-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!personalGoals || personalGoals.length === 0) {
+                container.innerHTML = '<p class="no-data">個人目標はありません。</p>';
+                return;
+            }
+
+            // 全メンバーの全月を集めてユニーク化し、降順にソート
+            const allPeriods = new Set();
+            personalGoals.forEach(member => {
+                (member.months || []).forEach(m => allPeriods.add(m.period));
+            });
+            const sortedPeriods = Array.from(allPeriods).sort().reverse();
+
+            // 月ごとにタブ切り替え
+            if (sortedPeriods.length === 0) {
+                container.innerHTML = '<p class="no-data">個人目標はありません。</p>';
+                return;
+            }
+
+            // 月セレクタ
+            const periodSelector = document.createElement('div');
+            periodSelector.className = 'personal-goals-period-selector';
+            sortedPeriods.forEach((period, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'personal-goals-period-btn' + (index === 0 ? ' active' : '');
+                btn.textContent = period;
+                btn.setAttribute('data-period', period);
+                btn.addEventListener('click', () => {
+                    periodSelector.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    showPersonalGoalsPeriod(container, personalGoals, period);
+                });
+                periodSelector.appendChild(btn);
+            });
+            container.appendChild(periodSelector);
+
+            // メンバーカードコンテナ
+            const cardsContainer = document.createElement('div');
+            cardsContainer.className = 'personal-goals-cards';
+            cardsContainer.id = 'personal-goals-cards';
+            container.appendChild(cardsContainer);
+
+            // 最新月を表示
+            showPersonalGoalsPeriod(container, personalGoals, sortedPeriods[0]);
+        }
+
+        function showPersonalGoalsPeriod(container, personalGoals, period) {
+            const cardsContainer = container.querySelector('#personal-goals-cards');
+            if (!cardsContainer) return;
+            cardsContainer.innerHTML = '';
+
+            personalGoals.forEach(member => {
+                const monthData = (member.months || []).find(m => m.period === period);
+                const card = document.createElement('div');
+                card.className = 'personal-goal-card';
+
+                const header = document.createElement('div');
+                header.className = 'personal-goal-card-header';
+
+                const nameEl = document.createElement('span');
+                nameEl.className = 'personal-goal-member-name';
+                nameEl.textContent = member.name;
+                header.appendChild(nameEl);
+
+                if (monthData && monthData.items) {
+                    const achievedCount = monthData.items.filter(i => i.status === 'achieved').length;
+                    const totalCount = monthData.items.length;
+                    const progressEl = document.createElement('span');
+                    progressEl.className = 'personal-goal-progress';
+                    progressEl.textContent = `${achievedCount}/${totalCount} 達成`;
+                    if (achievedCount === totalCount && totalCount > 0) {
+                        progressEl.classList.add('all-achieved');
+                    }
+                    header.appendChild(progressEl);
+                }
+
+                card.appendChild(header);
+
+                if (!monthData || !monthData.items || monthData.items.length === 0) {
+                    const empty = document.createElement('p');
+                    empty.className = 'personal-goal-empty';
+                    empty.textContent = 'この月の目標はまだ設定されていません';
+                    card.appendChild(empty);
+                } else {
+                    const ul = document.createElement('ul');
+                    ul.className = 'personal-goal-list';
+                    monthData.items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = `personal-goal-item personal-goal-${item.status || 'pending'}`;
+
+                        const checkbox = document.createElement('span');
+                        checkbox.className = 'personal-goal-checkbox';
+                        if (item.status === 'achieved') {
+                            checkbox.textContent = '✓';
+                        } else if (item.status === 'failed') {
+                            checkbox.textContent = '✗';
+                        } else {
+                            checkbox.textContent = '○';
+                        }
+                        li.appendChild(checkbox);
+
+                        const textSpan = document.createElement('span');
+                        textSpan.className = 'personal-goal-text';
+                        textSpan.textContent = item.text;
+                        li.appendChild(textSpan);
+
+                        const badge = createBadge(item.status || 'pending');
+                        li.appendChild(badge);
+
+                        ul.appendChild(li);
+                    });
+                    card.appendChild(ul);
+                }
+
+                cardsContainer.appendChild(card);
+            });
+        }
+
         function renderDiary(diary) {
             const container = document.getElementById('diary-list');
+            const selectorContainer = document.getElementById('diary-period-selector');
             container.innerHTML = '';
+            if (selectorContainer) selectorContainer.innerHTML = '';
+
             if (!diary || diary.length === 0) {
                 container.innerHTML = '<p class="no-data">日記はありません。</p>';
                 return;
             }
 
+            // 各エントリから月を抽出してグルーピング
+            const monthGroups = new Map();
             diary.forEach(post => {
+                const dateObj = new Date(post.date);
+                const monthKey = !isNaN(dateObj.getTime())
+                    ? `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月`
+                    : '不明';
+                if (!monthGroups.has(monthKey)) {
+                    monthGroups.set(monthKey, []);
+                }
+                monthGroups.get(monthKey).push(post);
+            });
+
+            const sortedMonths = Array.from(monthGroups.keys());
+
+            if (sortedMonths.length === 0) {
+                container.innerHTML = '<p class="no-data">日記はありません。</p>';
+                return;
+            }
+
+            // 月セレクタ
+            if (selectorContainer && sortedMonths.length > 0) {
+                // 「すべて」ボタン
+                const allBtn = document.createElement('button');
+                allBtn.className = 'personal-goals-period-btn active';
+                allBtn.textContent = 'すべて';
+                allBtn.addEventListener('click', () => {
+                    selectorContainer.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
+                    allBtn.classList.add('active');
+                    showDiaryPosts(container, diary);
+                });
+                selectorContainer.appendChild(allBtn);
+
+                sortedMonths.forEach(monthKey => {
+                    const btn = document.createElement('button');
+                    btn.className = 'personal-goals-period-btn';
+                    btn.textContent = monthKey;
+                    btn.addEventListener('click', () => {
+                        selectorContainer.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        showDiaryPosts(container, monthGroups.get(monthKey));
+                    });
+                    selectorContainer.appendChild(btn);
+                });
+            }
+
+            // 全件表示
+            showDiaryPosts(container, diary);
+        }
+
+        function showDiaryPosts(container, posts) {
+            container.innerHTML = '';
+
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<p class="no-data">この月の日記はありません。</p>';
+                return;
+            }
+
+            posts.forEach(post => {
                 const article = document.createElement('article');
                 article.className = 'diary-post';
 
@@ -3575,12 +3756,12 @@
         }
 
         function showErrorMessages() {
-            const listIds = ['yearly-goals-list', 'current-goals-list', 'achievements-list'];
+            const listIds = ['yearly-goals-list', 'achievements-list'];
             listIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '<li class="error">データの読み込みに失敗しました。</li>';
             });
-            const containers = ['past-goals-container', 'diary-list', 'event-detail-container'];
+            const containers = ['monthly-goals-container', 'personal-goals-container', 'diary-list', 'event-detail-container'];
             containers.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '<p class="error">データの読み込みに失敗しました。</p>';

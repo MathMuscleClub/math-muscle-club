@@ -12,3 +12,10 @@ supabase/.env*
 *.pdf
 # ただし exams/ 以下のPDFはGitで管理する（自動ビルド成果物）
 !exams/**/*.pdf
+
+# HPに不要なTeXソースファイル
+/upload-problems-*.tex
+/combine.tex
+/template.tex
+/tmp/
+

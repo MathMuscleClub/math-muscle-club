@@ -381,37 +381,239 @@ td a {
 }
 
 /* ==========================================
-   Past Goals Layout
+   Monthly Goals Layout
    ========================================== */
-#past-goals-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 16px;
+#monthly-goals-container {
+    margin-top: 8px;
 }
 
-.past-month-section {
-    background-color: var(--surface-soft);
-    border: 1px solid var(--line-soft);
-    border-radius: 8px;
-    padding: 16px 20px;
+.monthly-goals-content {
+    margin-top: 4px;
 }
 
-.past-month-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin: 0 0 12px 0;
-    color: #222222;
-}
-
-.past-month-section ul {
+.monthly-goal-list {
+    list-style: none;
     margin: 0;
-    padding-left: 20px;
+    padding: 0;
 }
 
-.past-month-section li {
-    font-size: 0.9rem;
-    color: #444444;
+.monthly-goal-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 0.92rem;
+}
+
+.monthly-goal-item:last-child {
+    border-bottom: none;
+}
+
+.monthly-goal-item::before {
+    content: none !important;
+    display: none !important;
+}
+
+.monthly-goal-item {
+    padding-left: 0;
+}
+
+.monthly-goal-item .badge {
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   Personal Goals
+   ========================================== */
+.personal-goals-description {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin: 0 0 16px 0;
+}
+
+.personal-goals-period-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.personal-goals-period-btn {
+    padding: 6px 16px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.personal-goals-period-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.personal-goals-period-btn.active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+
+.personal-goals-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+@media (min-width: 560px) {
+    .personal-goals-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.personal-goal-card {
+    background: var(--surface-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: box-shadow 0.2s ease;
+    animation: personalGoalFadeIn 0.3s ease;
+}
+
+.personal-goal-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes personalGoalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.personal-goal-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.personal-goal-member-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.personal-goal-progress {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    background: var(--surface);
+    padding: 2px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+}
+
+.personal-goal-progress.all-achieved {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+.personal-goal-empty {
+    font-size: 0.85rem;
+    color: #aaaaaa;
+    text-align: center;
+    padding: 12px 0;
+    margin: 0;
+}
+
+.personal-goal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.personal-goal-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    font-size: 0.88rem;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.personal-goal-item:last-child {
+    border-bottom: none;
+}
+
+.personal-goal-checkbox {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.personal-goal-pending .personal-goal-checkbox {
+    color: var(--text-muted);
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+}
+
+.personal-goal-achieved .personal-goal-checkbox {
+    color: #ffffff;
+    background: var(--accent);
+    border: 1.5px solid var(--accent);
+}
+
+.personal-goal-failed .personal-goal-checkbox {
+    color: #ffffff;
+    background: #aaaaaa;
+    border: 1.5px solid #aaaaaa;
+}
+
+.personal-goal-text {
+    flex: 1;
+    color: var(--text);
+}
+
+.personal-goal-achieved .personal-goal-text {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.personal-goal-failed .personal-goal-text {
+    text-decoration: line-through;
+    color: #bbbbbb;
+}
+
+.personal-goal-item .badge {
+    flex-shrink: 0;
+}
+
+.personal-goal-item::before {
+    content: none !important;
+    display: none !important;
+}
+
+.personal-goal-item {
+    padding-left: 0;
 }
 
 /* ==========================================
