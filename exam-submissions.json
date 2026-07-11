@@ -1,5 +1,27 @@
 [
   {
+    "id": "2014-B-1-problem",
+    "year": 2014,
+    "era": "平成26年",
+    "problemGroup": "B",
+    "problemNumber": "1",
+    "field": "algebra",
+    "title": "平成26年 B 第1問",
+    "summary": "",
+    "problemTexPath": "exam-problems/2014-B-1.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-07-03T05:43:30.807Z",
+    "updatedAt": "2026-07-11T07:13:42.534Z",
+    "tags": [
+      "ガロア理論",
+      "有限体",
+      "分解体"
+    ],
+    "status": "problem"
+  },
+  {
     "id": "2014-B-18-problem",
     "year": 2014,
     "era": "平成26年",
@@ -367,28 +389,6 @@
     "tags": [
       "可換環",
       "極大イデアル"
-    ],
-    "status": "problem"
-  },
-  {
-    "id": "2014-B-1-problem",
-    "year": 2014,
-    "era": "平成26年",
-    "problemGroup": "B",
-    "problemNumber": "1",
-    "field": "代数",
-    "title": "平成26年 B 第1問",
-    "summary": "",
-    "problemTexPath": "exam-problems/2014-B-1.tex",
-    "uploadedByName": "わらびもち",
-    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
-    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
-    "uploadedAt": "2026-07-03T05:43:30.807Z",
-    "updatedAt": "2026-07-03T05:43:30.807Z",
-    "tags": [
-      "ガロア理論",
-      "有限体",
-      "分解体"
     ],
     "status": "problem"
   },
