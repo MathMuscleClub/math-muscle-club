@@ -1,0 +1,42 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(\mathbb{N} = \{1, 2, \dots\}\) とする．\(X_j\) (\(j \in \mathbb{N}\)) を同一の分布に従う独立な確率変数系列とし，各 \(X_j\) の分布は区間 \((0,1)\) 上の一様分布であるとする．さらに，
+\[
+  A_n = \sum_{k=1}^n \prod_{j=1}^k X_j \quad (n \in \mathbb{N})
+\]
+とする．以下の問に答えよ．
+
+(1) \(n \to \infty\) のとき，\(A_n\) が概収束することを示せ．
+
+(2) 数列 \(\{c_n\}_{n=2,3,\dots}\) が，
+  \[
+    c_n \in \mathbb{N},\quad c_n \le n-1,\quad \liminf_{n \to \infty} \frac{\log c_n}{\log n} > 0
+  \]
+  を満たすとき，
+  \[
+    \lim_{n \to \infty} E\left[ \frac{1}{\sqrt{n}} \sum_{m=c_n+1}^n \left| (A_{2m} - A_{c_n})\left(X_m - \frac{1}{2}\right) \right| \right] = 0
+  \]
+  となることを示せ．
+
+(3) \(n \in \mathbb{N}\) に対し，
+  \[
+    \text{U}_n = \frac{1}{\sqrt{n}} \sum_{m=1}^n A_{2m} \left(X_m - \frac{1}{2}\right)
+  \]
+  とする．\(n \to \infty\) のとき，\(U_n\) が分布収束することを示し，極限分布を求めよ．
+
+\end{document}
