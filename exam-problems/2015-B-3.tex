@@ -1,0 +1,45 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+体 \(k\) 上の \(n\) 変数多項式環 \(S = k[x_1, \dots, x_n]\) を，\(\deg(x_i) = 1\) とおいて次数付き環と見る．\(k\langle e_1, \dots, e_n\rangle\) を \(k\) 上の \(n\) 変数非可換多項式環とし，外積代数 \(E = k\langle e_1, \dots, e_n\rangle / (e_i^2,\, e_i e_j + e_j e_i)_{1 \le i < j \le n}\) も，\(\deg(e_i) = -1\) とおいて次数付き環と見る．有限生成次数付き \(S\)-加群 \(M = \sum_{p \in \mathbb{Z}} M_p\) を考える．ここで \(M_p\) は次数 \(p\) 部分である．これに対して，次数付き右 \(E\)-加群の複体 \(R(M)\) を以下のように定義する：
+
+(a) \(p\) 番目の項は \(R(M)^p = \operatorname{Hom}_k(E, M_p)\) で与え，\(E\) を自然に右から作用させる．つまり，\(f \in R(M)^p\)，\(e, e' \in E\) に対して，\((fe)(e') = f(ee')\) と定める．
+
+(b) \(f \in R(M)^p\) の次数は，\(f\) が \(E \xrightarrow{\pi_{p-q}} E_{p-q} \to M_p\) と分解するとき，\(\deg(f) = q\) と定義する．ただし，\(\pi_{p-q} : E = \sum_{r \in \mathbb{Z}} E_r \to E_{p-q}\) は自然な射影とする．
+
+(c) 微分 \(d : R(M)^p \to R(M)^{p+1}\) は次のように定義する．
+\[
+  df(e) = \sum_{i=1}^n x_i f(e_i e) \in M_{p+1} \quad (f \in R(M)^p,\, e \in E)
+\]
+
+このとき以下の問に答えよ：
+
+(1) \(R(M)\) は次数付き右 \(E\)-加群の複体になることを証明せよ．すなわち，\(d\) は次数を保ち，\(d^2 = 0\) となることを証明せよ．
+
+(2) 複体 \(R(M)\) が完全系列になっているならば，\(M = 0\) であることを示せ．
+
+(3) 次数付き \(S\)-加群の準同型
+\[
+  h = \sum_{p \in \mathbb{Z}} h_p : M = \sum_{p \in \mathbb{Z}} M_p \to M' = \sum_{p \in \mathbb{Z}} M'_p
+\]
+に対して，次数付き右 \(E\)-加群の準同型
+\[
+  (h_p)_* : \operatorname{Hom}_k(E, M_p) \to \operatorname{Hom}_k(E, M'_p)
+\]
+を，\(f : E \to M_p\) に対して \((h_p)_*(f) = h_p \circ f\) で定義する．このとき，\((h_p)_*\) たちは \(d\) と可換で，次数付き右 \(E\)-加群の複体の準同型 \(R(h) : R(M) \to R(M')\) を誘導することを示せ．
+
+\end{document}
