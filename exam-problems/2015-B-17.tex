@@ -1,0 +1,67 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+無限個の正準変数 \(x = (x_1, x_2, \dots)\)，\(p = (p_1, p_2, \dots)\) の関数 \(f(x,p)\)，\(g(x,p)\) に対し，そのポアソン括弧を，
+\[
+  \{f,g\} = \sum_{n=1}^\infty \left( \frac{\partial f}{\partial p_n} \frac{\partial g}{\partial x_n} - \frac{\partial f}{\partial x_n} \frac{\partial g}{\partial p_n} \right)
+\]
+で定義する．\(z\) を不定元とし，母関数 \(\tau_+(z)\)，\(\tau_-(z)\)，\(\eta(z)\) を，
+\[
+  \tau_+(z) = \exp\left( - \sum_{n=1}^\infty x_n z^n \right),\quad \tau_-(z) = \exp\left( - \sum_{n=1}^\infty p_n z^{-n} \right),
+\]
+\[
+  \eta(z) = \sum_{n\in\mathbb{Z}} \eta_n z^{-n} = \exp\left( \sum_{n=1}^\infty x_n z^n \right) \exp\left( \sum_{n=1}^\infty p_n z^{-n} \right) = \frac{1}{\tau_+(z)\tau_-(z)}
+\]
+と定める．以下の問に答えよ．
+
+(1) \(\{\eta(z), \eta(w)\}\) を計算することによって，\(m > n\) のとき，次式が成立することを示せ．
+  \[
+    \{\eta_m, \eta_n\} = \sum_{l=1}^{m-n} \eta_{m-l}\eta_{n+l}.
+  \]
+
+以下，\(H = \eta_0\)，\(J = \eta_{-1}\eta_1\)，\(K = \eta_{-1}\eta_{-1}\eta_2 + \eta_{-2}\eta_1\eta_1 - \eta_{-1}\eta_0\eta_2\) とする．
+
+(2) \(\{H,J\} = 0\)，および，\(\{H,K\} = 0\) を示せ．
+
+(3) \(H\) をハミルトニアンとする時間発展の方程式
+  \[
+    \frac{df}{dt} = \{H,f\}
+  \]
+  を考える．いま，母関数 \(\tau_+(z)\)，\(\tau_-(z)\) の各係数が (II) にしたがって時間発展するとき，母関数のレベルで
+  \[
+    \frac{d\tau_-(z)}{dt}\tau_+(z) - \tau_-(z)\frac{d\tau_+(z)}{dt} + H\tau_-(z)\tau_+(z) = 1
+  \]
+  が成り立つことを，\(\{\eta(w), \tau_+(z)\}\)，\(\{\eta(w), \tau_-(z)\}\) の \(w\) に関する級数展開を用いて示せ．
+
+(4) 常微分方程式 (III) の特殊解を以下のように構成しよう．\(m\) を正の整数とし，\(2m+1\) 個のパラメータ
+  \[
+    \alpha_1,\, \dots,\, \alpha_m,\, \beta_1,\, \dots,\, \beta_m,\, \omega
+  \]
+  を用意する．これらを用いて，\(A_k(t), B_k(t), C_k(t), D_k(t)\) (\(0 \le k \le m\)) を，帰納的に，
+  \[
+    \begin{pmatrix} A_0 & B_0 \\ C_0 & D_0 \end{pmatrix} = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix},\quad
+    \begin{pmatrix} A_k & B_k \\ C_k & D_k \end{pmatrix} =
+    \begin{pmatrix} A_{k-1} & B_{k-1} \\ C_{k-1} & D_{k-1} \end{pmatrix}
+    \begin{pmatrix} 1 & \alpha_k e^{\omega t} z^k \\ \beta_k e^{-\omega t} z^{-k} & 1 \end{pmatrix}
+  \]
+  と定める．このとき，パラメータ (IV) をうまく選べば，
+  \[
+    \tau_-(z) = A_m + C_m,\quad \tau_+(z) = B_m + D_m
+  \]
+  は等高面 \(H = \omega\) に沿って常微分方程式 (III) を満たすという．パラメータ (IV) が満たすべき条件を求めよ．
+
+\end{document}
