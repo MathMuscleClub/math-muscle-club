@@ -1,0 +1,50 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(q\) を \(1\) より大きい実数とし，任意の複素数 \(z\) に対して，
+\[
+  L(z) := \sum_{n=0}^{+\infty} \frac{z^n}{[q]_n}
+\]
+と定義する．ただし，\([q]_n\) (\(n = 0, 1, 2, \dots\)) は，
+\[
+  [q]_0 := 1,\quad [q]_n := \prod_{k=1}^n (1 - q^k) \quad (n \ge 1)
+\]
+である．以下の問に答えよ．
+
+(1) \(L(q)\) の値を求めよ．
+
+(2) \(k\) を \(2\) 以上の整数とするとき，\(L(q^k) = 0\) となることを示せ．
+
+(3) 複素数を係数として，基本関係式 \(wv = qvw\) を満たす \(v, w\) により生成される非可換多元環を \(\C\{v,w\}\) とする．そして，\(\C\{v,w\}\) を完備化して得られる \(v,w\) の形式的べき級数環を \(\C\{\{v,w\}\}\) とする．また，\(\overline{L}\) を \(\C\{\{v,w\}\}\) に拡張し，
+  \[
+    L(v) := \sum_{n=0}^{+\infty} \frac{v^n}{[q]_n},\quad L(v+w) := \sum_{n=0}^{+\infty} \frac{(v+w)^n}{[q]_n}
+  \]
+  などとする．積 \(L(v)L(w)\) が，\(\sum_{n=0}^{+\infty} \sum_{k=0}^n \frac{v^{n-k} w^k}{[q]_{n-k} [q]_k}\) に等しいとき，
+  \[
+    L(v+w) = L(v)L(w)
+  \]
+  が成り立つことを示せ．
+
+(4) さらに，\(L(w)L(w)^{-1} = 1 = L(w)^{-1}L(w)\) を満たす，\(w\) のみの形式的べき級数 \(L(w)^{-1} \in \C\{\{v,w\}\}\) が存在するとき，次の関係式を示せ．
+
+(i) \(L(L(w)vL(w)^{-1} + w) = L(w)L(v)\)．
+
+(ii) \(L(w)L(v) = L(v - vw + w)\)．
+
+(iii) \(L(w)L(v) = L(w)L(-vw)L(v)\)．
+
+\end{document}
