@@ -1,0 +1,32 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(p\) を素数，\(\zeta = \exp \frac{2\pi\sqrt{-1}}{p} \in \C^\times\) とし，\(G\) を
+\[
+  a = \begin{pmatrix} \zeta & 0 & \dots & 0 \\ 0 & & & \\ \vdots & & I_{p-1} & \\ 0 & & & \end{pmatrix} \quad \text{および} \quad b = \begin{pmatrix} 0 & \dots & 0 & 1 \\ & & & 0 \\ & I_{p-1} & & \vdots \\ & & & 0 \end{pmatrix}
+\]
+（\(I_{p-1}\) は \((p-1)\) 次単位行列）によって生成される \(\GL(p, \C)\) の部分群とする．
+
+(1) \(G\) の共役類の個数を求めよ．
+
+(2) \(G\) から \(\C^\times\) への群準同型の個数を求めよ．
+
+(3) \(G\) の \(\C\) 上の既約表現のうち \(1\) 次元でないものの同値類の個数と，おおのおのの次元を求めよ．
+
+ただし \(\C\) は複素数体，\(\C^\times\) は \(\C\) の \(0\) 以外の元全体が乗法に関してなす群，\(\GL(p, \C)\) は \(\C\) の元を成分とする可逆な \(p\) 次正方行列全体がなす群を表す．
+
+\end{document}
