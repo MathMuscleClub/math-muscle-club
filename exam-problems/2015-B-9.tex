@@ -1,0 +1,34 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(0 < a < b\) に対し，
+\[
+  f_{a,b}(x) = \begin{cases} \frac{1}{x}, & a < |x| < b \text{ のとき}, \\ 0, & \text{その他のとき}, \end{cases}
+\]
+と定める．\(X = \{ g \in L^2(\R) \mid \|g\|_2 \le 1 \}\) とおくとき次の問いに答えよ．ただし，\(\|\cdot\|_2\) は \(L^2\) ノルムを表し，\(i = \sqrt{-1}\) とする．
+
+(1) \(\sup_{g \in X} \|f_{a,b} * g\|_2 < \infty\) であることを示せ．ここで \(*\) は合成積 (convolution) を表す．
+
+(2) \(\int_{-\infty}^\infty f_{a,b}(x) e^{-ix\xi} \dd x\) を，
+  \[
+    F(\xi) = \int_0^\xi \frac{\sin\eta}{\eta} \dd\eta
+  \]
+  を使って表せ．ここで \(\xi\) は実数である．
+
+(3) \(\sup_{a,b} \sup_{g \in X} \|f_{a,b} * g\|_2 < \infty\) であることを示せ．ここで，\(\lim_{\xi \to \infty} F(\xi) = \frac{\pi}{2}\) は既知としてよい．
+
+\end{document}
