@@ -1,0 +1,31 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\(a > b > c\) を正の実数とし，\(i = \sqrt{-1}\) とする．\(n = 0, 1, 2, 3, 4\) に対し，複素平面上に \(a_n = a e^{i \cdot 2n\pi/5}\)，\(b_n = b e^{i \cdot 2n\pi/5}\)，\(c_n = c e^{i \cdot 2n\pi/5}\) で頂点を定める．\(5\) を法とする各整数 \(n\) に対して，有向辺 \(a_n \to a_{n+1}\)，\(b_{n+1} \to b_n\)，\(c_n \to c_{n+1}\)，\(a_n \to b_n\)，\(b_n \to c_n\)，\(b_n \to a_n\)，\(c_n \to b_n\) を与えると，\(15\) 個の頂点と \(35\) 個の有向辺からなる有向グラフができる．頂点の集合を \(Q\) とおく．有向辺に沿った無限のパス \(\pi(0) \to \pi(1) \to \pi(2) \to \dots\) のうちで，最初の頂点 \(\pi(0)\) が \(q \in Q\) に等しいものの全体を \(\Pi(q)\) と書くことにする．集合 \(X \subseteq Q\) に対して，
+\[
+  \mathbf{EG}(X) = \{ q \in Q \mid \exists\pi\in\Pi(q)\ \forall n \ge 0\ \pi(n) \in X \},
+\]
+\[
+  \mathbf{AF}(X) = \{ q \in Q \mid \forall\pi\in\Pi(q)\ \exists n \ge 0\ \pi(n) \in X \}
+\]
+と定める．また，\(|X|\) で \(X\) の元の個数を表すとする．
+
+(1) \(\min \{ |X| \mid \mathbf{AF}(X) = Q \}\) を求めよ．
+
+(2) \(\min \{ |X| \mid \mathbf{AF}(\mathbf{EG}(X)) = Q \}\) を求めよ．
+
+\end{document}
