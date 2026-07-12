@@ -1,0 +1,42 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+定数 \(0 < a < 1\) に対して，\(2\) 次元トーラス \(T^2 = \R^2/\Z^2\) 上のベクトル場 \(F(x, y)\) と関数 \(L(x, y)\) を次のように定める．
+\[
+  F(x, y) = (F_1(x, y), F_2(x, y)),
+\]
+\[
+  L(x, y) = \cos(2\pi x - \pi) \cos(2\pi y - \pi).
+\]
+ただし
+\[
+  F_1(x, y) = \cos(2\pi x - \pi) \{ a \sin(2\pi x - \pi) - \sin(2\pi y - \pi) \},
+\]
+\[
+  F_2(x, y) = \cos(2\pi y - \pi) \{ \sin(2\pi x - \pi) + a \sin(2\pi y - \pi) \}
+\]
+とする．次の問に対する答えを理由とともに述べよ．
+
+(1) \(F(x, y) = (0, 0)\) となる \((x, y)\) をすべて求めよ．
+
+(2) (1) で答えた \((x, y)\) に対し，\((x, y)\) における微分 \(DF_{(x, y)}\) が実数でない固有値を持つような \((x, y)\) をすべて求めよ．
+
+(3) ベクトル場 \(F(x, y)\) の生成するフロー \(\phi_t(x, y)\) (\(t \in \R\)) に対し，\(\left. \frac{d}{dt} L(\phi_t(x, y)) \right|_{t=0}\) を計算せよ．
+
+(4) フロー \(\phi_t(x, y)\) は不動点以外に周期軌道を持つかどうか判定せよ．
+
+\end{document}
