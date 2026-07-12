@@ -1,0 +1,32 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+以下を通じ，\(3\) 次元ユークリッド空間 \(\R^3\) 内の，原点を中心とする単位球面を \(S^2\) で表すことにする．また点 \(P \in S^2\) に対し，\(G_P\) で \(P\) を中心とする \(S^2\) 上の大円を表す．大円をその上の相異なる \(2\) 点で切ると \(2\) つの弧が得られる．そのような弧であって長さが \(\pi\) 以下のものを大円の劣弧と呼ぶ．
+
+(1) \(S^2\) 上の大円の劣弧 \(\sigma\) に対し，\(R = \{ P \in S^2 \mid G_P \cap \sigma \ne \emptyset \}\) としたとき，\(R\) の面積 \(\operatorname{Area}(R)\) と \(\sigma\) の長さ \(\operatorname{Length}(\sigma)\) との間にどのような関係が成り立つか，理由とともに答えよ．
+
+(2) \(S^2\) 上の大円の劣弧を有限個つなげて得られる連続閉曲線 \(\alpha\) に対し，その長さ \(\operatorname{Length}(\alpha)\) とルベーグ積分 \(\int_{S^2} |G_P \cap \alpha| \dd P\) の間にどのような関係が成り立つか．ただし，\(|G_P \cap \alpha|\) は \(S^2\) 上の点 \(P\) に対して集合 \(G_P \cap \alpha\) の要素の個数を対応させる関数である．なお，この関数が \(S^2\) 上のほとんどすべての点 \(P\) に対して（有限な）偶数の値をとるルベーグ可測関数であるという事実は，(2) および (3) において証明なしで用いてよい．
+
+(3) 単位球面 \(S^2\) 上の \(C^1\) 級曲線 \(\beta(s)\) (\(0 \le s \le \ell\)) が閉（すなわち，\(\beta(0) = \beta(\ell)\), \(\dot{\beta}(0) = \dot{\beta}(\ell)\)，ただし，\({}^\cdot = d/ds\)），かつその長さが \(2\pi\) 以下であれば，それを含む \(S^2\) の閉半球面が存在することを証明せよ．
+
+(4) 空間 \(\R^3\) 内の \(C^2\) 級曲線 \(\gamma(s)\) (\(0 \le s \le \ell\)) が閉（すなわち，\(\gamma(0) = \gamma(\ell)\), \(\dot{\gamma}(0) = \dot{\gamma}(\ell)\), \(\ddot{\gamma}(0) = \ddot{\gamma}(\ell)\)），かつ弧長でパラメータ付けられている（すなわち，\(|\dot{\gamma}(s)| \equiv 1\)）とする．そのとき，\(\gamma(s)\) の曲率 \(|\ddot{\gamma}(s)|\) は
+  \[
+    \int_0^\ell |\ddot{\gamma}(s)| \dd s \ge 2\pi
+  \]
+  を満たすことを示せ．
+
+\end{document}
