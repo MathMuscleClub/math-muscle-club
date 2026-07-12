@@ -1,0 +1,32 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+\((\Omega, \mathcal{B}, \mu)\) を測度空間，
+\[
+  X = \left\{ f : \Omega \to \R \,\middle|\, f \text{ は } \mathcal{B}\text{-可測で } \int_\Omega \sqrt{|f(x)|} \, \mu(dx) < \infty \text{ を満たす．} \right\}
+\]
+とする．ただし，\(L^p\)-空間の場合と同様に，ほとんどいたるところ \(f(x) = g(x)\) のときは \(f = g\) とみなす．
+
+(1) \(f, g \in X\) に対して，
+  \[
+    \rho(f,g) = \int_\Omega \sqrt{|f(x) - g(x)|} \, \mu(dx)
+  \]
+  と定義すると，\(\rho(\cdot,\cdot)\) は \(X\) 上の距離であることを示せ．
+
+(2) \((X, \rho)\) は，完備な距離空間であることを証明せよ．
+
+\end{document}
