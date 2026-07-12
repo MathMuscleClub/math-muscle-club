@@ -66,7 +66,7 @@
           "period": "2026年7月",
           "items": [
             { "text": "ベンチプレス 55kg x 10回 70kg x 1回", "status": "pending" },
-            { "text": "スクワッド 80kg x 10回: "pending" }
+            { "text": "スクワッド 80kg x 10回", "status": "pending" }
           ]
         }
       ]
