@@ -1,0 +1,67 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+次のような非線形連立常微分方程式を考える：
+\[
+  \frac{dx(t)}{dt} = -\beta x(t)y(t),
+\]
+\[
+  \frac{dy(t)}{dt} = -\gamma y(t) + \beta (x(t) + \sigma z(t))y(t),
+\]
+\[
+  \frac{dz(t)}{dt} = \gamma y(t) - \beta \sigma z(t) y(t).
+\]
+ただし，\(\beta, \gamma, \sigma\) はすべて正の実数である．\(\R^3\) の集合 \(\Omega\) とその部分集合 \(\Omega_0\) を，
+\[
+  \Omega = \{ (x,y,z) \in \R^3 \mid x + y + z = 1,\, x \ge 0,\, y \ge 0,\, z \ge 0 \},
+\]
+\[
+  \Omega_0 = \{ (x,y,z) \in \R^3 \mid x + y + z = 1,\, x = 0,\, y \ge 0,\, z \ge 0 \}
+\]
+と定義する．\((x(0), y(0), z(0)) \in \Omega\) と仮定する．また，パラメータ \(R_0\) を，
+\[
+  R_0 = \frac{\beta}{\gamma}
+\]
+と定義する．以下では，\(0 \le t < \infty\) において，この微分方程式の解が一意的に存在することを仮定してよい．このとき，次の問に答えよ．
+
+(1) 任意の \(t > 0\) で，\((x(t), y(t), z(t)) \in \Omega\) となることを示せ．また，もし，\((x(0), y(0), z(0)) \in \Omega_0\) であれば，任意の \(t > 0\) で，\((x(t), y(t), z(t)) \in \Omega_0\) となることを示せ．
+
+(2) \((x(0), y(0), z(0)) \in \Omega_0\) であるとする．このとき，\(\sigma R_0 \le 1\) であれば，
+  \[
+    \text{lim}_{t \to \infty} y(t) = 0
+  \]
+  となり，\(\sigma R_0 > 1\) かつ \(y(0) \ne 0\) であれば，
+  \[
+    \text{lim}_{t \to \infty} y(t) = 1 - \frac{1}{\sigma R_0}
+  \]
+  となることを示せ．
+
+(3) \(x\) を \(z\) の関数と見なして，\(dx/dz\) を考察することによって，軌道に沿って定数となる \(x\) と \(z\) のみで記述される保存量が存在することを示せ．ただし，\(x(0) \ne 0\) とする．
+
+(4) \((x(0), y(0), z(0)) \in \Omega\) であるとする．このとき，\(\sigma R_0 \le 1\) であれば，
+  \[
+    \text{lim}_{t \to \infty} y(t) = 0
+  \]
+  となることを示せ．
+
+(5) \(\sigma R_0 > 1\) かつ \(y(0) \ne 0\) とする．\(\sigma \le 1\) であれば
+  \[
+    \text{lim}_{t \to \infty} y(t) = 1 - \frac{1}{\sigma R_0}
+  \]
+  となることを示せ．
+
+\end{document}
