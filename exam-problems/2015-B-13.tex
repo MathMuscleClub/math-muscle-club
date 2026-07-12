@@ -1,0 +1,34 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+(1) \(A\) を正則な \(n \times n\) エルミート行列とし，\(b \in \C^n\) とする．\(N\) を \(N + N^* - A\) が正値行列となるような正則行列として，\(P = N - A\) と定める．ここで，\(N^*\) は \(N\) の複素共役転置行列を表す．連立一次方程式 \(Ax = b\) を解くために，反復法
+  \[
+    Nx^{(k+1)} = Px^{(k)} + b \quad (k = 0, 1, \dots)
+  \]
+  を考える．このとき，任意の初期ベクトル \(x^{(0)}\) に対して点列 \(\{x^{(k)}\}_{k \ge 0}\) が \(Ax = b\) の解 \(x\) に収束するための必要十分条件は，\(A\) が正値行列であることを証明せよ．
+
+(2) 連立一次方程式
+  \[
+    \begin{pmatrix} 4 & -1 & -1 \\ -1 & 4 & -2 \\ -1 & -2 & 4 \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \\ x_3 \end{pmatrix} = \begin{pmatrix} 4 \\ 5 \\ 6 \end{pmatrix}
+  \]
+  に一意的な解 \((x_1, x_2, x_3)\) が存在することを示し，さらに，任意の初期ベクトル \((x_1^{(0)}, x_2^{(0)}, x_3^{(0)})\) に対して，
+  \[
+    \begin{pmatrix} 4 & 0 & 0 \\ -1 & 4 & 0 \\ -1 & -2 & 4 \end{pmatrix} \begin{pmatrix} x_1^{(k+1)} \\ x_2^{(k+1)} \\ x_3^{(k+1)} \end{pmatrix} = \begin{pmatrix} 0 & 1 & 1 \\ 0 & 0 & 2 \\ 0 & 0 & 0 \end{pmatrix} \begin{pmatrix} x_1^{(k)} \\ x_2^{(k)} \\ x_3^{(k)} \end{pmatrix} + \begin{pmatrix} 4 \\ 5 \\ 6 \end{pmatrix} \quad (k = 0, 1, \dots)
+  \]
+  によって生成された点列 \(\{(x_1^{(k)}, x_2^{(k)}, x_3^{(k)})\}_{k \ge 0}\) が，\((x_1, x_2, x_3)\) に収束することを証明せよ．
+
+\end{document}
