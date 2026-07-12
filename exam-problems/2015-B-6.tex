@@ -1,0 +1,28 @@
+\documentclass[12pt]{jlreq}
+\usepackage{amsmath, amssymb}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\dd}{\,d}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\Impart}{\operatorname{Im}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+\begin{document}
+
+円周 \(S^1\) を \(\{ z \in \C \mid |z| = 1 \}\) とみなし，\(T^2 = S^1 \times S^1\) と表す．\(T^2 \times [0, 1]\) の境界の \(2\) つの成分 \(T^2 \times \{0\}\) と \(T^2 \times \{1\}\) を
+\[
+  (z, \zeta, 1) \sim (z, z^2 \zeta, 0), \quad (z, \zeta) \in S^1 \times S^1 = T^2
+\]
+に従って同一視する．\(T^2 \times [0, 1]\) からこのようにして得られる商空間を \(X\) とする．また，連続写像 \(T^2 \times [0, 1] \to T^2\)，\((z, \zeta, t) \mapsto (z, e^{2\pi\sqrt{-1}t})\) の誘導する連続写像を \(\pi : X \to T^2\) とする．
+
+(1) \(X\) の整数係数ホモロジー群 \(H_*(X; \mathbb{Z})\) を求めよ．
+
+(2) 連続写像 \(s : T^2 \to X\) で \(\pi \circ s = 1_{T^2}\) をみたすものが存在しないことを証明せよ．ただし \(1_{T^2}\) は \(T^2\) の恒等写像を表す．
+
+\end{document}
