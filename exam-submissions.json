@@ -1,5 +1,27 @@
 [
   {
+    "id": "2015-B-1-problem",
+    "year": 2015,
+    "era": "平成27年",
+    "problemGroup": "B",
+    "problemNumber": "1",
+    "field": "algebra",
+    "title": "平成27年 B 第1問",
+    "summary": "",
+    "problemTexPath": "exam-problems/2015-B-1.tex",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-07-12T22:10:44.513Z",
+    "updatedAt": "2026-07-14T10:54:06.013Z",
+    "tags": [
+      "群論",
+      "線形代数",
+      "表現論"
+    ],
+    "status": "problem"
+  },
+  {
     "id": "2015-B-18-problem",
     "year": 2015,
     "era": "平成27年",
@@ -369,28 +391,6 @@
     "tags": [
       "可換環",
       "イデアル"
-    ],
-    "status": "problem"
-  },
-  {
-    "id": "2015-B-1-problem",
-    "year": 2015,
-    "era": "平成27年",
-    "problemGroup": "B",
-    "problemNumber": "1",
-    "field": "代数",
-    "title": "平成27年 B 第1問",
-    "summary": "",
-    "problemTexPath": "exam-problems/2015-B-1.tex",
-    "uploadedByName": "わらびもち",
-    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
-    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
-    "uploadedAt": "2026-07-12T22:10:44.513Z",
-    "updatedAt": "2026-07-12T22:10:44.513Z",
-    "tags": [
-      "群論",
-      "線形代数",
-      "表現論"
     ],
     "status": "problem"
   },
