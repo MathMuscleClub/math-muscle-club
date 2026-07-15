@@ -53,8 +53,7 @@
         {
           "period": "2026年7月",
           "items": [
-            { "text": "ベンチプレス 55kg x 10回 70kg x 1回", "status": "pending" },
-            { "text": "プロテインを毎日飲む", "status": "pending" }
+            { "text": "ベンチプレス 55kg x 10回 70kg x 1回", "status": "pending" }
           ]
         }
       ]
