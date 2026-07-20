@@ -1,5 +1,23 @@
 [
   {
+    "id": "2026-B-20260720014603-user-5c004f14",
+    "year": 2026,
+    "problemGroup": "B",
+    "problemNumbers": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "filePath": "exams/2026/B/submissions/2026-B-20260720014603-user-5c004f14/answer.pdf",
+    "fileType": "pdf",
+    "uploadedByName": "わらびもち",
+    "uploadedByEmail": "suzuki-yuga870@g.ecc.u-tokyo.ac.jp",
+    "uploadedByUserId": "95a665dd-5cf1-406b-ba89-061025cceca4",
+    "uploadedAt": "2026-07-20T01:46:03.513Z",
+    "status": "submitted"
+  },
+  {
     "id": "2015-B-1-problem",
     "year": 2015,
     "era": "平成27年",
