@@ -1159,23 +1159,61 @@ class LaTeXSushidaGame {
 }
 
 // Global singletons
-let latexGame = null;
+// 数式表示は過去問機能に依存せず、ゲーム開始前に準備する。
+let mathRendererPromise = null;
+function loadMathRenderer() {
+    if (mathRendererPromise) return mathRendererPromise;
+    mathRendererPromise = new Promise((resolve, reject) => {
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: { fontCache: 'global' }
+        };
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js';
+        script.async = true;
+        script.onload = () => window.MathJax.startup.promise.then(resolve, reject);
+        script.onerror = () => {
+            script.remove();
+            reject(new Error('MathJaxの読み込みに失敗しました'));
+        };
+        document.head.appendChild(script);
+    }).catch(error => {
+        mathRendererPromise = null;
+        throw error;
+    });
+    return mathRendererPromise;
+}
 
-function startLaTeXGame(courseType) {
-    if (!latexGame) {
-        latexGame = new LaTeXSushidaGame();
+let latexGame = null;
+let latexGameStartRequest = 0;
+
+async function startLaTeXGame(courseType) {
+    const request = ++latexGameStartRequest;
+    try {
+        if (!latexGame) latexGame = new LaTeXSushidaGame();
+        // 音声の初期化はユーザーのクリック中に行う。
+        latexGame.se.init();
+        await loadMathRenderer();
+        // 読み込み中にタブ移動・中断した場合や、連打した古い開始要求は無視する。
+        if (request !== latexGameStartRequest || !document.getElementById('latex-typing').classList.contains('active')) return;
+        latexGame.quit();
+        latexGame.start(courseType);
+    } catch (error) {
+        if (request === latexGameStartRequest) {
+            alert('数式を読み込めませんでした。接続を確認して、もう一度コースを選んでください。');
+        }
     }
-    latexGame.start(courseType);
 }
 
 function quitLaTeXGame() {
-    if (latexGame) {
-        latexGame.quit();
-    }
+    latexGameStartRequest++;
+    if (latexGame) latexGame.quit();
 }
 
 function restartLaTeXGame() {
-    if (latexGame) {
-        latexGame.start(latexGame.currentCourse);
-    }
+    if (latexGame) startLaTeXGame(latexGame.currentCourse);
 }
