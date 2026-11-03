@@ -4,23 +4,25 @@
 //   行を押すと編集、「＋ 追加」で新しい行、削除した行は「削除したもの」から戻せる。
 //   部員名・種目名を変えると、日記や目標の同じ名前もスクリプト側で書き換わる。
 // ==========================================
+// 直すシート（プルダウンでグループに分けて並べる）
 const EDITOR_SHEETS = [
-    { key: 'diary', label: '日記' },
-    { key: 'activity', label: '活動した日' },
-    { key: 'goals', label: '目標' },
-    { key: 'members', label: '部員' },
-    { key: 'lifts', label: '種目' },
-    { key: 'schedule', label: '予定' },
-    { key: 'weekly', label: '毎週の予定' },
-    { key: 'trainings', label: 'トレーニング' },
-    { key: 'info', label: '基本情報' },
-    { key: 'yearly', label: '今年の目標と実績' },
-    { key: 'trash', label: '🗑 削除したもの' }
+    { key: 'diary', label: '日記', group: 'よく使う' },
+    { key: 'activity', label: '活動した日', group: 'よく使う' },
+    { key: 'goals', label: '目標', group: 'よく使う' },
+    { key: 'members', label: '部員', group: '部の情報' },
+    { key: 'lifts', label: '種目', group: '部の情報' },
+    { key: 'schedule', label: '予定', group: '部の情報' },
+    { key: 'weekly', label: '毎週の予定', group: '部の情報' },
+    { key: 'trainings', label: 'トレーニング', group: '部の情報' },
+    { key: 'info', label: '基本情報', group: '部の情報' },
+    { key: 'yearly', label: '今年の目標と実績', group: '部の情報' },
+    { key: 'trash', label: '削除したもの', group: 'そのほか' }
 ];
 // 新しい順に並べるシート（いちばん左の列が日付や月）
 const EDITOR_NEWEST_FIRST = ['diary', 'activity', 'goals', 'schedule', 'trash'];
 
-const editorState = { sheet: 'diary', table: null, query: '', loading: false };
+// cache: 読み込んだシートをしまっておき、切り替えをすぐ表示する（保存したら捨てる）
+const editorState = { sheet: 'diary', table: null, query: '', request: 0, cache: {} };
 let editorDialog = null;
 
 function editorPassphrase() {
@@ -76,59 +78,71 @@ function renderEditorLogin(host, message = '') {
 }
 
 function renderEditorShell(host) {
+    const groups = [...new Set(EDITOR_SHEETS.map(sheet => sheet.group))];
     host.innerHTML = `
         <div class="editor-shell">
-            <div class="editor-sheets" role="tablist" aria-label="直すシート">
-                ${EDITOR_SHEETS.map(s => `<button type="button" class="personal-goals-period-btn" data-sheet="${s.key}" role="tab">${escapeHTML(s.label)}</button>`).join('')}
-            </div>
             <div class="editor-toolbar">
-                <input class="diary-search editor-search" type="search" placeholder="このシートを検索" aria-label="このシートを検索">
-                <button type="button" class="write-button-inline editor-add">＋ 追加</button>
-                <button type="button" class="calendar-today-btn editor-reload">読み込み直す</button>
+                <select class="editor-sheet-select" aria-label="直すもの">
+                    ${groups.map(group => `
+                        <optgroup label="${escapeAttribute(group)}">
+                            ${EDITOR_SHEETS.filter(sheet => sheet.group === group).map(sheet => `<option value="${sheet.key}">${escapeHTML(sheet.label)}</option>`).join('')}
+                        </optgroup>
+                    `).join('')}
+                </select>
+                <input class="editor-search" type="search" placeholder="検索" aria-label="検索">
+                <button type="button" class="write-button-inline editor-add" aria-label="追加">＋ 追加</button>
             </div>
-            <p class="editor-status" role="status"></p>
+            <div class="editor-statusbar">
+                <span class="editor-status" role="status"></span>
+                <button type="button" class="editor-reload" aria-label="読み込み直す" title="読み込み直す">↻</button>
+            </div>
             <div class="editor-list"></div>
-            <p class="editor-foot">
-                スプレッドシートと同じ内容です。部員名・種目名を変えると、日記や目標の同じ名前も書き換わります。
-                <button type="button" class="editor-logout">合言葉を忘れる</button>
-            </p>
+            <p class="editor-foot"><button type="button" class="editor-logout">合言葉を忘れる</button></p>
         </div>
     `;
-    host.querySelectorAll('[data-sheet]').forEach(button => {
-        button.addEventListener('click', () => {
-            editorState.sheet = button.dataset.sheet;
-            editorState.query = '';
-            host.querySelector('.editor-search').value = '';
-            loadEditorTable();
-        });
+    const select = host.querySelector('.editor-sheet-select');
+    select.value = editorState.sheet;
+    select.addEventListener('change', () => {
+        editorState.sheet = select.value;
+        editorState.query = '';
+        host.querySelector('.editor-search').value = '';
+        loadEditorTable();
     });
     host.querySelector('.editor-search').addEventListener('input', event => {
         editorState.query = event.target.value.trim().toLowerCase();
         renderEditorList();
     });
     host.querySelector('.editor-add').addEventListener('click', () => openEditorDialog(null));
-    host.querySelector('.editor-reload').addEventListener('click', () => loadEditorTable());
+    host.querySelector('.editor-reload').addEventListener('click', () => loadEditorTable({ fresh: true }));
     host.querySelector('.editor-logout').addEventListener('click', () => {
         writeLocal(PASSPHRASE_KEY, '');
         editorState.table = null;
+        editorState.cache = {};
         renderEditorLogin(host);
     });
 }
 
-async function loadEditorTable() {
+async function loadEditorTable({ fresh = false } = {}) {
     const host = document.getElementById('editor');
     const status = host.querySelector('.editor-status');
-    host.querySelectorAll('[data-sheet]').forEach(b => {
-        const active = b.dataset.sheet === editorState.sheet;
-        b.classList.toggle('active', active);
-        b.setAttribute('aria-selected', active ? 'true' : 'false');
-    });
-    host.querySelector('.editor-add').hidden = editorState.sheet === 'trash';
+    const sheet = editorState.sheet;
+    host.querySelector('.editor-add').hidden = sheet === 'trash';
+
+    // 前に読んだシートなら、すぐ出す
+    if (!fresh && editorState.cache[sheet]) {
+        editorState.table = editorState.cache[sheet];
+        renderEditorList();
+        return;
+    }
+
+    // 切り替えを続けて押しても、最後に選んだシートの結果だけを使う
+    const request = ++editorState.request;
+    editorState.table = null;
     status.textContent = '読み込んでいます...';
     host.querySelector('.editor-list').innerHTML = '';
-    editorState.loading = true;
     try {
-        const result = await postToSheet('getTable', { sheet: editorState.sheet }, editorPassphrase());
+        const result = await postToSheet('getTable', { sheet }, editorPassphrase());
+        if (request !== editorState.request) return;
         if (!result.ok) {
             if (result.code === 'bad_passphrase') {
                 renderEditorLogin(host, '合言葉が変わったようです。もう一度入れてください。');
@@ -137,14 +151,12 @@ async function loadEditorTable() {
             status.textContent = result.error || '読み込めませんでした。';
             return;
         }
-        if (result.sheet !== editorState.sheet) return; // 読み込み中に別のシートに切り替えた
+        editorState.cache[sheet] = result;
         editorState.table = result;
-        status.textContent = '';
         renderEditorList();
     } catch (error) {
-        status.textContent = '通信できませんでした。「読み込み直す」を押してください。';
-    } finally {
-        editorState.loading = false;
+        if (request !== editorState.request) return;
+        status.textContent = '読み込めませんでした。↻ を押してください。';
     }
 }
 
@@ -322,6 +334,7 @@ async function runEditorAction(action, data, message, doneText) {
         }
         editorDialog.close();
         showSiteToast(result.renamed ? `${doneText}（ほかの ${result.renamed} か所も書き換えました）` : doneText);
+        editorState.cache = {};
         loadEditorTable();
         reloadSiteData();
     } catch (error) {

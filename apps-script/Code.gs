@@ -194,22 +194,30 @@ function doPost(e) {
     return json_({ ok: false, error: '合言葉が違います。', code: 'bad_passphrase' });
   }
 
+  // 読むだけの操作は順番待ちしない（編集タブで切り替えを続けて押しても詰まらないように）
+  try {
+    if (body.action === 'check') return json_({ ok: true });
+    if (body.action === 'getTable') return json_(getTable_(body.data || {}));
+  } catch (error) {
+    return json_({ ok: false, error: String(error.message || error) });
+  }
+
   const lock = LockService.getScriptLock();
-  lock.waitLock(10000);
+  if (!lock.tryLock(20000)) return json_({ ok: false, error: 'ほかの人が保存中です。少し待ってからもう一度試してください。' });
   try {
     ensureSheets_();
-    if (body.action === 'check') return json_({ ok: true });
     if (body.action === 'addDiary') return json_(addDiary_(body.data || {}));
     if (body.action === 'addGoals') return json_(addGoals_(body.data || {}));
     if (body.action === 'setGoalStatus') return json_(setGoalStatus_(body.data || {}));
     if (body.action === 'importData') return json_(importData_(body.data || {}));
     if (body.action === 'setActivity') return json_(setActivity_(body.data || {}));
-    if (body.action === 'getTable') return json_(getTable_(body.data || {}));
     if (body.action === 'updateRow') return json_(updateRow_(body.data || {}));
     if (body.action === 'addRow') return json_(addRow_(body.data || {}));
     if (body.action === 'deleteRow') return json_(deleteRow_(body.data || {}));
     if (body.action === 'restoreRow') return json_(restoreRow_(body.data || {}));
     return json_({ ok: false, error: '知らない操作です。' });
+  } catch (error) {
+    return json_({ ok: false, error: String(error.message || error) });
   } finally {
     lock.releaseLock();
   }

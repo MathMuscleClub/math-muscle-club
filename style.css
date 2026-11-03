@@ -1962,25 +1962,78 @@ body.sheet-enabled .tab-button-edit {
     background: var(--surface);
 }
 
-.editor-sheets {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 14px;
-}
-
 .editor-toolbar {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+}
+
+.editor-sheet-select,
+.editor-search {
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    padding: 8px 14px;
+    min-width: 0;
+}
+
+.editor-sheet-select {
+    flex: 0 0 auto;
+    font-weight: 700;
+}
+
+.editor-search {
+    flex: 1 1 auto;
+}
+
+.editor-sheet-select:focus,
+.editor-search:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.editor-statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px 2px;
+    min-height: 1.6em;
 }
 
 .editor-status {
     font-size: 0.8rem;
     color: var(--text-muted);
-    margin: 10px 0;
-    min-height: 1.2em;
+}
+
+.editor-reload {
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
+.editor-reload:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+@media (max-width: 480px) {
+    .editor-add {
+        padding: 8px 12px;
+        font-size: 0;
+    }
+
+    .editor-add::before {
+        content: "＋";
+        font-size: 1rem;
+    }
 }
 
 .editor-list {
@@ -2032,6 +2085,7 @@ body.sheet-enabled .tab-button-edit {
     font-size: 0.75rem;
     color: var(--text-muted);
     margin-top: 16px;
+    text-align: right;
 }
 
 .editor-logout {
