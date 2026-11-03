@@ -1661,3 +1661,322 @@ body.sheet-enabled .write-button {
 .write-field[hidden] {
     display: none;
 }
+
+/* ==========================================
+   Activity Heatmap（活動日記のマス目）
+   ========================================== */
+.activity-heatmap {
+    margin-bottom: 24px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+
+.heatmap-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.heatmap-stats div {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.heatmap-stats strong {
+    font-family: var(--mono);
+    font-size: 1.4rem;
+    color: var(--accent);
+}
+
+.heatmap-stats span {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.heatmap-scroll {
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.heatmap {
+    --cell: 14px;
+    --gap: 3px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 6px;
+    width: max-content;
+}
+
+.heatmap-months {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: repeat(var(--weeks), var(--cell));
+    gap: var(--gap);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    height: 1.2em;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.heatmap-weekdays {
+    display: grid;
+    grid-template-rows: repeat(7, var(--cell));
+    gap: var(--gap);
+    font-size: 0.62rem;
+    line-height: var(--cell);
+    color: var(--text-muted);
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-rows: repeat(7, var(--cell));
+    grid-auto-columns: var(--cell);
+    grid-auto-flow: column;
+    gap: var(--gap);
+}
+
+.heatmap-cell {
+    width: var(--cell);
+    height: var(--cell);
+    border-radius: 3px;
+    border: 0;
+    padding: 0;
+    display: block;
+}
+
+button.heatmap-cell {
+    cursor: pointer;
+}
+
+button.heatmap-cell:hover,
+button.heatmap-cell:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+.heatmap-cell.is-future {
+    background: transparent;
+}
+
+.heatmap-cell.is-today {
+    box-shadow: inset 0 0 0 1.5px var(--text-muted);
+}
+
+.heatmap-cell.is-selected {
+    outline: 2px solid #c0392b;
+    outline-offset: 1px;
+}
+
+.activity-heatmap .level-0 { background: var(--line-soft); }
+.activity-heatmap .level-1 { background: #b9dcc8; }
+.activity-heatmap .level-2 { background: #7fbf9c; }
+.activity-heatmap .level-3 { background: #44986d; }
+.activity-heatmap .level-4 { background: #2f6f4e; }
+
+.heatmap-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.heatmap-legend-scale {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.heatmap-legend-scale i {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.diary-date-clear {
+    font: inherit;
+    font-size: 0.78rem;
+    border: 1px solid #c0392b;
+    color: #c0392b;
+    background: transparent;
+    border-radius: 999px;
+    padding: 1px 10px;
+    cursor: pointer;
+}
+
+@media (max-width: 640px) {
+    .activity-heatmap {
+        padding: 12px;
+    }
+
+    .heatmap-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ==========================================
+   Monthly Summary（月のまとめ）
+   ========================================== */
+.monthly-summary-list {
+    display: grid;
+    gap: 12px;
+}
+
+.monthly-summary {
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+
+.monthly-summary h3 {
+    margin: 0 0 4px;
+    font-size: 1rem;
+}
+
+.monthly-summary-comment {
+    margin: 0 0 10px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.monthly-summary dl {
+    margin: 0;
+    display: grid;
+    gap: 4px;
+    font-size: 0.86rem;
+}
+
+.monthly-summary dl div {
+    display: grid;
+    grid-template-columns: 8.5em 1fr;
+    gap: 8px;
+}
+
+.monthly-summary dt {
+    color: var(--text-muted);
+}
+
+.monthly-summary dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   Footer Cat（フッターを歩くネコ）
+   ========================================== */
+.footer-cat-track {
+    position: relative;
+    height: 44px;
+    margin-top: -68px;
+    margin-bottom: 24px;
+}
+
+.footer-cat {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.footer-cat:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+.footer-cat-body {
+    display: inline-block;
+}
+
+.footer-cat.is-walking .footer-cat-body {
+    animation: footer-cat-bob 0.45s ease-in-out infinite alternate;
+}
+
+.footer-cat.is-rolling .footer-cat-body {
+    animation: footer-cat-roll 0.9s ease-in-out;
+}
+
+.footer-cat-bubble {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    translate: -50% -4px;
+    white-space: nowrap;
+    font-size: 0.72rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 10px;
+    box-shadow: var(--shadow);
+    pointer-events: none;
+    animation: footer-cat-fade 1.6s ease forwards;
+}
+
+.footer-cat-heart {
+    position: absolute;
+    bottom: 60%;
+    color: #e0607e;
+    font-size: 14px;
+    pointer-events: none;
+    animation: footer-cat-heart 1s ease-out forwards;
+}
+
+.footer-cat-count {
+    position: absolute;
+    right: 0;
+    bottom: 2px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+@keyframes footer-cat-bob {
+    from { translate: 0 0; }
+    to { translate: 0 -2px; }
+}
+
+@keyframes footer-cat-roll {
+    from { rotate: 0deg; }
+    to { rotate: 360deg; }
+}
+
+@keyframes footer-cat-fade {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes footer-cat-heart {
+    from { opacity: 1; translate: 0 0; }
+    to { opacity: 0; translate: 0 -28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .footer-cat .footer-cat-body,
+    .footer-cat-heart {
+        animation: none !important;
+    }
+}

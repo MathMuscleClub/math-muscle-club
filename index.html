@@ -12,7 +12,7 @@
     <meta property="og:url" content="https://mathmuscleclub.github.io/math-muscle-club/">
     <meta name="theme-color" content="#2f6f4e">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
-    <link rel="stylesheet" href="style.css?v=20261103a">
+    <link rel="stylesheet" href="style.css?v=20261103b">
     <link rel="stylesheet" href="latex-typing.css?v=20260616a">
     <link rel="stylesheet" href="muscle-mode.css?v=20261103a">
 </head>
@@ -146,6 +146,12 @@
                     </div>
                 </section>
 
+                <section id="monthly-summary-section" hidden>
+                    <h2>月のまとめ</h2>
+                    <p class="personal-goals-description">毎月1日に、スプレッドシートが先月の分を自動で作ります。</p>
+                    <div id="monthly-summary-list" class="monthly-summary-list"></div>
+                </section>
+
                 <section>
                     <h2>これまでの実績</h2>
                     <ul id="achievements-list">
@@ -161,6 +167,7 @@
                         <h2>活動日記</h2>
                         <button class="write-button" type="button" data-write="diary">＋ 日記を書く</button>
                     </div>
+                    <div id="activity-heatmap" class="activity-heatmap"></div>
                     <div class="diary-toolbar">
                         <input id="diary-search" class="diary-search" type="search" placeholder="日記を検索" aria-label="日記を検索">
                         <select id="diary-month" class="diary-month" aria-label="月で絞り込む"></select>
@@ -311,6 +318,8 @@
     <script src="latex-typing.js?v=20261003a"></script>
     <script src="muscle-mode.js?v=20261103a"></script>
     <script src="records.js?v=20261103a"></script>
+    <script src="heatmap.js?v=20261103b"></script>
+    <script src="footer-cat.js?v=20261103b"></script>
     <script src="sheet-config.js?v=20261103a"></script>
     <script src="sheet-sync.js?v=20261103a"></script>
     <script>
@@ -397,6 +406,7 @@
                 renderYearlyGoals(goals.yearlyGoals);
                 renderMonthlyGoals(goals.monthlyGoals);
                 renderAchievements(goals.achievements);
+                renderMonthlySummaries(sheetData.summaries);
                 renderPersonalGoals(goals.personalGoals);
                 renderDiary(diary);
                 renderCalendar(currentYear, currentMonth);
@@ -680,6 +690,31 @@
             });
         }
 
+        // スプレッドシートの「月のまとめ」（新しい月から3つ）
+        function renderMonthlySummaries(summaries) {
+            const section = document.getElementById('monthly-summary-section');
+            const list = document.getElementById('monthly-summary-list');
+            if (!section || !list) return;
+            const recent = (Array.isArray(summaries) ? summaries : [])
+                .slice()
+                .sort((a, b) => b.period.localeCompare(a.period))
+                .slice(0, 3);
+            section.hidden = recent.length === 0;
+            list.innerHTML = recent.map(s => `
+                <article class="monthly-summary">
+                    <h3>${escapeHTML(monthKeyToPeriod(s.period))}</h3>
+                    ${s.comment ? `<p class="monthly-summary-comment">${escapeHTML(s.comment)}</p>` : ''}
+                    <dl>
+                        <div><dt>日記</dt><dd>${s.posts}件・${s.days}日</dd></div>
+                        ${s.topWriter ? `<div><dt>いちばん書いた人</dt><dd>${escapeHTML(s.topWriter)}</dd></div>` : ''}
+                        <div><dt>部の目標</dt><dd>${escapeHTML(s.teamGoals || 'なし')}</dd></div>
+                        <div><dt>個人目標</dt><dd>${escapeHTML(s.personalGoals || 'なし')}</dd></div>
+                        ${s.records ? `<div><dt>自己ベスト</dt><dd>${s.records.split('\n').map(r => `🏆 ${escapeHTML(r)}`).join('<br>')}</dd></div>` : ''}
+                    </dl>
+                </article>
+            `).join('');
+        }
+
         function renderPersonalGoals(personalGoals) {
             const container = document.getElementById('personal-goals-container');
             if (!container) return;
@@ -822,7 +857,7 @@
         }
 
         const DIARY_NEW_DAYS = 14;
-        const diaryFilter = { query: '', month: 'all', author: 'all' };
+        const diaryFilter = { query: '', month: 'all', author: 'all', date: '' };
 
         function renderDiary(diary) {
             // 書いた人の表記ゆれ（KsK と ksk など）を部員名にそろえ、新しい順に並べる
@@ -875,6 +910,7 @@
                 button.innerHTML = `${color ? `<span class="member-dot" style="background:${color}"></span>` : ''}${escapeHTML(label)} <span class="diary-chip-count">${count}</span>`;
                 button.addEventListener('click', () => {
                     diaryFilter.author = value;
+                    diaryFilter.date = '';
                     showDiaryPosts();
                 });
                 authors.appendChild(button);
@@ -891,6 +927,7 @@
                 });
                 monthSelect.addEventListener('change', () => {
                     diaryFilter.month = monthSelect.value;
+                    diaryFilter.date = '';
                     showDiaryPosts();
                 });
                 search.dataset.ready = 'true';
@@ -960,8 +997,18 @@
                 return;
             }
 
+            renderActivityHeatmap(diaryPosts, {
+                author: diaryFilter.author,
+                selectedDate: diaryFilter.date,
+                onSelect: date => {
+                    diaryFilter.date = date;
+                    showDiaryPosts();
+                }
+            });
+
             const query = diaryFilter.query.toLowerCase();
             const posts = diaryPosts.filter(post => {
+                if (diaryFilter.date && post.date !== diaryFilter.date) return false;
                 if (diaryFilter.month !== 'all' && post.date.slice(0, 7) !== diaryFilter.month) return false;
                 if (diaryFilter.author !== 'all' && (post.author || '不明') !== diaryFilter.author) return false;
                 if (query) {
@@ -973,6 +1020,17 @@
 
             if (count) {
                 count.textContent = posts.length === diaryPosts.length ? `${posts.length}件` : `${diaryPosts.length}件中 ${posts.length}件`;
+                if (diaryFilter.date) {
+                    const clear = document.createElement('button');
+                    clear.type = 'button';
+                    clear.className = 'diary-date-clear';
+                    clear.textContent = `${formatDate(diaryFilter.date, getDayOfWeek(diaryFilter.date))} だけ表示中 ×`;
+                    clear.addEventListener('click', () => {
+                        diaryFilter.date = '';
+                        showDiaryPosts();
+                    });
+                    count.append(' ', clear);
+                }
             }
 
             if (posts.length === 0) {

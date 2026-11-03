@@ -13,6 +13,10 @@
  *     表記ゆれ（KsK など）は「別名」に書いて organizeData を実行すると、正しい名前にそろう。
  *   ・種目名は「種目」シートが正。名前を書き換えると、日記の記録と部の目標メーターも書き換わる。
  *   ・日記の「書いた人」「記録の人」、目標の「誰の目標」、日記の「種目」はプルダウンで選べる。
+ *
+ * 月のまとめ
+ *   setupMonthlyTrigger を一度だけ実行すると、毎月1日の朝に先月のまとめが「月のまとめ」シートに入る。
+ *   途中経過を見たいときは summarizeThisMonth を実行する（同じ月の行は上書きされる）。
  */
 
 const SHEETS = {
@@ -51,6 +55,10 @@ const SHEETS = {
   trainings: {
     name: 'トレーニング',
     headers: ['名前', '部位', 'メニュー', 'ポイント']
+  },
+  summary: {
+    name: '月のまとめ',
+    headers: ['月', '日記の数', '活動した日数', 'いちばん書いた人', '自己ベスト', '部の目標', '個人目標', 'ひとこと', '作った日時']
   }
 };
 
@@ -123,7 +131,17 @@ function doGet() {
       target: text_(row['部位']),
       menu: String(row['メニュー'] || '').split(/\n/).map(t => t.trim()).filter(Boolean),
       point: text_(row['ポイント'])
-    })).filter(t => t.name)
+    })).filter(t => t.name),
+    summaries: readRows_(SHEETS.summary).map(row => ({
+      period: formatMonth_(row['月']),
+      posts: Number(row['日記の数']) || 0,
+      days: Number(row['活動した日数']) || 0,
+      topWriter: text_(row['いちばん書いた人']),
+      records: text_(row['自己ベスト']),
+      teamGoals: text_(row['部の目標']),
+      personalGoals: text_(row['個人目標']),
+      comment: text_(row['ひとこと'])
+    })).filter(s => s.period)
   });
 }
 
@@ -251,6 +269,106 @@ function fillIfEmpty_(def, rows) {
   if (rows.length === 0) return `${def.name}: 取り込むものがありませんでした`;
   sheet.getRange(2, 1, rows.length, def.headers.length).setNumberFormat('@').setValues(rows);
   return `${def.name}: ${rows.length}行を取り込みました`;
+}
+
+// ---------- 月のまとめ ----------
+// 毎月1日に先月の分を作る（setupMonthlyTrigger で時間のトリガーに登録する）
+function monthlySummary() {
+  const now = new Date();
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return summarizeMonth_(Utilities.formatDate(lastMonth, 'Asia/Tokyo', 'yyyy-MM'));
+}
+
+// 今月の途中経過を作る（手で実行する用）
+function summarizeThisMonth() {
+  return summarizeMonth_(Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM'));
+}
+
+// 一度だけ実行する。何回実行してもトリガーは1つだけになる
+function setupMonthlyTrigger() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'monthlySummary')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('monthlySummary').timeBased().onMonthDay(1).atHour(6).inTimezone('Asia/Tokyo').create();
+  Logger.log('毎月1日の朝6時ごろに、先月のまとめを作るようにしました。');
+}
+
+function summarizeMonth_(monthKey) {
+  ensureSheets_();
+  const measures = new Map(readRows_(SHEETS.lifts).map(row => [text_(row['種目']), measureFromLabel_(row['記録のしかた'])]));
+  const posts = readRows_(SHEETS.diary)
+    .map(row => ({ ...row, date: formatDate_(row['日付']) }))
+    .filter(row => row.date.slice(0, 7) === monthKey && (text_(row['タイトル']) || text_(row['本文'])));
+
+  const writers = new Map();
+  posts.forEach(row => {
+    const name = text_(row['書いた人']) || '不明';
+    writers.set(name, (writers.get(name) || 0) + 1);
+  });
+  const top = [...writers.entries()].sort((a, b) => b[1] - a[1])[0];
+  const days = new Set(posts.map(row => row.date)).size;
+
+  const records = posts
+    .filter(row => text_(row['種目']) && (Number(row['重さ(kg)']) || Number(row['回数']) || Number(row['時間(秒)'])))
+    .map(row => {
+      const lift = text_(row['種目']);
+      const weight = Number(row['重さ(kg)']) || 0;
+      const reps = Number(row['回数']) || 0;
+      const seconds = Number(row['時間(秒)']) || 0;
+      const measure = measures.get(lift) || 'weight';
+      const value = measure === 'reps' ? `${reps}回`
+        : measure === 'time' ? `${seconds}秒`
+          : `${weight}kg${reps > 1 ? `×${reps}回` : ''}`;
+      return `${text_(row['記録の人']) || text_(row['書いた人']) || '不明'} ${lift} ${value}`;
+    });
+
+  const goals = readRows_(SHEETS.goals).filter(row => formatMonth_(row['月']) === monthKey);
+  const isTeam = row => !text_(row['誰の目標']) || text_(row['誰の目標']) === '部';
+  const goalText = list => {
+    if (list.length === 0) return 'なし';
+    const achieved = list.filter(row => statusFromLabel_(row['状態']) === 'achieved').length;
+    return `${achieved} / ${list.length} 達成`;
+  };
+  const teamGoals = goals.filter(isTeam);
+  const personalGoals = goals.filter(row => !isTeam(row));
+
+  const row = {
+    '月': monthKey,
+    '日記の数': posts.length,
+    '活動した日数': days,
+    'いちばん書いた人': top ? `${top[0]}（${top[1]}件）` : '',
+    '自己ベスト': records.join('\n'),
+    '部の目標': goalText(teamGoals),
+    '個人目標': goalText(personalGoals),
+    'ひとこと': summaryComment_(days, records.length, teamGoals),
+    '作った日時': new Date()
+  };
+
+  // 同じ月の行があれば書き換え、なければ足す
+  const sheet = sheet_(SHEETS.summary);
+  const headers = headersOf_(sheet);
+  const values = sheet.getDataRange().getValues();
+  const monthCol = headers.indexOf('月');
+  for (let r = 1; r < values.length; r++) {
+    if (formatMonth_(values[r][monthCol]) === monthKey) {
+      sheet.getRange(r + 1, 1, 1, headers.length).setValues([headers.map(h => (h in row ? row[h] : values[r][headers.indexOf(h)]))]);
+      Logger.log(`${monthKey} のまとめを書き換えました`);
+      return row;
+    }
+  }
+  appendObject_(SHEETS.summary, row);
+  Logger.log(`${monthKey} のまとめを作りました`);
+  return row;
+}
+
+function summaryComment_(days, recordCount, teamGoals) {
+  const allTeamAchieved = teamGoals.length > 0 && teamGoals.every(row => statusFromLabel_(row['状態']) === 'achieved');
+  if (allTeamAchieved) return '部の目標を全部達成！ 完全勝利 Q.E.D. 💪';
+  if (recordCount >= 3) return `自己ベストが ${recordCount} 回も更新された。単調増加が止まらない 📈`;
+  if (days >= 8) return `${days} 日も活動した。筋肉の積分値がすごい ∫💪`;
+  if (days === 0) return '日記ゼロ。来月は ε > 0 でいいので書こう ✍️';
+  if (recordCount > 0) return '自己ベストあり。成長は確かに正の値 ✨';
+  return 'コツコツ継続。lim(継続) = 筋肉 🏋️';
 }
 
 // ---------- 名前をそろえる・プルダウンを付け直す ----------
