@@ -8,9 +8,13 @@
 // 種目ごとの記録のしかた。「種目」シートにない種目は「重さと回数」として扱う
 const MEASURE_UNITS = { weight: 'kg', reps: '回', time: '秒' };
 let liftMeasures = new Map();
+let hiddenChartLifts = new Set();
 
 function setLiftCatalog(lifts) {
-    liftMeasures = new Map((Array.isArray(lifts) ? lifts : []).map(l => [l.name, l.measure || 'weight']));
+    const list = Array.isArray(lifts) ? lifts : [];
+    liftMeasures = new Map(list.map(l => [l.name, l.measure || 'weight']));
+    // 「種目」シートで「グラフに出す」を外した種目はグラフに出さない
+    hiddenChartLifts = new Set(list.filter(l => l.showInChart === false).map(l => l.name));
 }
 
 function measureOf(lift) {
@@ -110,15 +114,56 @@ function renderRecords(members, diary, teamTarget, lifts) {
     const directory = createMemberDirectory(members);
     const records = collectRecords(diary, directory);
 
+    latestRecords = records;
+    latestDirectory = directory;
     renderTeamMeter(meterHost, records, directory, teamTarget);
-    renderRecordsChart(chartHost, records, directory);
+    renderRecordsChart(chartHost, records.filter(r => !hiddenChartLifts.has(r.lift)), directory);
+}
+
+// ---------- 目標の進み具合（目標に種目と目標値があるとき） ----------
+let latestRecords = [];
+let latestDirectory = null;
+
+// owner が「部」なら部員の自己ベストの平均、部員の名前ならその人の自己ベスト
+function goalProgress(owner, lift, target) {
+    if (!lift || !(target > 0) || !latestDirectory) return null;
+    const best = bestByMember(latestRecords, lift);
+    let current = 0;
+    if (!owner || owner === '部') {
+        const values = [...best.values()].map(r => r.value);
+        current = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+    } else {
+        const record = best.get(latestDirectory.resolve(owner));
+        current = record ? record.value : 0;
+    }
+    return {
+        current: Math.round(current * 10) / 10,
+        target,
+        unit: MEASURE_UNITS[measureOf(lift)],
+        ratio: Math.min(current / target, 1),
+        reached: current >= target
+    };
+}
+
+function createGoalProgress(item, owner) {
+    const progress = goalProgress(owner, item.lift, Number(item.target));
+    if (!progress) return null;
+    const box = document.createElement('div');
+    box.className = 'goal-progress' + (progress.reached ? ' is-reached' : '');
+    box.innerHTML = `
+        <span class="goal-progress-text">${escapeHTML(item.lift)} ${progress.current} / ${progress.target}${progress.unit}${progress.reached ? '　🎯 記録で達成！' : ''}</span>
+        <span class="goal-progress-bar"><span style="width:${progress.ratio * 100}%"></span></span>
+    `;
+    return box;
 }
 
 // ---------- 部の目標メーター ----------
 function renderTeamMeter(host, records, directory, target) {
+    const homeHost = document.getElementById('home-meter');
     if (!target || !target.lift || !(target.weight > 0)) {
         host.innerHTML = '';
         host.hidden = true;
+        if (homeHost) homeHost.innerHTML = '<p class="no-data">部の目標メーターはまだ設定されていません。</p>';
         return;
     }
 
@@ -159,13 +204,27 @@ function renderTeamMeter(host, records, directory, target) {
         </ul>
         <p class="team-meter-note">${withRecord.length}人ぶんの自己ベストの平均です（記録のない人は数えません）。</p>
     `;
+
+    // ホームには数字とバーだけ出す
+    if (homeHost) {
+        homeHost.innerHTML = `
+            <div class="team-meter-head">
+                <div>
+                    <p class="team-meter-label">${escapeHTML(target.label || `${target.lift}の平均`)}</p>
+                    <p class="team-meter-value"><strong>${averageText}</strong> / ${target.weight}${unit}</p>
+                </div>
+                <p class="team-meter-status${remaining === 0 && withRecord.length ? ' is-done' : ''}">${statusText}</p>
+            </div>
+            <div class="team-meter-bar" aria-hidden="true"><span style="width: ${ratio * 100}%"></span></div>
+        `;
+    }
 }
 
 // ---------- 伸びのグラフ ----------
 function renderRecordsChart(host, records, directory) {
     const lifts = [...new Set(records.map(r => r.lift))];
     if (lifts.length === 0) {
-        host.innerHTML = '<p class="no-data">まだ記録がありません。日記に「record」を書くと、ここにグラフが出ます。</p>';
+        host.innerHTML = '<p class="no-data">まだ記録がありません。日記に自己ベストを書くと、ここにグラフが出ます。</p>';
         return;
     }
 

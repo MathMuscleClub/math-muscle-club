@@ -12,7 +12,11 @@
  *   ・人の名前は「部員」シートが正。名前を書き換えると、日記・目標の名前も書き換わる。
  *     表記ゆれ（KsK など）は「別名」に書いて organizeData を実行すると、正しい名前にそろう。
  *   ・種目名は「種目」シートが正。名前を書き換えると、日記の記録と部の目標メーターも書き換わる。
- *   ・日記の「書いた人」「記録の人」、目標の「誰の目標」、日記の「種目」はプルダウンで選べる。
+ *   ・日記の「書いた人」「記録の人」、目標の「誰の目標」、日記と目標の「種目」はプルダウンで選べる。
+ *
+ * 編集タブ
+ *   ホームページの「編集」タブからも、合言葉で全部のシートを直せる（getTable / updateRow など）。
+ *   消した行は「削除したもの」シートに残り、編集タブから戻せる。
  *
  * 月のまとめ
  *   setupMonthlyTrigger を一度だけ実行すると、毎月1日の朝に先月のまとめが「月のまとめ」シートに入る。
@@ -26,7 +30,7 @@ const SHEETS = {
   },
   goals: {
     name: '目標',
-    headers: ['月', '誰の目標', '目標', '状態', 'ID', '更新日時']
+    headers: ['月', '誰の目標', '目標', '状態', 'ID', '更新日時', '種目', '目標値']
   },
   info: {
     name: '基本情報',
@@ -38,7 +42,7 @@ const SHEETS = {
   },
   lifts: {
     name: '種目',
-    headers: ['種目', '記録のしかた']
+    headers: ['種目', '記録のしかた', 'グラフに出す']
   },
   yearly: {
     name: '今年の目標と実績',
@@ -59,7 +63,29 @@ const SHEETS = {
   summary: {
     name: '月のまとめ',
     headers: ['月', '日記の数', '活動した日数', 'いちばん書いた人', '自己ベスト', '部の目標', '個人目標', 'ひとこと', '作った日時']
+  },
+  activity: {
+    name: '活動した日',
+    headers: ['日付', 'メモ']
+  },
+  trash: {
+    name: '削除したもの',
+    headers: ['削除した日時', 'シート', '内容']
   }
+};
+
+// 編集タブで直せるシート（並び順は編集タブのボタンの順）
+const EDITABLE = ['diary', 'activity', 'goals', 'members', 'lifts', 'schedule', 'weekly', 'trainings', 'info', 'yearly'];
+// 編集タブで見せない（自動で入る）列
+const HIDDEN_COLUMNS = ['ID', '書いた日時', '更新日時'];
+const DATE_COLUMNS = ['日付', '開始日', '終了日'];
+const NUMBER_COLUMNS = ['重さ(kg)', '回数', '時間(秒)', '目標値'];
+const TEXTAREA_COLUMNS = ['本文', '説明', 'メニュー', '内容'];
+const CHECKBOX_COLUMNS = ['グラフに出す'];
+// 名前を変えたら、ほかのシートの同じ名前も書き換える
+const REFERENCES = {
+  members: { header: '名前', targets: [['diary', '書いた人'], ['diary', '記録の人'], ['goals', '誰の目標']] },
+  lifts: { header: '種目', targets: [['diary', '種目'], ['goals', '種目']], meter: true }
 };
 
 const STATUS_LABELS = { pending: '進行中', achieved: '達成', failed: '未達成' };
@@ -90,7 +116,9 @@ function doGet() {
       period: formatMonth_(row['月']),
       owner: text_(row['誰の目標']),
       text: text_(row['目標']),
-      status: statusFromLabel_(row['状態'])
+      status: statusFromLabel_(row['状態']),
+      lift: text_(row['種目']),
+      target: Number(row['目標値']) || 0
     })).filter(goal => goal.period && goal.text),
     info: readRows_(SHEETS.info)
       .map(row => ({ key: text_(row['項目']), value: text_(row['内容']) }))
@@ -104,7 +132,8 @@ function doGet() {
     })).filter(m => m.name),
     lifts: readRows_(SHEETS.lifts).map(row => ({
       name: text_(row['種目']),
-      measure: measureFromLabel_(row['記録のしかた'])
+      measure: measureFromLabel_(row['記録のしかた']),
+      showInChart: row['グラフに出す'] === true || /^(true|✓|はい|1)$/i.test(text_(row['グラフに出す']))
     })).filter(l => l.name),
     yearly: readRows_(SHEETS.yearly).map(row => ({
       kind: text_(row['種類']),
@@ -132,6 +161,9 @@ function doGet() {
       menu: String(row['メニュー'] || '').split(/\n/).map(t => t.trim()).filter(Boolean),
       point: text_(row['ポイント'])
     })).filter(t => t.name),
+    activityDays: readRows_(SHEETS.activity)
+      .map(row => ({ date: formatDate_(row['日付']), memo: text_(row['メモ']) }))
+      .filter(day => day.date),
     summaries: readRows_(SHEETS.summary).map(row => ({
       period: formatMonth_(row['月']),
       posts: Number(row['日記の数']) || 0,
@@ -171,6 +203,12 @@ function doPost(e) {
     if (body.action === 'addGoals') return json_(addGoals_(body.data || {}));
     if (body.action === 'setGoalStatus') return json_(setGoalStatus_(body.data || {}));
     if (body.action === 'importData') return json_(importData_(body.data || {}));
+    if (body.action === 'setActivity') return json_(setActivity_(body.data || {}));
+    if (body.action === 'getTable') return json_(getTable_(body.data || {}));
+    if (body.action === 'updateRow') return json_(updateRow_(body.data || {}));
+    if (body.action === 'addRow') return json_(addRow_(body.data || {}));
+    if (body.action === 'deleteRow') return json_(deleteRow_(body.data || {}));
+    if (body.action === 'restoreRow') return json_(restoreRow_(body.data || {}));
     return json_({ ok: false, error: '知らない操作です。' });
   } finally {
     lock.releaseLock();
@@ -208,6 +246,8 @@ function addDiary_(data) {
 function addGoals_(data) {
   const period = clean_(data.period, 7);
   const owner = clean_(data.owner, 50) || '部';
+  const target = positive_(data.target);
+  const lift = target ? clean_(data.lift, 50) : '';
   const items = (Array.isArray(data.items) ? data.items : [])
     .map(text => clean_(text, 300))
     .filter(Boolean)
@@ -218,7 +258,8 @@ function addGoals_(data) {
   const ids = items.map(text => {
     const id = Utilities.getUuid();
     appendObject_(SHEETS.goals, {
-      '月': period, '誰の目標': owner, '目標': text, '状態': STATUS_LABELS.pending, 'ID': id, '更新日時': new Date()
+      '月': period, '誰の目標': owner, '目標': text, '状態': STATUS_LABELS.pending, 'ID': id, '更新日時': new Date(),
+      '種目': lift, '目標値': lift ? target : ''
     });
     return id;
   });
@@ -244,6 +285,27 @@ function setGoalStatus_(data) {
     }
   }
   return { ok: false, error: 'その目標が見つかりませんでした。' };
+}
+
+// 「活動した日」を付ける・外す（active: true で付ける、false で外す）
+function setActivity_(data) {
+  const date = clean_(data.date, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, error: '日付が正しくありません。' };
+  const sheet = sheet_(SHEETS.activity);
+  const dateCol = column_(sheet, '日付');
+  const last = sheet.getLastRow();
+  const rows = [];
+  if (last > 1) {
+    sheet.getRange(2, dateCol, last - 1, 1).getValues().forEach(([value], i) => {
+      if (formatDate_(value) === date) rows.push(i + 2);
+    });
+  }
+  if (data.active === false) {
+    rows.reverse().forEach(row => sheet.deleteRow(row));
+    return { ok: true, active: false };
+  }
+  if (rows.length === 0) appendObject_(SHEETS.activity, { '日付': date, 'メモ': clean_(data.memo, 200) });
+  return { ok: true, active: true };
 }
 
 // ---------- 最初の取り込み（ホームページの JSON の中身を送ってもらう） ----------
@@ -422,6 +484,7 @@ function refreshDropdowns_() {
   set(SHEETS.diary, '記録の人', names);
   set(SHEETS.goals, '誰の目標', ['部', ...names]);
   set(SHEETS.diary, '種目', lifts);
+  set(SHEETS.goals, '種目', lifts);
 }
 
 // 「部員」「種目」シートを直したとき
@@ -429,36 +492,202 @@ function refreshDropdowns_() {
 //   ・プルダウンを付け直す
 function onEdit(e) {
   if (!e || !e.range) return;
-  const sheetName = e.range.getSheet().getName();
-  const watched = {
-    [SHEETS.members.name]: { header: '名前', targets: [[SHEETS.diary, '書いた人'], [SHEETS.diary, '記録の人'], [SHEETS.goals, '誰の目標']] },
-    [SHEETS.lifts.name]: { header: '種目', targets: [[SHEETS.diary, '種目']], meter: true }
-  }[sheetName];
-  if (!watched) return;
-
   const sheet = e.range.getSheet();
+  const key = Object.keys(REFERENCES).find(k => SHEETS[k].name === sheet.getName());
+  if (!key) return;
+
   const isSingleCell = e.range.getNumRows() === 1 && e.range.getNumColumns() === 1
-    && e.range.getColumn() === column_(sheet, watched.header) && e.range.getRow() > 1;
+    && e.range.getColumn() === column_(sheet, REFERENCES[key].header) && e.range.getRow() > 1;
   const oldValue = String(e.oldValue || '').trim();
   const newValue = String(e.value || '').trim();
   if (isSingleCell && oldValue && newValue && oldValue !== newValue) {
-    let count = 0;
-    const replace = value => (normalize_(value) === normalize_(oldValue) ? newValue : value);
-    watched.targets.forEach(([def, header]) => { count += mapColumn_(def, header, replace); });
-    if (watched.meter) {
-      // 部の目標メーターの種目も合わせる
-      const info = sheet_(SHEETS.info);
-      const values = info.getDataRange().getValues();
-      for (let r = 1; r < values.length; r++) {
-        if (text_(values[r][0]) === METER_LIFT_KEY && normalize_(values[r][1]) === normalize_(oldValue)) {
-          info.getRange(r + 1, 2).setValue(newValue);
-          count++;
-        }
-      }
-    }
+    const count = renameReferences_(key, oldValue, newValue);
     SpreadsheetApp.getActiveSpreadsheet().toast(`「${oldValue}」を「${newValue}」に ${count} か所書き換えました`, '名前の変更');
   }
   refreshDropdowns_();
+}
+
+function renameReferences_(key, oldValue, newValue) {
+  const ref = REFERENCES[key];
+  let count = 0;
+  const replace = value => (normalize_(value) === normalize_(oldValue) ? newValue : value);
+  ref.targets.forEach(([target, header]) => { count += mapColumn_(SHEETS[target], header, replace); });
+  if (ref.meter) {
+    // 部の目標メーターの種目も合わせる
+    const info = sheet_(SHEETS.info);
+    const values = info.getDataRange().getValues();
+    for (let r = 1; r < values.length; r++) {
+      if (text_(values[r][0]) === METER_LIFT_KEY && normalize_(values[r][1]) === normalize_(oldValue)) {
+        info.getRange(r + 1, 2).setValue(newValue);
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+// ---------- 編集タブ用 ----------
+function editableDef_(key) {
+  if (!EDITABLE.includes(key) && key !== 'trash') throw new Error('そのシートは編集できません。');
+  return SHEETS[key];
+}
+
+// 列ごとの入力のしかた（プルダウンの選択肢など）
+function columnInfo_(key, headers) {
+  const names = readRows_(SHEETS.members).map(row => text_(row['名前'])).filter(Boolean);
+  const lifts = readRows_(SHEETS.lifts).map(row => text_(row['種目'])).filter(Boolean);
+  const options = {
+    diary: { '書いた人': names, '記録の人': names, '種目': lifts },
+    goals: { '誰の目標': ['部', ...names], '状態': Object.values(STATUS_LABELS), '種目': lifts },
+    lifts: { '記録のしかた': Object.values(MEASURES) },
+    yearly: { '種類': YEARLY_KINDS }
+  }[key] || {};
+  return headers.map(name => {
+    let type = 'text';
+    if (DATE_COLUMNS.includes(name)) type = 'date';
+    else if (name === '月') type = 'month';
+    else if (NUMBER_COLUMNS.includes(name)) type = 'number';
+    else if (TEXTAREA_COLUMNS.includes(name)) type = 'textarea';
+    else if (CHECKBOX_COLUMNS.includes(name)) type = 'checkbox';
+    else if (options[name]) type = 'select';
+    return { name, type, options: options[name] || null, hidden: HIDDEN_COLUMNS.includes(name) };
+  });
+}
+
+// セルの値を、編集タブで見せる形（文字か true/false）にする
+function displayValue_(header, value) {
+  if (value === true || value === false) return value;
+  if (value instanceof Date) {
+    if (header === '月') return Utilities.formatDate(value, 'Asia/Tokyo', 'yyyy-MM');
+    if (header === '時間') return Utilities.formatDate(value, 'Asia/Tokyo', 'H:mm');
+    if (DATE_COLUMNS.includes(header)) return Utilities.formatDate(value, 'Asia/Tokyo', 'yyyy-MM-dd');
+    return Utilities.formatDate(value, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm');
+  }
+  return value == null ? '' : String(value);
+}
+
+function rowValues_(sheet, rowNumber, headers) {
+  const values = sheet.getRange(rowNumber, 1, 1, headers.length).getValues()[0];
+  const obj = {};
+  headers.forEach((h, i) => { obj[h] = displayValue_(h, values[i]); });
+  return obj;
+}
+
+function getTable_(data) {
+  const key = String(data.sheet || '');
+  const def = editableDef_(key);
+  const sheet = sheet_(def);
+  const headers = headersOf_(sheet);
+  const last = sheet.getLastRow();
+  const values = last > 1 ? sheet.getRange(2, 1, last - 1, headers.length).getValues() : [];
+  const rows = values
+    .map((row, index) => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = displayValue_(h, row[i]); });
+      return { row: index + 2, values: obj };
+    })
+    .filter(r => headers.some(h => r.values[h] !== '' && r.values[h] !== false));
+  return { ok: true, sheet: key, name: def.name, columns: columnInfo_(key, headers), rows };
+}
+
+// 編集タブから来た値を、セルに入れる値にする
+function cellValue_(column, value) {
+  if (column.type === 'checkbox') return value === true || value === 'true';
+  const text = clean_(value, MAX_TEXT);
+  if (column.type === 'number') return text === '' ? '' : (Number(text) || '');
+  return text;
+}
+
+// 読み込んだあとに誰かが同じ行を変えていたら、上書きしない
+function assertUnchanged_(sheet, rowNumber, headers, before) {
+  if (!(rowNumber >= 2) || rowNumber > sheet.getLastRow()) throw new Error('その行が見つかりませんでした。読み込み直してください。');
+  const current = rowValues_(sheet, rowNumber, headers);
+  const changed = headers.some(h => before && h in before && String(current[h]) !== String(before[h]));
+  if (changed) throw new Error('ほかの人が先にこの行を変えました。読み込み直してから、もう一度直してください。');
+  return current;
+}
+
+function updateRow_(data) {
+  const key = String(data.sheet || '');
+  const def = editableDef_(key);
+  if (key === 'trash') throw new Error('「削除したもの」は直せません。戻してから直してください。');
+  const sheet = sheet_(def);
+  const headers = headersOf_(sheet);
+  const columns = columnInfo_(key, headers);
+  const rowNumber = Number(data.row);
+  const before = assertUnchanged_(sheet, rowNumber, headers, data.before);
+  const original = sheet.getRange(rowNumber, 1, 1, headers.length).getValues()[0];
+  const values = data.values || {};
+
+  const next = headers.map((h, i) => {
+    if (columns[i].hidden || !(h in values)) return original[i];
+    return cellValue_(columns[i], values[h]);
+  });
+  if (headers.includes('更新日時')) next[headers.indexOf('更新日時')] = new Date();
+  sheet.getRange(rowNumber, 1, 1, headers.length).setValues([next]);
+
+  let renamed = 0;
+  const ref = REFERENCES[key];
+  if (ref) {
+    const oldName = text_(before[ref.header]);
+    const newName = text_(next[headers.indexOf(ref.header)]);
+    if (oldName && newName && oldName !== newName) renamed = renameReferences_(key, oldName, newName);
+    refreshDropdowns_();
+  }
+  return { ok: true, renamed };
+}
+
+function addRow_(data) {
+  const key = String(data.sheet || '');
+  const def = editableDef_(key);
+  if (key === 'trash') throw new Error('「削除したもの」には足せません。');
+  const sheet = sheet_(def);
+  const headers = headersOf_(sheet);
+  const columns = columnInfo_(key, headers);
+  const obj = {};
+  headers.forEach((h, i) => {
+    if (h === 'ID') obj[h] = Utilities.getUuid();
+    else if (h === '書いた日時' || h === '更新日時') obj[h] = new Date();
+    else if (!columns[i].hidden) obj[h] = cellValue_(columns[i], (data.values || {})[h]);
+  });
+  if (headers.includes('状態') && !obj['状態']) obj['状態'] = STATUS_LABELS.pending;
+  appendObject_(def, obj);
+  if (REFERENCES[key]) refreshDropdowns_();
+  return { ok: true };
+}
+
+// 消した行は「削除したもの」シートに残す
+function deleteRow_(data) {
+  const key = String(data.sheet || '');
+  const def = editableDef_(key);
+  if (key === 'trash') throw new Error('「削除したもの」は戻すか、スプレッドシートで消してください。');
+  const sheet = sheet_(def);
+  const headers = headersOf_(sheet);
+  const rowNumber = Number(data.row);
+  const current = assertUnchanged_(sheet, rowNumber, headers, data.before);
+  appendObject_(SHEETS.trash, { '削除した日時': new Date(), 'シート': def.name, '内容': JSON.stringify(current) });
+  sheet.deleteRow(rowNumber);
+  if (REFERENCES[key]) refreshDropdowns_();
+  return { ok: true };
+}
+
+// 「削除したもの」の行を、元のシートに戻す
+function restoreRow_(data) {
+  const sheet = sheet_(SHEETS.trash);
+  const headers = headersOf_(sheet);
+  const rowNumber = Number(data.row);
+  const current = assertUnchanged_(sheet, rowNumber, headers, data.before);
+  const key = Object.keys(SHEETS).find(k => SHEETS[k].name === current['シート']);
+  if (!key || !EDITABLE.includes(key)) throw new Error('戻す先のシートが見つかりませんでした。');
+  const values = JSON.parse(current['内容']);
+  const target = sheet_(SHEETS[key]);
+  target.appendRow(headersOf_(target).map(h => {
+    const value = h in values ? values[h] : '';
+    return CHECKBOX_COLUMNS.includes(h) ? value === true || value === 'true' : value;
+  }));
+  sheet.deleteRow(rowNumber);
+  if (REFERENCES[key]) refreshDropdowns_();
+  return { ok: true, sheet: key };
 }
 
 // ある列の値を fn で書き換え、変わった数を返す
@@ -493,6 +722,18 @@ function ensureSheets_() {
       const missing = def.headers.filter(h => !current.includes(h));
       if (missing.length) {
         sheet.getRange(1, current.length + 1, 1, missing.length).setValues([missing]).setFontWeight('bold');
+      }
+    }
+
+    // 「グラフに出す」はチェックボックス。列ができたときは今ある種目を全部チェックしておく
+    if (key === 'lifts' && !props.getProperty('checkbox_lifts')) {
+      props.setProperty('checkbox_lifts', '1');
+      const col = column_(sheet, 'グラフに出す');
+      sheet.getRange(2, col, 999, 1).insertCheckboxes();
+      const last = sheet.getLastRow();
+      if (last > 1) {
+        const names = sheet.getRange(2, column_(sheet, '種目'), last - 1, 1).getValues();
+        sheet.getRange(2, col, last - 1, 1).setValues(names.map(([name]) => [Boolean(text_(name))]));
       }
     }
 

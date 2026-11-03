@@ -47,7 +47,8 @@ function writeLocal(key, value) {
 async function fetchSheetData() {
     if (!isSheetEnabled()) return null;
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000);
+    // しばらく誰も開いていないと、Google側の起動に10秒以上かかることがある
+    const timer = setTimeout(() => controller.abort(), 30000);
     try {
         const response = await fetch(`${SHEET_API_URL}?t=${Date.now()}`, { signal: controller.signal });
         const data = await response.json();
@@ -163,7 +164,7 @@ function mergeSheetData(diary, goals, sheet, directory) {
 
     (sheet.goals || []).forEach(goal => {
         const period = monthKeyToPeriod(goal.period);
-        const item = { id: goal.id, source: 'sheet', text: goal.text, status: goal.status };
+        const item = { id: goal.id, source: 'sheet', text: goal.text, status: goal.status, lift: goal.lift, target: goal.target };
         const owner = String(goal.owner || '').trim();
         if (!owner || owner === '部') {
             addToMonths(mergedGoals.monthlyGoals, period, item);
@@ -240,6 +241,32 @@ function createGoalStatus(item) {
         }
     });
     return button;
+}
+
+// 「活動した日」を付ける・外す（ヒートマップのマスと「今日活動した」ボタンから）
+async function setActivityDay(date, active) {
+    if (!isSheetEnabled()) return false;
+    let passphrase = readLocal(PASSPHRASE_KEY);
+    if (!passphrase) {
+        passphrase = (window.prompt('合言葉を入れてください') || '').trim();
+        if (!passphrase) return false;
+    }
+    const [, month, day] = date.split('-').map(Number);
+    if (date !== getTodayKey() && !window.confirm(`${month}月${day}日を「${active ? '活動した日' : '活動なし'}」にしますか？`)) return false;
+    try {
+        const result = await postToSheet('setActivity', { date, active }, passphrase);
+        if (!result.ok) {
+            showSiteToast(result.error || '保存できませんでした', true);
+            return false;
+        }
+        writeLocal(PASSPHRASE_KEY, passphrase);
+        showSiteToast(active ? `${month}月${day}日を活動した日にしました 💪` : `${month}月${day}日の活動を外しました`);
+        reloadSiteData();
+        return true;
+    } catch (error) {
+        showSiteToast('通信できませんでした。少し待ってからもう一度試してください。', true);
+        return false;
+    }
 }
 
 // ---------- 入力画面 ----------
@@ -350,6 +377,23 @@ function goalFormHTML() {
             <span>目標（1行に1つ）</span>
             <textarea name="items" rows="4" required placeholder="ベンチプレス+5kg&#10;週2回ぜんぶ出る"></textarea>
         </label>
+        <details class="write-record">
+            <summary>🎯 種目と数字で測る（記録から進み具合を出す）</summary>
+            <div class="write-row">
+                <label class="write-field">
+                    <span>種目</span>
+                    <select name="lift">
+                        <option value="">選んでください</option>
+                        ${liftCatalog.map(l => `<option value="${escapeAttribute(l.name)}">${escapeHTML(l.name)}</option>`).join('')}
+                    </select>
+                </label>
+                <label class="write-field write-field-small">
+                    <span>目標値 <span class="write-unit"></span></span>
+                    <input name="target" type="number" min="0" max="1000" step="0.5" inputmode="decimal">
+                </label>
+            </div>
+            <p class="write-hint">「部の目標」なら部員の自己ベストの平均、部員なら本人の自己ベストで進み具合を出します。</p>
+        </details>
         <p class="write-hint">達成したら、目標の「進行中」のバッジを押すと切り替えられます。</p>
         ${passphraseFieldHTML()}
     `;
@@ -394,6 +438,8 @@ function openWriteDialog(kind) {
         const update = () => {
             const lift = liftCatalog.find(l => l.name === liftSelect.value);
             const measure = lift ? lift.measure : 'weight';
+            const unit = body.querySelector('.write-unit');
+            if (unit) unit.textContent = `(${({ weight: 'kg', reps: '回', time: '秒' })[measure]})`;
             body.querySelectorAll('[data-measure]').forEach(field => {
                 const show = field.dataset.measure.split(' ').includes(measure);
                 field.hidden = !show;
@@ -442,8 +488,14 @@ async function submitWriteForm(kind, form, message) {
         data = {
             period: values.period,
             owner: values.owner,
-            items: String(values.items || '').split('\n').map(t => t.trim()).filter(Boolean)
+            items: String(values.items || '').split('\n').map(t => t.trim()).filter(Boolean),
+            lift: values.lift,
+            target: values.target
         };
+        if (Number(values.target) > 0 && !values.lift) {
+            message.textContent = '目標値を入れたときは種目も選んでください。';
+            return;
+        }
     }
 
     submit.disabled = true;

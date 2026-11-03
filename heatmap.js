@@ -1,7 +1,7 @@
 // ==========================================
-// 活動ヒートマップ（活動日記のタブ）
-//   日記を書いた日を、1マス1日のマス目で色の濃さにして並べる
-//   書いた人で絞り込むと、その人の分だけになる。マスを押すとその日の日記だけ出る
+// 活動ヒートマップ（記録タブ）
+//   「活動した日」（スプレッドシートの「活動した日」シート）を、1マス1日のマス目で並べる
+//   「今日活動した」ボタンか、マスを押して付ける。日記を書いた日とは別に数える
 // ==========================================
 // 何週分出すか。幅に入るだけ出すが、少なくとも半年・多くても1年
 const HEATMAP_MIN_WEEKS = 26;
@@ -18,13 +18,6 @@ function heatmapWeekStart(date) {
     const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     start.setDate(start.getDate() - start.getDay());
     return start;
-}
-
-function heatmapLevel(count) {
-    if (count >= 4) return 4;
-    if (count >= 3) return 3;
-    if (count >= 2) return 2;
-    return count > 0 ? 1 : 0;
 }
 
 // 日記のある週が、今週（まだなら先週）から何週続いているか・いちばん長く続いたのは何週か
@@ -49,14 +42,13 @@ function heatmapWeekStreaks(dateKeys) {
     return { current, longest };
 }
 
-function renderActivityHeatmap(posts, { author = 'all', selectedDate = '', onSelect = () => {} } = {}) {
+// days: 活動した日（"2026-11-04" の配列）
+// onToggle(date, active): マスを押したとき。active は押したあとの状態
+function renderActivityHeatmap(days, { onToggle = null } = {}) {
     const container = document.getElementById('activity-heatmap');
     if (!container) return;
 
-    const counts = new Map();
-    posts
-        .filter(post => author === 'all' || (post.author || '不明') === author)
-        .forEach(post => counts.set(post.date, (counts.get(post.date) || 0) + 1));
+    const active = new Set(days);
 
     // 別のタブを開いているあいだは幅が0なので、ページの幅で考える
     const width = container.clientWidth || (container.closest('main') || document.body).clientWidth;
@@ -66,12 +58,11 @@ function renderActivityHeatmap(posts, { author = 'all', selectedDate = '', onSel
 
     const today = new Date();
     const todayKey = heatmapDateKey(today);
+    const monthPrefix = todayKey.slice(0, 7);
     const start = heatmapWeekStart(today);
     start.setDate(start.getDate() - (weekCount - 1) * 7);
-    const startKey = heatmapDateKey(start);
 
     let activeDays = 0;
-    let total = 0;
     const cells = [];
     const months = [];
     for (let week = 0; week < weekCount; week++) {
@@ -83,17 +74,14 @@ function renderActivityHeatmap(posts, { author = 'all', selectedDate = '', onSel
                 cells.push('<span class="heatmap-cell is-future" aria-hidden="true"></span>');
                 continue;
             }
-            const count = counts.get(key) || 0;
-            if (count) {
-                activeDays++;
-                total += count;
-            }
-            const label = `${date.getMonth() + 1}月${date.getDate()}日 ${count ? `日記${count}件` : '日記なし'}`;
-            const classes = ['heatmap-cell', `level-${heatmapLevel(count)}`];
+            const done = active.has(key);
+            if (done) activeDays++;
+            const label = `${date.getMonth() + 1}月${date.getDate()}日 ${done ? '活動した' : '活動なし'}`;
+            const classes = ['heatmap-cell', done ? 'level-4' : 'level-0'];
             if (key === todayKey) classes.push('is-today');
-            if (key === selectedDate) classes.push('is-selected');
-            cells.push(count
-                ? `<button type="button" class="${classes.join(' ')}" data-date="${key}" title="${label}" aria-label="${label}"></button>`
+            // 押すと「活動した日」を付けたり外したりできる（合言葉が要る）
+            cells.push(onToggle
+                ? `<button type="button" class="${classes.join(' ')}" data-date="${key}" data-active="${done}" title="${label}（押して切り替え）" aria-label="${label}"></button>`
                 : `<span class="${classes.join(' ')}" title="${label}"></span>`);
         }
     }
@@ -103,33 +91,34 @@ function renderActivityHeatmap(posts, { author = 'all', selectedDate = '', onSel
         .map(m => `<span style="grid-column:${m.week + 1}">${m.label}</span>`)
         .join('');
 
-    const inRange = new Set([...counts.keys()].filter(key => key >= startKey && key <= todayKey));
-    const streak = heatmapWeekStreaks(counts.keys());
-    const who = author === 'all' ? '部' : author;
+    const streak = heatmapWeekStreaks(active);
+    const thisMonth = [...active].filter(key => key.startsWith(monthPrefix)).length;
 
     container.innerHTML = `
         <div class="heatmap-stats">
-            <div><strong>${activeDays}</strong><span>日 活動（${span}）</span></div>
+            <div><strong>${thisMonth}</strong><span>日 今月の活動</span></div>
             <div><strong>${streak.current}</strong><span>週 連続中</span></div>
             <div><strong>${streak.longest}</strong><span>週 最長連続</span></div>
-            <div><strong>${total}</strong><span>件 日記（${span}）</span></div>
+            <div><strong>${activeDays}</strong><span>日 活動（${span}）</span></div>
         </div>
         <div class="heatmap-scroll">
             <div class="heatmap" style="--weeks:${weekCount}">
                 <div class="heatmap-months">${monthLabels}</div>
                 <div class="heatmap-weekdays" aria-hidden="true"><span></span><span>月</span><span></span><span>水</span><span></span><span>金</span><span></span></div>
-                <div class="heatmap-grid" role="group" aria-label="${escapeAttribute(who)}の活動ヒートマップ">${cells.join('')}</div>
+                <div class="heatmap-grid" role="group" aria-label="活動ヒートマップ">${cells.join('')}</div>
             </div>
         </div>
         <div class="heatmap-legend" aria-hidden="true">
-            <span>${inRange.size ? `${escapeHTML(who)}の日記を書いた日` : `${escapeHTML(who)}はこの${span}、日記がありません`}</span>
-            <span class="heatmap-legend-scale">少<i class="level-0"></i><i class="level-1"></i><i class="level-2"></i><i class="level-3"></i><i class="level-4"></i>多</span>
+            <span>${active.size ? '色の付いた日が「活動した日」。マスを押すと付けたり外したりできます' : 'まだ活動した日がありません。「今日活動した」を押してみよう'}</span>
+            <span class="heatmap-legend-scale">なし<i class="level-0"></i><i class="level-4"></i>活動</span>
         </div>
     `;
 
-    container.querySelectorAll('button[data-date]').forEach(button => {
-        button.addEventListener('click', () => onSelect(button.dataset.date === selectedDate ? '' : button.dataset.date));
-    });
+    if (onToggle) {
+        container.querySelectorAll('button[data-date]').forEach(button => {
+            button.addEventListener('click', () => onToggle(button.dataset.date, button.dataset.active !== 'true'));
+        });
+    }
     // 最初は今日（右端）が見えるようにする
     const scroll = container.querySelector('.heatmap-scroll');
     if (scroll) scroll.scrollLeft = scroll.scrollWidth;

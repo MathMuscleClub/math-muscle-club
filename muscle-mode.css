@@ -60,7 +60,8 @@ html.muscle-mode .eyebrow::after {
     color: #c0392b;
 }
 
-html.muscle-mode section:not(.latex-typing-section) > h2::before {
+html.muscle-mode section:not(.latex-typing-section) > h2::before,
+html.muscle-mode section > .section-head > h2::before {
     content: "💪";
     font-family: inherit;
     display: inline-block;

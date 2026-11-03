@@ -12,9 +12,9 @@
     <meta property="og:url" content="https://mathmuscleclub.github.io/math-muscle-club/">
     <meta name="theme-color" content="#2f6f4e">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
-    <link rel="stylesheet" href="style.css?v=20261103b">
+    <link rel="stylesheet" href="style.css?v=20261103c">
     <link rel="stylesheet" href="latex-typing.css?v=20260616a">
-    <link rel="stylesheet" href="muscle-mode.css?v=20261103a">
+    <link rel="stylesheet" href="muscle-mode.css?v=20261103c">
 </head>
 
 <body>
@@ -27,19 +27,44 @@
 
         <!-- タブナビゲーション -->
         <nav class="tabs">
-            <button class="tab-button active" onclick="switchTab('activity')">活動紹介</button>
-            <button class="tab-button" onclick="switchTab('schedule')">活動予定</button>
-            <button class="tab-button" onclick="switchTab('goals')">目標と実績</button>
-            <button class="tab-button" onclick="switchTab('diary')">活動日記</button>
-            <button class="tab-button" onclick="switchTab('latex-typing')">LaTeXタイピング</button>
+            <button class="tab-button active" onclick="switchTab('activity')">ホーム</button>
+            <button class="tab-button" onclick="switchTab('schedule')">予定</button>
+            <button class="tab-button" onclick="switchTab('goals')">目標</button>
+            <button class="tab-button" onclick="switchTab('records')">記録</button>
+            <button class="tab-button" onclick="switchTab('diary')">日記</button>
+            <button class="tab-button" onclick="switchTab('latex-typing')">あそぶ</button>
+            <button class="tab-button tab-button-edit" onclick="switchTab('edit')">✏️ 編集</button>
         </nav>
 
         <main>
-            <!-- タブ1: 活動紹介 -->
+            <!-- タブ: ホーム（いちばん見たいものだけ。詳しくは各タブへ） -->
             <div id="activity" class="tab-content active">
+                <section class="home-top">
+                    <div id="next-activity" class="next-activity" hidden></div>
+                    <div class="activity-button-host"></div>
+                </section>
+
                 <section>
                     <h2>今日のトレーニング</h2>
                     <div id="daily-training-card" class="daily-training-card">
+                        <p class="loading">読み込み中...</p>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="section-head">
+                        <h2>部の目標</h2>
+                        <button class="link-button" type="button" onclick="switchTab('records')">記録を見る →</button>
+                    </div>
+                    <div id="home-meter" class="home-meter"></div>
+                </section>
+
+                <section>
+                    <div class="section-head">
+                        <h2>最新の日記</h2>
+                        <button class="link-button" type="button" onclick="switchTab('diary')">日記を見る →</button>
+                    </div>
+                    <div id="home-diary" class="home-diary">
                         <p class="loading">読み込み中...</p>
                     </div>
                 </section>
@@ -72,11 +97,10 @@
                 </section>
             </div>
 
-            <!-- タブ: 活動予定 -->
+            <!-- タブ: 予定 -->
             <div id="schedule" class="tab-content">
                 <section>
-                    <h2>活動予定</h2>
-                    <div id="next-activity" class="next-activity" hidden></div>
+                    <h2>予定</h2>
                     <div class="calendar-container">
                         <div class="calendar-header">
                             <button class="calendar-btn" onclick="prevMonth()" aria-label="前の月">&lt;</button>
@@ -110,46 +134,23 @@
                 </section>
             </div>
 
-            <!-- タブ2: 目標と実績 -->
+            <!-- タブ: 目標 -->
             <div id="goals" class="tab-content">
                 <section>
-                    <div class="section-head">
-                        <h2>目標</h2>
-                        <button class="write-button" type="button" data-write="goal">＋ 目標を書く</button>
-                    </div>
-                    <h3>今年の目標</h3>
+                    <h2>今年の目標</h2>
                     <ul id="yearly-goals-list">
                         <li class="loading">読み込み中...</li>
                     </ul>
-
-                    <h3>月間目標</h3>
-                    <div id="monthly-goals-container">
-                        <p class="loading">読み込み中...</p>
-                    </div>
                 </section>
 
                 <section>
-                    <h2>記録</h2>
-                    <div id="team-meter" class="team-meter">
+                    <div class="section-head">
+                        <h2>月の目標</h2>
+                        <button class="write-button" type="button" data-write="goal">＋ 目標を書く</button>
+                    </div>
+                    <div id="month-goals-container">
                         <p class="loading">読み込み中...</p>
                     </div>
-                    <h3>伸びのグラフ</h3>
-                    <div id="records-chart" class="records-chart"></div>
-                    <p class="records-help">自己ベストを更新した日の日記に記録を1行足すと、メーターとグラフに反映されます。</p>
-                </section>
-
-                <section>
-                    <h2>個人目標</h2>
-                    <p class="personal-goals-description">メンバーそれぞれの月間目標です。</p>
-                    <div id="personal-goals-container">
-                        <p class="loading">読み込み中...</p>
-                    </div>
-                </section>
-
-                <section id="monthly-summary-section" hidden>
-                    <h2>月のまとめ</h2>
-                    <p class="personal-goals-description">毎月1日に、スプレッドシートが先月の分を自動で作ります。</p>
-                    <div id="monthly-summary-list" class="monthly-summary-list"></div>
                 </section>
 
                 <section>
@@ -160,14 +161,43 @@
                 </section>
             </div>
 
-            <!-- タブ3: 活動日記 -->
+            <!-- タブ: 記録 -->
+            <div id="records" class="tab-content">
+                <section>
+                    <h2>部の目標メーター</h2>
+                    <div id="team-meter" class="team-meter">
+                        <p class="loading">読み込み中...</p>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="section-head">
+                        <h2>活動した日</h2>
+                        <div class="activity-button-host"></div>
+                    </div>
+                    <div id="activity-heatmap" class="activity-heatmap"></div>
+                </section>
+
+                <section>
+                    <h2>伸びのグラフ</h2>
+                    <div id="records-chart" class="records-chart"></div>
+                    <p class="records-help">自己ベストを更新した日の日記に記録を付けると、メーターとグラフに反映されます。</p>
+                </section>
+
+                <section id="monthly-summary-section" hidden>
+                    <h2>月のまとめ</h2>
+                    <p class="personal-goals-description">毎月1日に、スプレッドシートが先月の分を自動で作ります。</p>
+                    <div id="monthly-summary-list" class="monthly-summary-list"></div>
+                </section>
+            </div>
+
+            <!-- タブ: 日記 -->
             <div id="diary" class="tab-content">
                 <section>
                     <div class="section-head">
-                        <h2>活動日記</h2>
+                        <h2>日記</h2>
                         <button class="write-button" type="button" data-write="diary">＋ 日記を書く</button>
                     </div>
-                    <div id="activity-heatmap" class="activity-heatmap"></div>
                     <div class="diary-toolbar">
                         <input id="diary-search" class="diary-search" type="search" placeholder="日記を検索" aria-label="日記を検索">
                         <select id="diary-month" class="diary-month" aria-label="月で絞り込む"></select>
@@ -307,6 +337,13 @@
                 </section>
             </div>
 
+            <!-- タブ: 編集（スプレッドシートの中身をここで直す） -->
+            <div id="edit" class="tab-content">
+                <section>
+                    <h2>編集</h2>
+                    <div id="editor"></div>
+                </section>
+            </div>
         </main>
 
         <footer>
@@ -316,12 +353,12 @@
 
     <!-- タブ切り替え用のスクリプト -->
     <script src="latex-typing.js?v=20261003a"></script>
-    <script src="muscle-mode.js?v=20261103a"></script>
-    <script src="records.js?v=20261103a"></script>
-    <script src="heatmap.js?v=20261103b"></script>
-    <script src="footer-cat.js?v=20261103b"></script>
-    <script src="sheet-config.js?v=20261103a"></script>
-    <script src="sheet-sync.js?v=20261103a"></script>
+    <script src="muscle-mode.js?v=20261103c"></script>
+    <script src="records.js?v=20261103c"></script>
+    <script src="heatmap.js?v=20261103c"></script>
+    <script src="sheet-config.js?v=20261103c"></script>
+    <script src="sheet-sync.js?v=20261103d"></script>
+    <script src="editor.js?v=20261103c"></script>
     <script>
         function switchTab(tabId) {
             const targetContent = document.getElementById(tabId);
@@ -334,6 +371,8 @@
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.classList.toggle('active', button.getAttribute('onclick') === `switchTab('${tabId}')`);
             });
+
+            if (tabId === 'edit') openEditor();
 
             // URLの#にタブ名を残して、リロードや共有でも同じタブを開けるようにする
             if (location.hash.slice(1) !== tabId) {
@@ -362,6 +401,7 @@
         let schedules = [];
         let recurringSchedules = [];
         let diaryPosts = [];
+        let activityDays = [];
         let memberDirectory = null;
         let currentYear, currentMonth;
 
@@ -404,11 +444,13 @@
                 renderMembers(data.members);
                 renderRecords(data.members, diary, goals.teamTarget, data.lifts);
                 renderYearlyGoals(goals.yearlyGoals);
-                renderMonthlyGoals(goals.monthlyGoals);
+                renderMonthGoals(goals.monthlyGoals, goals.personalGoals);
                 renderAchievements(goals.achievements);
                 renderMonthlySummaries(sheetData.summaries);
-                renderPersonalGoals(goals.personalGoals);
                 renderDiary(diary);
+                renderHomeDiary();
+                activityDays = (sheetData.activityDays || []).map(day => day.date);
+                renderActivity();
                 renderCalendar(currentYear, currentMonth);
                 renderNextActivity();
 
@@ -416,6 +458,59 @@
                 console.error(error);
                 showErrorMessages();
             }
+        }
+
+        // 「活動した日」：記録タブのヒートマップと、ホーム・記録タブの「今日活動した」ボタン
+        function renderActivity() {
+            const canEdit = isSheetEnabled();
+            renderActivityHeatmap(activityDays, { onToggle: canEdit ? setActivityDay : null });
+            const today = getTodayKey();
+            const done = activityDays.includes(today);
+            document.querySelectorAll('.activity-button-host').forEach(host => {
+                if (!canEdit) {
+                    host.innerHTML = '';
+                    return;
+                }
+                host.innerHTML = done
+                    ? '<button type="button" class="activity-button is-done">✓ 今日は活動済み</button>'
+                    : '<button type="button" class="activity-button">💪 今日活動した</button>';
+                host.querySelector('button').addEventListener('click', () => {
+                    if (done && !window.confirm('今日の「活動した」を取り消しますか？')) return;
+                    setActivityDay(today, !done);
+                });
+            });
+        }
+
+        // ホームの「最新の日記」（新しい3件）
+        function renderHomeDiary() {
+            const host = document.getElementById('home-diary');
+            if (!host) return;
+            const latest = diaryPosts.slice(0, 3);
+            if (latest.length === 0) {
+                host.innerHTML = '<p class="no-data">まだ日記はありません。</p>';
+                return;
+            }
+            host.innerHTML = latest.map(post => {
+                const author = post.author || '不明';
+                const text = String(post.content || '').replace(/\s+/g, ' ');
+                return `
+                    <button type="button" class="home-diary-item" data-date="${escapeAttribute(post.date)}">
+                        <span class="diary-avatar" style="background:${getMemberColor(author)}" aria-hidden="true">${escapeHTML(Array.from(author)[0] || '?')}</span>
+                        <span class="home-diary-body">
+                            <span class="home-diary-meta">${escapeHTML(author)} · ${formatDate(post.date, getDayOfWeek(post.date))}${isNewPost(post) ? ' <span class="diary-new">NEW</span>' : ''}</span>
+                            <strong>${escapeHTML(post.title || '（タイトルなし）')}</strong>
+                            ${text ? `<span class="home-diary-text">${escapeHTML(text.length > 60 ? `${text.slice(0, 60)}…` : text)}</span>` : ''}
+                        </span>
+                    </button>
+                `;
+            }).join('');
+            host.querySelectorAll('.home-diary-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    diaryFilter.date = item.dataset.date;
+                    switchTab('diary');
+                    showDiaryPosts();
+                });
+            });
         }
 
         function renderDailyTraining(trainings) {
@@ -545,47 +640,67 @@
             });
         }
 
-        function renderMonthlyGoals(monthlyGoals) {
-            const container = document.getElementById('monthly-goals-container');
+        // 月の目標（部の目標と個人の目標を、同じ月の切り替えで見せる）
+        function renderMonthGoals(monthlyGoals, personalGoals) {
+            const container = document.getElementById('month-goals-container');
             if (!container) return;
             container.innerHTML = '';
 
-            if (!monthlyGoals || monthlyGoals.length === 0) {
-                container.innerHTML = '<p class="no-data">月間目標はありません。</p>';
-                return;
-            }
-
-            // 新しい月が先頭。今月の分がまだなければ、前の月の進行中の目標を引き継いで今月として出す
-            const sorted = withCurrentMonth(sortByPeriodDesc(monthlyGoals), month => ({
+            // 部の目標は新しい月が先頭。今月の分がまだなければ、前の月の進行中の目標を引き継いで今月として出す
+            const team = withCurrentMonth(sortByPeriodDesc(monthlyGoals), month => ({
                 period: month.period,
                 isVirtual: true,
                 carriedFrom: month.carriedFrom,
                 items: month.items
             }));
+            const personal = Array.isArray(personalGoals) ? personalGoals : [];
 
-            // 月セレクタ
+            const periods = new Map();
+            team.forEach(m => periods.set(periodToNumber(m.period), m.period));
+            personal.forEach(member => (member.months || []).forEach(m => periods.set(periodToNumber(m.period), m.period)));
+            const sortedPeriods = [...periods.entries()].sort((a, b) => b[0] - a[0]).map(([, period]) => period);
+            if (sortedPeriods.length === 0) {
+                container.innerHTML = '<p class="no-data">目標はまだありません。</p>';
+                return;
+            }
+
+            const findTeam = period => team.find(m => periodToNumber(m.period) === periodToNumber(period)) || { period, items: [] };
+            const isRegistered = period => {
+                const teamMonth = findTeam(period);
+                return (!teamMonth.isVirtual && teamMonth.items.length > 0)
+                    || personal.some(member => (member.months || []).some(m => periodToNumber(m.period) === periodToNumber(period)));
+            };
+
             const periodSelector = document.createElement('div');
             periodSelector.className = 'personal-goals-period-selector';
-            sorted.forEach((month, index) => {
+            container.appendChild(periodSelector);
+
+            container.insertAdjacentHTML('beforeend', `
+                <h3 class="month-goals-label">部の目標</h3>
+                <div class="monthly-goals-content"></div>
+                <h3 class="month-goals-label">個人の目標</h3>
+                <div id="personal-goals-cards" class="personal-goals-cards"></div>
+            `);
+            const teamArea = container.querySelector('.monthly-goals-content');
+
+            const show = period => {
+                showMonthlyGoalItems(teamArea, findTeam(period));
+                showPersonalGoalsPeriod(container, personal, period);
+            };
+
+            sortedPeriods.forEach((period, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'personal-goals-period-btn' + (index === 0 ? ' active' : '');
-                btn.innerHTML = escapeHTML(month.period) + (month.isVirtual ? ' <span class="period-unset">未登録</span>' : '');
+                btn.innerHTML = escapeHTML(period) + (isRegistered(period) ? '' : ' <span class="period-unset">未登録</span>');
                 btn.addEventListener('click', () => {
                     periodSelector.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    showMonthlyGoalItems(contentArea, month);
+                    show(period);
                 });
                 periodSelector.appendChild(btn);
             });
-            container.appendChild(periodSelector);
 
-            // コンテンツエリア
-            const contentArea = document.createElement('div');
-            contentArea.className = 'monthly-goals-content';
-            container.appendChild(contentArea);
-
-            // 最新月を表示
-            showMonthlyGoalItems(contentArea, sorted[0]);
+            show(sortedPeriods[0]);
         }
 
         function showMonthlyGoalItems(contentArea, monthData) {
@@ -615,6 +730,12 @@
                 const textSpan = document.createElement('span');
                 textSpan.innerHTML = `<strong>${escapeHTML(item.text)}</strong>`;
                 li.appendChild(textSpan);
+
+                const progress = createGoalProgress(item, '部');
+                if (progress) {
+                    li.classList.add('has-progress');
+                    textSpan.appendChild(progress);
+                }
 
                 if (item.carried) li.classList.add('is-carried');
 
@@ -715,57 +836,6 @@
             `).join('');
         }
 
-        function renderPersonalGoals(personalGoals) {
-            const container = document.getElementById('personal-goals-container');
-            if (!container) return;
-            container.innerHTML = '';
-
-            if (!personalGoals || personalGoals.length === 0) {
-                container.innerHTML = '<p class="no-data">個人目標はありません。</p>';
-                return;
-            }
-
-            // 全メンバーの全月を集めてユニーク化し、新しい順に並べる（今月は登録がなくても入れる）
-            const allPeriods = new Set([getCurrentPeriod()]);
-            personalGoals.forEach(member => {
-                (member.months || []).forEach(m => allPeriods.add(m.period));
-            });
-            const sortedPeriods = Array.from(allPeriods).sort((a, b) => periodToNumber(b) - periodToNumber(a));
-
-            // 月ごとにタブ切り替え
-            if (sortedPeriods.length === 0) {
-                container.innerHTML = '<p class="no-data">個人目標はありません。</p>';
-                return;
-            }
-
-            // 月セレクタ
-            const periodSelector = document.createElement('div');
-            periodSelector.className = 'personal-goals-period-selector';
-            sortedPeriods.forEach((period, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'personal-goals-period-btn' + (index === 0 ? ' active' : '');
-                const isRegistered = personalGoals.some(member => (member.months || []).some(m => periodToNumber(m.period) === periodToNumber(period)));
-                btn.innerHTML = escapeHTML(period) + (isRegistered ? '' : ' <span class="period-unset">未登録</span>');
-                btn.setAttribute('data-period', period);
-                btn.addEventListener('click', () => {
-                    periodSelector.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    showPersonalGoalsPeriod(container, personalGoals, period);
-                });
-                periodSelector.appendChild(btn);
-            });
-            container.appendChild(periodSelector);
-
-            // メンバーカードコンテナ
-            const cardsContainer = document.createElement('div');
-            cardsContainer.className = 'personal-goals-cards';
-            cardsContainer.id = 'personal-goals-cards';
-            container.appendChild(cardsContainer);
-
-            // 最新月を表示
-            showPersonalGoalsPeriod(container, personalGoals, sortedPeriods[0]);
-        }
-
         function showPersonalGoalsPeriod(container, personalGoals, period) {
             const cardsContainer = container.querySelector('#personal-goals-cards');
             if (!cardsContainer) return;
@@ -843,6 +913,9 @@
                         textSpan.className = 'personal-goal-text';
                         textSpan.textContent = item.text;
                         li.appendChild(textSpan);
+
+                        const progress = createGoalProgress(item, member.name);
+                        if (progress) textSpan.appendChild(progress);
 
                         const badge = createGoalStatus(item);
                         li.appendChild(badge);
@@ -996,15 +1069,6 @@
                 if (count) count.textContent = '';
                 return;
             }
-
-            renderActivityHeatmap(diaryPosts, {
-                author: diaryFilter.author,
-                selectedDate: diaryFilter.date,
-                onSelect: date => {
-                    diaryFilter.date = date;
-                    showDiaryPosts();
-                }
-            });
 
             const query = diaryFilter.query.toLowerCase();
             const posts = diaryPosts.filter(post => {
@@ -1200,12 +1264,16 @@
                     </div>
                 `;
                 host.hidden = false;
-                host.onclick = () => goToCalendarDate(dateStr);
+                host.onclick = () => {
+                    switchTab('schedule');
+                    goToCalendarDate(dateStr);
+                };
                 host.setAttribute('role', 'button');
                 host.tabIndex = 0;
                 host.onkeydown = e => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
+                        switchTab('schedule');
                         goToCalendarDate(dateStr);
                     }
                 };
@@ -1343,7 +1411,7 @@
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '<li class="error">データの読み込みに失敗しました。</li>';
             });
-            const containers = ['monthly-goals-container', 'personal-goals-container', 'diary-list', 'event-detail-container'];
+            const containers = ['month-goals-container', 'diary-list', 'home-diary', 'event-detail-container'];
             containers.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '<p class="error">データの読み込みに失敗しました。</p>';

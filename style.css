@@ -192,7 +192,8 @@ h2 {
 }
 
 /* 見出しの頭に § を置く（LaTeXタイピングは独自の見出し） */
-section:not(.latex-typing-section) > h2::before {
+section:not(.latex-typing-section) > h2::before,
+section > .section-head > h2::before {
     content: "§";
     font-family: var(--mono);
     font-weight: 600;
@@ -1878,105 +1879,336 @@ button.heatmap-cell:focus-visible {
 }
 
 /* ==========================================
-   Footer Cat（フッターを歩くネコ）
+   Goal progress & Editor
    ========================================== */
-.footer-cat-track {
-    position: relative;
-    height: 44px;
-    margin-top: -68px;
-    margin-bottom: 24px;
-}
-
-.footer-cat {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    border: 0;
-    background: transparent;
-    padding: 0;
-    font-size: 30px;
-    line-height: 1;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.footer-cat:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-    border-radius: 6px;
-}
-
-.footer-cat-body {
-    display: inline-block;
-}
-
-.footer-cat.is-walking .footer-cat-body {
-    animation: footer-cat-bob 0.45s ease-in-out infinite alternate;
-}
-
-.footer-cat.is-rolling .footer-cat-body {
-    animation: footer-cat-roll 0.9s ease-in-out;
-}
-
-.footer-cat-bubble {
-    position: absolute;
-    left: 50%;
-    bottom: 100%;
-    translate: -50% -4px;
-    white-space: nowrap;
-    font-size: 0.72rem;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 2px 10px;
-    box-shadow: var(--shadow);
-    pointer-events: none;
-    animation: footer-cat-fade 1.6s ease forwards;
-}
-
-.footer-cat-heart {
-    position: absolute;
-    bottom: 60%;
-    color: #e0607e;
-    font-size: 14px;
-    pointer-events: none;
-    animation: footer-cat-heart 1s ease-out forwards;
-}
-
-.footer-cat-count {
-    position: absolute;
-    right: 0;
-    bottom: 2px;
-    font-size: 0.7rem;
+.goal-progress {
+    display: grid;
+    gap: 4px;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    font-weight: 400;
     color: var(--text-muted);
 }
 
-@keyframes footer-cat-bob {
-    from { translate: 0 0; }
-    to { translate: 0 -2px; }
+.goal-progress-bar {
+    display: block;
+    height: 6px;
+    max-width: 260px;
+    border-radius: 999px;
+    background: var(--line-soft);
+    overflow: hidden;
 }
 
-@keyframes footer-cat-roll {
-    from { rotate: 0deg; }
-    to { rotate: 360deg; }
+.goal-progress-bar span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
 }
 
-@keyframes footer-cat-fade {
-    0% { opacity: 0; }
-    15% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
+.goal-progress.is-reached .goal-progress-text {
+    color: var(--accent);
+    font-weight: 700;
 }
 
-@keyframes footer-cat-heart {
-    from { opacity: 1; translate: 0 0; }
-    to { opacity: 0; translate: 0 -28px; }
+.monthly-goal-item.has-progress {
+    align-items: flex-start;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .footer-cat .footer-cat-body,
-    .footer-cat-heart {
-        animation: none !important;
-    }
+.tab-button-edit {
+    display: none;
+}
+
+body.sheet-enabled .tab-button-edit {
+    display: inline-block;
+}
+
+.write-button-inline {
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.write-button-inline[hidden] {
+    display: none;
+}
+
+.editor-login {
+    max-width: 420px;
+}
+
+.editor-login p {
+    font-size: 0.9rem;
+}
+
+.editor-login-row {
+    display: flex;
+    gap: 8px;
+}
+
+.editor-login-row input {
+    flex: 1;
+    font: inherit;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 16px;
+    background: var(--surface);
+}
+
+.editor-sheets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.editor-status {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 10px 0;
+    min-height: 1.2em;
+}
+
+.editor-list {
+    display: grid;
+    gap: 8px;
+}
+
+.editor-row {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.editor-row:hover,
+.editor-row:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.editor-row-main {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.editor-row-meta {
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 6px;
+}
+
+.editor-row-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.editor-foot {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 16px;
+}
+
+.editor-logout {
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    text-decoration: underline;
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 6px;
+}
+
+.editor-delete {
+    border: 1px solid #e3b4ad;
+    background: #fff5f3;
+    color: #c0392b;
+}
+
+.editor-delete[hidden] {
+    display: none;
+}
+
+.editor-actions-space {
+    flex: 1;
+}
+
+.editor-trash {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 14px;
+    font-size: 0.88rem;
+    margin: 0;
+}
+
+.editor-trash dt {
+    color: var(--text-muted);
+}
+
+.editor-trash dd {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* ==========================================
+   Home & Activity days
+   ========================================== */
+.home-top {
+    display: grid;
+    gap: 12px;
+}
+
+.home-top .next-activity {
+    margin-bottom: 0;
+}
+
+.activity-button {
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 800;
+    padding: 10px 20px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(47, 111, 78, 0.25);
+    transition: transform 0.15s ease;
+}
+
+.activity-button:active {
+    transform: scale(0.97);
+}
+
+.activity-button.is-done {
+    background: var(--accent-soft);
+    color: var(--accent);
+    box-shadow: none;
+    border: 1px solid #b9d8c6;
+}
+
+.home-top .activity-button-host:empty {
+    display: none;
+}
+
+.home-top .activity-button {
+    width: 100%;
+}
+
+.link-button {
+    border: none;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 0;
+    white-space: nowrap;
+}
+
+.link-button:hover {
+    text-decoration: underline;
+}
+
+.home-meter {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+}
+
+.home-meter:empty {
+    display: none;
+}
+
+.home-diary {
+    display: grid;
+    gap: 8px;
+}
+
+.home-diary-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.home-diary-item:hover,
+.home-diary-item:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.home-diary-body {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.home-diary-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.home-diary-body strong {
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.home-diary-text {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.month-goals-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 20px 0 8px 0;
+}
+
+#records .heatmap-cell.level-4 {
+    background: var(--accent);
+}
+
+button.heatmap-cell {
+    cursor: pointer;
 }
