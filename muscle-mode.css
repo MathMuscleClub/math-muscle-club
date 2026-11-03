@@ -1,0 +1,352 @@
+/* ==========================================
+   隠し筋肉モード
+   ========================================== */
+.muscle-trigger {
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- モード中のページ全体 ---------- */
+html.muscle-mode {
+    --bg: #fffaf0;
+    --line: #efe2c4;
+    --line-soft: #f6ecd6;
+    --accent: #a8760a;
+    --accent-soft: #fbf1d9;
+    --gold: #c9971c;
+}
+
+html.muscle-mode body {
+    background:
+        radial-gradient(1200px 500px at 50% -10%, rgba(201, 151, 28, 0.18), transparent 70%),
+        var(--bg);
+}
+
+html.muscle-mode .tabs {
+    background-color: rgba(255, 250, 240, 0.88);
+}
+
+html.muscle-mode .site-header::before {
+    background-image:
+        linear-gradient(rgba(201, 151, 28, 0.22) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201, 151, 28, 0.22) 1px, transparent 1px);
+}
+
+html.muscle-mode .site-header h1 {
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    background: linear-gradient(100deg, #6b4a00 0%, #c9971c 25%, #fff2b8 40%, #c9971c 55%, #6b4a00 80%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: muscleShimmer 3.2s linear infinite, musclePump 1.6s ease-in-out infinite;
+    transform-origin: left center;
+}
+
+html.muscle-mode .site-header h1::after {
+    content: " 💪";
+    -webkit-text-fill-color: initial;
+    color: initial;
+    display: inline-block;
+    animation: muscleFlex 0.9s ease-in-out infinite alternate;
+}
+
+html.muscle-mode .eyebrow::after {
+    content: " — MODE: ON";
+    color: #c0392b;
+}
+
+html.muscle-mode section:not(.latex-typing-section) > h2::before {
+    content: "💪";
+    font-family: inherit;
+    display: inline-block;
+    animation: muscleFlex 1.1s ease-in-out infinite alternate;
+}
+
+html.muscle-mode h2 {
+    letter-spacing: 0.04em;
+}
+
+html.muscle-mode .daily-training-card,
+html.muscle-mode .table-wrapper,
+html.muscle-mode .calendar-container,
+html.muscle-mode .personal-goal-card,
+html.muscle-mode .event-card {
+    border-color: #e7cf94;
+    box-shadow: 0 0 0 1px rgba(201, 151, 28, 0.15), 0 10px 30px rgba(201, 151, 28, 0.16);
+}
+
+html.muscle-mode .tab-button.active {
+    border-bottom-color: var(--gold);
+}
+
+@keyframes muscleShimmer {
+    from { background-position: 100% 0; }
+    to { background-position: -150% 0; }
+}
+
+@keyframes musclePump {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.035); }
+}
+
+@keyframes muscleFlex {
+    from { transform: rotate(-12deg) scale(1); }
+    to { transform: rotate(10deg) scale(1.18); }
+}
+
+/* ---------- 登場時の揺れ ---------- */
+body.muscle-shake .container {
+    animation: muscleShake 0.6s cubic-bezier(.36, .07, .19, .97) 0.15s both;
+}
+
+@keyframes muscleShake {
+    10%, 90% { transform: translate(-2px, 1px); }
+    20%, 80% { transform: translate(5px, -2px); }
+    30%, 50%, 70% { transform: translate(-9px, 3px) rotate(-0.4deg); }
+    40%, 60% { transform: translate(9px, -3px) rotate(0.4deg); }
+}
+
+/* ---------- 登場バナー ---------- */
+.muscle-banner {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    cursor: pointer;
+    background: radial-gradient(circle at 50% 50%, rgba(40, 26, 0, 0.55), rgba(10, 6, 0, 0.82));
+    animation: muscleFadeIn 0.2s ease both;
+}
+
+.muscle-banner.is-leaving {
+    animation: muscleFadeOut 0.6s ease both;
+}
+
+.muscle-banner-flash {
+    position: absolute;
+    inset: 0;
+    background: #fff8dc;
+    animation: muscleFlash 0.5s ease-out both;
+}
+
+.muscle-banner-rays {
+    position: absolute;
+    width: 220vmax;
+    height: 220vmax;
+    left: 50%;
+    top: 50%;
+    margin: -110vmax 0 0 -110vmax;
+    background: repeating-conic-gradient(rgba(255, 215, 90, 0.22) 0deg 8deg, transparent 8deg 20deg);
+    animation: muscleSpin 12s linear infinite;
+    -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 55%);
+    mask-image: radial-gradient(circle, #000 0%, transparent 55%);
+}
+
+.muscle-banner-inner {
+    position: relative;
+    text-align: center;
+    padding: 0 16px;
+    animation: muscleSlam 0.55s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+
+.muscle-banner-arms {
+    display: flex;
+    justify-content: center;
+    gap: 0.4em;
+    font-size: clamp(3rem, 12vw, 6rem);
+    line-height: 1;
+    margin-bottom: 0.15em;
+}
+
+.muscle-banner-arms span {
+    display: inline-block;
+    animation: muscleFlex 0.45s ease-in-out infinite alternate;
+}
+
+.muscle-banner-arms span:first-child {
+    transform: scaleX(-1);
+    animation-name: muscleFlexMirror;
+}
+
+@keyframes muscleFlexMirror {
+    from { transform: scaleX(-1) rotate(-12deg) scale(1); }
+    to { transform: scaleX(-1) rotate(10deg) scale(1.18); }
+}
+
+.muscle-banner-title {
+    font-family: Impact, "Arial Black", "Hiragino Sans", sans-serif;
+    font-weight: 900;
+    font-size: clamp(3.4rem, 16vw, 9rem);
+    line-height: 0.92;
+    letter-spacing: 0.04em;
+    background: linear-gradient(180deg, #fffbe6 0%, #ffd75a 38%, #c9971c 62%, #7a5200 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 4px 0 #3d2900) drop-shadow(0 0 24px rgba(255, 200, 60, 0.65));
+}
+
+.muscle-banner-sub {
+    margin-top: 0.9em;
+    font-family: "Times New Roman", "Hiragino Mincho ProN", serif;
+    font-style: italic;
+    font-size: clamp(1.1rem, 4.5vw, 1.7rem);
+    color: #fff2c4;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    animation: muscleFadeIn 0.4s ease 0.45s both;
+}
+
+@keyframes muscleSlam {
+    0% { transform: scale(3.2); opacity: 0; filter: blur(8px); }
+    60% { transform: scale(0.92); opacity: 1; filter: blur(0); }
+    100% { transform: scale(1); }
+}
+
+@keyframes muscleFlash {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes muscleSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes muscleFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes muscleFadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(1.08); }
+}
+
+/* ---------- 記号が舞うキャンバス ---------- */
+.muscle-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    pointer-events: none;
+}
+
+/* ---------- タップで出る文字 ---------- */
+.muscle-pop {
+    position: fixed;
+    z-index: 950;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    font-weight: 900;
+    font-size: 1.05rem;
+    color: var(--gold);
+    text-shadow: 0 1px 0 #fff, 0 2px 8px rgba(201, 151, 28, 0.45);
+    white-space: nowrap;
+    animation: musclePop 0.9s ease-out forwards;
+}
+
+.muscle-pop.is-prime {
+    font-size: 1.35rem;
+    color: #c0392b;
+}
+
+@keyframes musclePop {
+    0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+    20% { transform: translate(-50%, -90%) scale(1.15); opacity: 1; }
+    100% { transform: translate(-50%, -260%) scale(1); opacity: 0; }
+}
+
+/* ---------- 右下のバッジ ---------- */
+.muscle-badge {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 960;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 8px 8px 16px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #2a1d00, #4a3300);
+    color: #ffe9a8;
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: 0 0 0 1px rgba(255, 215, 90, 0.5), 0 10px 30px rgba(60, 40, 0, 0.35);
+    animation: muscleBadgeIn 0.5s cubic-bezier(.2, 1.4, .4, 1) 0.6s both;
+}
+
+.muscle-badge[hidden] {
+    display: none;
+}
+
+.muscle-badge-label {
+    letter-spacing: 0.06em;
+}
+
+.muscle-badge-reps {
+    font-family: var(--mono);
+    color: #c9b27a;
+}
+
+.muscle-badge-reps strong {
+    display: inline-block;
+    min-width: 2ch;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.muscle-badge.is-prime .muscle-badge-reps strong {
+    color: #ff8a7a;
+}
+
+.muscle-badge-close {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffe9a8;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.muscle-badge-close:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+@keyframes muscleBadgeIn {
+    from { transform: translateY(30px) scale(0.8); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+
+/* ---------- 元に戻したときの通知 ---------- */
+.muscle-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    z-index: 960;
+    transform: translateX(-50%);
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: #1f1f1d;
+    color: #fff;
+    font-size: 0.85rem;
+    animation: muscleToast 1.8s ease both;
+}
+
+@keyframes muscleToast {
+    0% { opacity: 0; transform: translate(-50%, 10px); }
+    15%, 80% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, 0); }
+}
+
+@media (max-width: 640px) {
+    .muscle-badge-label {
+        display: none;
+    }
+}

@@ -5,13 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学科筋トレ部</title>
-    <link rel="stylesheet" href="style.css?v=20261003a">
+    <meta name="description" content="数学を愛し、筋肉を愛する者の集い。数学科筋トレ部の活動予定・目標・活動日記。">
+    <meta property="og:title" content="数学科筋トレ部">
+    <meta property="og:description" content="数学を愛し、筋肉を愛する者の集い">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mathmuscleclub.github.io/math-muscle-club/">
+    <meta name="theme-color" content="#2f6f4e">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+    <link rel="stylesheet" href="style.css?v=20261103a">
     <link rel="stylesheet" href="latex-typing.css?v=20260616a">
+    <link rel="stylesheet" href="muscle-mode.css?v=20261103a">
 </head>
 
 <body>
     <div class="container">
-        <header>
+        <header class="site-header">
+            <p class="eyebrow">MATH × MUSCLE</p>
             <h1>数学科筋トレ部</h1>
             <p class="subtitle">数学を愛し、筋肉を愛する者の集い</p>
         </header>
@@ -37,10 +46,8 @@
 
                 <section>
                     <h2>活動内容</h2>
-                    <ul>
-                        <li><strong>活動日：</strong>水曜日, 金曜日 3限</li>
-                        <li><strong>場所：</strong>第2体育館トレーニング室</li>
-                        <li><strong>内容：</strong>ベンチプレスやスクワットなどをみんなでやっています！</li>
+                    <ul id="activity-info">
+                        <li class="loading">読み込み中...</li>
                     </ul>
                 </section>
 
@@ -69,11 +76,15 @@
             <div id="schedule" class="tab-content">
                 <section>
                     <h2>活動予定</h2>
+                    <div id="next-activity" class="next-activity" hidden></div>
                     <div class="calendar-container">
                         <div class="calendar-header">
-                            <button class="calendar-btn" onclick="prevMonth()">&lt;</button>
-                            <h3 id="calendar-title">-年-月</h3>
-                            <button class="calendar-btn" onclick="nextMonth()">&gt;</button>
+                            <button class="calendar-btn" onclick="prevMonth()" aria-label="前の月">&lt;</button>
+                            <div class="calendar-title-group">
+                                <h3 id="calendar-title">-年-月</h3>
+                                <button class="calendar-today-btn" type="button" onclick="goToToday()">今日</button>
+                            </div>
+                            <button class="calendar-btn" onclick="nextMonth()" aria-label="次の月">&gt;</button>
                         </div>
                         <div class="calendar-weekdays">
                             <div>日</div>
@@ -87,6 +98,10 @@
                         <div id="calendar-days" class="calendar-days">
                             <!-- JSで日付を生成 -->
                         </div>
+                        <div class="calendar-legend">
+                            <span><span class="event-dot-sample"></span>活動</span>
+                            <span><span class="diary-dot-sample"></span>日記</span>
+                        </div>
                     </div>
 
                     <div id="event-detail-container" class="event-detail-container">
@@ -98,7 +113,10 @@
             <!-- タブ2: 目標と実績 -->
             <div id="goals" class="tab-content">
                 <section>
-                    <h2>目標</h2>
+                    <div class="section-head">
+                        <h2>目標</h2>
+                        <button class="write-button" type="button" data-write="goal">＋ 目標を書く</button>
+                    </div>
                     <h3>今年の目標</h3>
                     <ul id="yearly-goals-list">
                         <li class="loading">読み込み中...</li>
@@ -108,6 +126,16 @@
                     <div id="monthly-goals-container">
                         <p class="loading">読み込み中...</p>
                     </div>
+                </section>
+
+                <section>
+                    <h2>記録</h2>
+                    <div id="team-meter" class="team-meter">
+                        <p class="loading">読み込み中...</p>
+                    </div>
+                    <h3>伸びのグラフ</h3>
+                    <div id="records-chart" class="records-chart"></div>
+                    <p class="records-help">自己ベストを更新した日の日記に記録を1行足すと、メーターとグラフに反映されます。</p>
                 </section>
 
                 <section>
@@ -129,8 +157,16 @@
             <!-- タブ3: 活動日記 -->
             <div id="diary" class="tab-content">
                 <section>
-                    <h2>活動日記</h2>
-                    <div id="diary-period-selector" class="personal-goals-period-selector"></div>
+                    <div class="section-head">
+                        <h2>活動日記</h2>
+                        <button class="write-button" type="button" data-write="diary">＋ 日記を書く</button>
+                    </div>
+                    <div class="diary-toolbar">
+                        <input id="diary-search" class="diary-search" type="search" placeholder="日記を検索" aria-label="日記を検索">
+                        <select id="diary-month" class="diary-month" aria-label="月で絞り込む"></select>
+                    </div>
+                    <div id="diary-authors" class="diary-authors" aria-label="書いた人で絞り込む"></div>
+                    <p id="diary-count" class="diary-count" aria-live="polite"></p>
                     <div id="diary-list" class="diary-list">
                         <p class="loading">読み込み中...</p>
                     </div>
@@ -273,6 +309,10 @@
 
     <!-- タブ切り替え用のスクリプト -->
     <script src="latex-typing.js?v=20261003a"></script>
+    <script src="muscle-mode.js?v=20261103a"></script>
+    <script src="records.js?v=20261103a"></script>
+    <script src="sheet-config.js?v=20261103a"></script>
+    <script src="sheet-sync.js?v=20261103a"></script>
     <script>
         function switchTab(tabId) {
             const targetContent = document.getElementById(tabId);
@@ -285,54 +325,82 @@
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.classList.toggle('active', button.getAttribute('onclick') === `switchTab('${tabId}')`);
             });
+
+            // URLの#にタブ名を残して、リロードや共有でも同じタブを開けるようにする
+            if (location.hash.slice(1) !== tabId) {
+                history.replaceState(null, '', tabId === 'activity' ? location.pathname + location.search : `#${tabId}`);
+            }
         }
+
+        function getTabFromHash() {
+            const target = document.getElementById(location.hash.slice(1));
+            return target?.classList.contains('tab-content') ? target.id : null;
+        }
+
+        // #タブ名 はタブのidと同じなので、ブラウザがそこへ飛ばないようにページ先頭へ戻す
+        function openTabFromHash() {
+            const tabId = getTabFromHash();
+            if (!tabId) return;
+            switchTab(tabId);
+            setTimeout(() => window.scrollTo(0, 0), 0);
+        }
+
+        window.addEventListener('hashchange', openTabFromHash);
+        window.addEventListener('load', () => {
+            if (getTabFromHash()) setTimeout(() => window.scrollTo(0, 0), 0);
+        });
 
         let schedules = [];
         let recurringSchedules = [];
+        let diaryPosts = [];
+        let memberDirectory = null;
         let currentYear, currentMonth;
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
             currentYear = today.getFullYear();
             currentMonth = today.getMonth();
+            openTabFromHash();
             loadData();
         });
 
+        // 入力画面で保存したあとに、表示を最新にする
+        function reloadSiteData() {
+            return loadData();
+        }
+
         async function loadData() {
             try {
-                const [membersRes, goalsRes, diaryRes, scheduleRes, recurringScheduleRes, trainingsRes] = await Promise.all([
-                    fetch('members.json'),
-                    fetch('goals.json'),
-                    fetch('diary.json'),
-                    fetch('schedule.json'),
-                    fetch('recurring-schedule.json'),
-                    fetch('trainings.json')
-                ]);
-
-                if (!membersRes.ok || !goalsRes.ok || !diaryRes.ok || !scheduleRes.ok || !recurringScheduleRes.ok || !trainingsRes.ok) {
-                    throw new Error('データの読み込みに失敗しました');
+                // データはすべて Googleスプレッドシートから読む（sheet-config.js の URL）
+                const sheetData = await fetchSheetData();
+                if (!sheetData) {
+                    throw new Error('スプレッドシートを読み込めませんでした');
                 }
 
-                const [members, goals, diary, scheduleData, recurringScheduleData, trainings] = await Promise.all([
-                    membersRes.json(),
-                    goalsRes.json(),
-                    diaryRes.json(),
-                    scheduleRes.json(),
-                    recurringScheduleRes.json(),
-                    trainingsRes.json()
-                ]);
+                const data = applySheetData({
+                    members: [],
+                    goals: { yearlyGoals: [], achievements: [], monthlyGoals: [], personalGoals: [] },
+                    schedules: [],
+                    recurring: [],
+                    trainings: []
+                }, sheetData);
+                schedules = data.schedules;
+                recurringSchedules = data.recurring;
+                memberDirectory = createMemberDirectory(data.members);
+                const { diary, goals } = mergeSheetData([], data.goals, sheetData, memberDirectory);
 
-                schedules = scheduleData;
-                recurringSchedules = recurringScheduleData;
-
-                renderDailyTraining(trainings);
-                renderMembers(members);
+                setLiftCatalog(data.lifts);
+                renderActivityInfo(data.info, data.recurring);
+                renderDailyTraining(data.trainings);
+                renderMembers(data.members);
+                renderRecords(data.members, diary, goals.teamTarget, data.lifts);
                 renderYearlyGoals(goals.yearlyGoals);
                 renderMonthlyGoals(goals.monthlyGoals);
                 renderAchievements(goals.achievements);
                 renderPersonalGoals(goals.personalGoals);
                 renderDiary(diary);
                 renderCalendar(currentYear, currentMonth);
+                renderNextActivity();
 
             } catch (error) {
                 console.error(error);
@@ -384,6 +452,39 @@
             return ['日', '月', '火', '水', '木', '金', '土'][parseDateKey(dateStr).getDay()];
         }
 
+        // 活動内容はスプレッドシートの「基本情報」から作る。
+        // 「活動日」は書かなければ「毎週の予定」から作る（予定を直せば活動日も変わる）
+        function renderActivityInfo(info, recurring) {
+            const list = document.getElementById('activity-info');
+            if (!list) return;
+            const items = Array.isArray(info) ? info.slice() : [];
+            const weekly = describeWeeklySchedule(recurring);
+            if (weekly && !items.some(item => item.key === '活動日')) {
+                items.unshift({ key: '活動日', value: weekly });
+            }
+            list.innerHTML = items.length
+                ? items.map(item => `<li><strong>${escapeHTML(item.key)}：</strong>${escapeHTML(item.value)}</li>`).join('')
+                : '<li class="no-data">まだ登録されていません。</li>';
+        }
+
+        // [{ daysOfWeek: [3], time: "12:00 - 13:00" }, { daysOfWeek: [5], ... }] → "水曜日・金曜日 12:00 - 13:00"
+        function describeWeeklySchedule(recurring) {
+            const today = getTodayKey();
+            const active = (Array.isArray(recurring) ? recurring : [])
+                .filter(e => (!e.endDate || e.endDate >= today));
+            const byTime = new Map();
+            active.forEach(e => {
+                const days = Array.isArray(e.daysOfWeek) ? e.daysOfWeek : [e.dayOfWeek];
+                const key = e.time || '';
+                if (!byTime.has(key)) byTime.set(key, new Set());
+                days.forEach(d => byTime.get(key).add(d));
+            });
+            const names = ['日', '月', '火', '水', '木', '金', '土'];
+            return [...byTime.entries()]
+                .map(([time, days]) => `${[...days].sort().map(d => `${names[d]}曜日`).join('・')}${time ? ` ${time}` : ''}`)
+                .join(' / ');
+        }
+
         function renderMembers(members) {
             const tbody = document.getElementById('members-list');
             tbody.innerHTML = '';
@@ -405,10 +506,12 @@
                     const a = document.createElement('a');
                     a.href = m.url;
                     a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
                     a.textContent = 'リンク';
                     linkTd.appendChild(a);
                 } else {
-                    linkTd.textContent = 'なし';
+                    linkTd.textContent = '—';
+                    linkTd.classList.add('muted-cell');
                 }
 
                 tr.appendChild(nameTd);
@@ -442,8 +545,13 @@
                 return;
             }
 
-            // 降順に並べる（最新月が先頭）
-            const sorted = monthlyGoals.slice().reverse();
+            // 新しい月が先頭。今月の分がまだなければ、前の月の進行中の目標を引き継いで今月として出す
+            const sorted = withCurrentMonth(sortByPeriodDesc(monthlyGoals), month => ({
+                period: month.period,
+                isVirtual: true,
+                carriedFrom: month.carriedFrom,
+                items: month.items
+            }));
 
             // 月セレクタ
             const periodSelector = document.createElement('div');
@@ -451,7 +559,7 @@
             sorted.forEach((month, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'personal-goals-period-btn' + (index === 0 ? ' active' : '');
-                btn.textContent = month.period;
+                btn.innerHTML = escapeHTML(month.period) + (month.isVirtual ? ' <span class="period-unset">未登録</span>' : '');
                 btn.addEventListener('click', () => {
                     periodSelector.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
@@ -473,6 +581,16 @@
         function showMonthlyGoalItems(contentArea, monthData) {
             contentArea.innerHTML = '';
 
+            if (monthData && monthData.isVirtual) {
+                const note = document.createElement('p');
+                note.className = 'goal-unset-note';
+                note.textContent = monthData.items.length > 0
+                    ? `${monthData.period}の目標はまだ登録されていません。${monthData.carriedFrom}の進行中の目標を引き継いで表示しています。`
+                    : `${monthData.period}の目標はまだ登録されていません。`;
+                contentArea.appendChild(note);
+                if (monthData.items.length === 0) return;
+            }
+
             if (!monthData || !monthData.items || monthData.items.length === 0) {
                 contentArea.innerHTML = '<p class="no-data">この月の目標はありません。</p>';
                 return;
@@ -488,12 +606,51 @@
                 textSpan.innerHTML = `<strong>${escapeHTML(item.text)}</strong>`;
                 li.appendChild(textSpan);
 
-                const badge = createBadge(item.status || 'pending');
+                if (item.carried) li.classList.add('is-carried');
+
+                const badge = createGoalStatus(item);
                 li.appendChild(badge);
 
                 ul.appendChild(li);
             });
             contentArea.appendChild(ul);
+        }
+
+        // "2026年7月" → 202607（並べ替え用の数）。読めなければ 0
+        function periodToNumber(period) {
+            const match = String(period || '').match(/(\d{4})\D+(\d{1,2})/);
+            return match ? Number(match[1]) * 100 + Number(match[2]) : 0;
+        }
+
+        function getCurrentPeriod() {
+            const today = new Date();
+            return `${today.getFullYear()}年${today.getMonth() + 1}月`;
+        }
+
+        function sortByPeriodDesc(months) {
+            return (Array.isArray(months) ? months : [])
+                .slice()
+                .sort((a, b) => periodToNumber(b.period) - periodToNumber(a.period));
+        }
+
+        // 前の月で「進行中」のまま終わった目標を、今月ぶんとして引き継ぐ
+        function carryOverItems(sortedMonths) {
+            const current = periodToNumber(getCurrentPeriod());
+            const previous = sortedMonths.find(m => periodToNumber(m.period) < current);
+            if (!previous) return { from: null, items: [] };
+            const items = (previous.items || [])
+                .filter(item => (item.status || 'pending') === 'pending')
+                .map(item => ({ ...item, carried: true }));
+            return { from: previous.period, items };
+        }
+
+        // 今月の分が登録されていなければ、引き継ぎ分を「今月」として先頭に足す
+        function withCurrentMonth(sortedMonths, makeVirtual) {
+            const currentPeriod = getCurrentPeriod();
+            const current = periodToNumber(currentPeriod);
+            if (sortedMonths.some(m => periodToNumber(m.period) === current)) return sortedMonths;
+            const carried = carryOverItems(sortedMonths);
+            return [makeVirtual({ period: currentPeriod, carriedFrom: carried.from, items: carried.items }), ...sortedMonths];
         }
 
         function createBadge(status) {
@@ -533,12 +690,12 @@
                 return;
             }
 
-            // 全メンバーの全月を集めてユニーク化し、降順にソート
-            const allPeriods = new Set();
+            // 全メンバーの全月を集めてユニーク化し、新しい順に並べる（今月は登録がなくても入れる）
+            const allPeriods = new Set([getCurrentPeriod()]);
             personalGoals.forEach(member => {
                 (member.months || []).forEach(m => allPeriods.add(m.period));
             });
-            const sortedPeriods = Array.from(allPeriods).sort().reverse();
+            const sortedPeriods = Array.from(allPeriods).sort((a, b) => periodToNumber(b) - periodToNumber(a));
 
             // 月ごとにタブ切り替え
             if (sortedPeriods.length === 0) {
@@ -552,7 +709,8 @@
             sortedPeriods.forEach((period, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'personal-goals-period-btn' + (index === 0 ? ' active' : '');
-                btn.textContent = period;
+                const isRegistered = personalGoals.some(member => (member.months || []).some(m => periodToNumber(m.period) === periodToNumber(period)));
+                btn.innerHTML = escapeHTML(period) + (isRegistered ? '' : ' <span class="period-unset">未登録</span>');
                 btn.setAttribute('data-period', period);
                 btn.addEventListener('click', () => {
                     periodSelector.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
@@ -578,8 +736,18 @@
             if (!cardsContainer) return;
             cardsContainer.innerHTML = '';
 
+            const isCurrentPeriod = periodToNumber(period) === periodToNumber(getCurrentPeriod());
+
             personalGoals.forEach(member => {
-                const monthData = (member.months || []).find(m => m.period === period);
+                let monthData = (member.months || []).find(m => periodToNumber(m.period) === periodToNumber(period));
+                let carriedFrom = null;
+                if (!monthData && isCurrentPeriod) {
+                    const carried = carryOverItems(sortByPeriodDesc(member.months));
+                    if (carried.items.length > 0) {
+                        monthData = { period, items: carried.items };
+                        carriedFrom = carried.from;
+                    }
+                }
                 const card = document.createElement('div');
                 card.className = 'personal-goal-card';
 
@@ -605,6 +773,13 @@
 
                 card.appendChild(header);
 
+                if (carriedFrom) {
+                    const note = document.createElement('p');
+                    note.className = 'personal-goal-carried';
+                    note.textContent = `${carriedFrom}から引き継ぎ`;
+                    card.appendChild(note);
+                }
+
                 if (!monthData || !monthData.items || monthData.items.length === 0) {
                     const empty = document.createElement('p');
                     empty.className = 'personal-goal-empty';
@@ -616,6 +791,7 @@
                     monthData.items.forEach(item => {
                         const li = document.createElement('li');
                         li.className = `personal-goal-item personal-goal-${item.status || 'pending'}`;
+                        if (item.carried) li.classList.add('is-carried');
 
                         const checkbox = document.createElement('span');
                         checkbox.className = 'personal-goal-checkbox';
@@ -633,7 +809,7 @@
                         textSpan.textContent = item.text;
                         li.appendChild(textSpan);
 
-                        const badge = createBadge(item.status || 'pending');
+                        const badge = createGoalStatus(item);
                         li.appendChild(badge);
 
                         ul.appendChild(li);
@@ -645,96 +821,169 @@
             });
         }
 
+        const DIARY_NEW_DAYS = 14;
+        const diaryFilter = { query: '', month: 'all', author: 'all' };
+
         function renderDiary(diary) {
+            // 書いた人の表記ゆれ（KsK と ksk など）を部員名にそろえ、新しい順に並べる
+            diaryPosts = (Array.isArray(diary) ? diary : [])
+                .filter(post => post && post.date)
+                .map(post => ({ ...post, author: memberDirectory ? memberDirectory.resolve(post.author) : post.author }))
+                .sort((a, b) => b.date.localeCompare(a.date));
+
+            setupDiaryControls();
+            showDiaryPosts();
+        }
+
+        function setupDiaryControls() {
+            const search = document.getElementById('diary-search');
+            const monthSelect = document.getElementById('diary-month');
+            const authors = document.getElementById('diary-authors');
+            if (!search || !monthSelect || !authors) return;
+
+            // 月の選択肢（年ごとにまとめる）
+            const monthCounts = new Map();
+            diaryPosts.forEach(post => {
+                const key = post.date.slice(0, 7);
+                monthCounts.set(key, (monthCounts.get(key) || 0) + 1);
+            });
+            const years = new Map();
+            [...monthCounts.keys()].forEach(key => {
+                const year = key.slice(0, 4);
+                if (!years.has(year)) years.set(year, []);
+                years.get(year).push(key);
+            });
+            monthSelect.innerHTML = `<option value="all">すべての月 (${diaryPosts.length})</option>` +
+                [...years.entries()].map(([year, keys]) => `
+                    <optgroup label="${year}年">
+                        ${keys.map(key => `<option value="${key}">${year}年${Number(key.slice(5))}月 (${monthCounts.get(key)})</option>`).join('')}
+                    </optgroup>
+                `).join('');
+
+            // 書いた人のボタン
+            const authorCounts = new Map();
+            diaryPosts.forEach(post => {
+                const name = post.author || '不明';
+                authorCounts.set(name, (authorCounts.get(name) || 0) + 1);
+            });
+            authors.innerHTML = '';
+            const makeChip = (value, label, count, color) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'personal-goals-period-btn diary-author-chip';
+                button.dataset.author = value;
+                button.innerHTML = `${color ? `<span class="member-dot" style="background:${color}"></span>` : ''}${escapeHTML(label)} <span class="diary-chip-count">${count}</span>`;
+                button.addEventListener('click', () => {
+                    diaryFilter.author = value;
+                    showDiaryPosts();
+                });
+                authors.appendChild(button);
+            };
+            makeChip('all', '全員', diaryPosts.length, null);
+            [...authorCounts.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([name, count]) => makeChip(name, name, count, getMemberColor(name)));
+
+            if (!search.dataset.ready) {
+                search.addEventListener('input', () => {
+                    diaryFilter.query = search.value.trim();
+                    showDiaryPosts();
+                });
+                monthSelect.addEventListener('change', () => {
+                    diaryFilter.month = monthSelect.value;
+                    showDiaryPosts();
+                });
+                search.dataset.ready = 'true';
+            }
+        }
+
+        function getMemberColor(name) {
+            return memberDirectory ? memberDirectory.colorOf(name) : '#8a8a84';
+        }
+
+        function getPostRecords(post) {
+            if (Array.isArray(post.records)) return post.records;
+            return post.record ? [post.record] : [];
+        }
+
+        function isNewPost(post) {
+            const age = (parseDateKey(getTodayKey()) - parseDateKey(post.date)) / 86400000;
+            return age >= 0 && age < DIARY_NEW_DAYS;
+        }
+
+        // 本文の「60kg」を太字にし、検索語に印を付ける（タグの中は触らない）
+        function decorateDiaryText(text, query) {
+            let html = escapeHTML(text).replace(/\d+(?:\.\d+)?\s*kg/gi, match => `<strong class="diary-weight">${match}</strong>`);
+            if (query) {
+                const pattern = new RegExp(escapeHTML(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                html = html.split(/(<[^>]+>)/).map(part => part.startsWith('<') ? part : part.replace(pattern, m => `<mark>${m}</mark>`)).join('');
+            }
+            return html.replace(/\n/g, '<br>');
+        }
+
+        function createDiaryArticle(post, query = '') {
+            const article = document.createElement('article');
+            article.className = 'diary-post';
+            const author = post.author || '';
+            const initial = author ? Array.from(author)[0].toUpperCase() : '?';
+            const records = getPostRecords(post);
+
+            article.innerHTML = `
+                <header class="diary-post-header">
+                    <div class="diary-post-meta">
+                        <span class="diary-avatar" style="background:${getMemberColor(author)}" aria-hidden="true">${escapeHTML(initial)}</span>
+                        <span class="diary-post-author">${escapeHTML(author || '不明')}</span>
+                        <time datetime="${escapeAttribute(post.date)}">${formatDate(post.date, getDayOfWeek(post.date))}</time>
+                        ${isNewPost(post) ? '<span class="diary-new">NEW</span>' : ''}
+                    </div>
+                    <h3 class="diary-post-title">${decorateDiaryText(post.title, query)}</h3>
+                </header>
+                ${records.length ? `<p class="diary-records">${records.map(r => `<span class="diary-record">🏆 ${r.name ? `${escapeHTML(memberDirectory ? memberDirectory.resolve(r.name) : r.name)} ` : ''}${escapeHTML(r.lift)} ${escapeHTML(formatRecordValue({ lift: r.lift, weight: Number(r.weight), reps: Number(r.reps) || 0, seconds: Number(r.seconds) || 0 }))}</span>`).join('')}</p>` : ''}
+                <p class="diary-post-content">${decorateDiaryText(post.content, query)}</p>
+            `;
+            return article;
+        }
+
+        function showDiaryPosts() {
             const container = document.getElementById('diary-list');
-            const selectorContainer = document.getElementById('diary-period-selector');
+            const count = document.getElementById('diary-count');
+            if (!container) return;
             container.innerHTML = '';
-            if (selectorContainer) selectorContainer.innerHTML = '';
 
-            if (!diary || diary.length === 0) {
+            document.querySelectorAll('.diary-author-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.author === diaryFilter.author);
+            });
+
+            if (diaryPosts.length === 0) {
                 container.innerHTML = '<p class="no-data">日記はありません。</p>';
+                if (count) count.textContent = '';
                 return;
             }
 
-            // 各エントリから月を抽出してグルーピング
-            const monthGroups = new Map();
-            diary.forEach(post => {
-                const dateObj = new Date(post.date);
-                const monthKey = !isNaN(dateObj.getTime())
-                    ? `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月`
-                    : '不明';
-                if (!monthGroups.has(monthKey)) {
-                    monthGroups.set(monthKey, []);
+            const query = diaryFilter.query.toLowerCase();
+            const posts = diaryPosts.filter(post => {
+                if (diaryFilter.month !== 'all' && post.date.slice(0, 7) !== diaryFilter.month) return false;
+                if (diaryFilter.author !== 'all' && (post.author || '不明') !== diaryFilter.author) return false;
+                if (query) {
+                    const haystack = `${post.title} ${post.content} ${post.author}`.toLowerCase();
+                    if (!haystack.includes(query)) return false;
                 }
-                monthGroups.get(monthKey).push(post);
+                return true;
             });
 
-            const sortedMonths = Array.from(monthGroups.keys());
+            if (count) {
+                count.textContent = posts.length === diaryPosts.length ? `${posts.length}件` : `${diaryPosts.length}件中 ${posts.length}件`;
+            }
 
-            if (sortedMonths.length === 0) {
-                container.innerHTML = '<p class="no-data">日記はありません。</p>';
+            if (posts.length === 0) {
+                container.innerHTML = '<p class="no-data">条件に合う日記はありません。</p>';
                 return;
             }
 
-            // 月セレクタ
-            if (selectorContainer && sortedMonths.length > 0) {
-                // 「すべて」ボタン
-                const allBtn = document.createElement('button');
-                allBtn.className = 'personal-goals-period-btn active';
-                allBtn.textContent = 'すべて';
-                allBtn.addEventListener('click', () => {
-                    selectorContainer.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
-                    allBtn.classList.add('active');
-                    showDiaryPosts(container, diary);
-                });
-                selectorContainer.appendChild(allBtn);
-
-                sortedMonths.forEach(monthKey => {
-                    const btn = document.createElement('button');
-                    btn.className = 'personal-goals-period-btn';
-                    btn.textContent = monthKey;
-                    btn.addEventListener('click', () => {
-                        selectorContainer.querySelectorAll('.personal-goals-period-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        showDiaryPosts(container, monthGroups.get(monthKey));
-                    });
-                    selectorContainer.appendChild(btn);
-                });
-            }
-
-            // 全件表示
-            showDiaryPosts(container, diary);
+            posts.forEach(post => container.appendChild(createDiaryArticle(post, diaryFilter.query)));
         }
 
-        function showDiaryPosts(container, posts) {
-            container.innerHTML = '';
-
-            if (!posts || posts.length === 0) {
-                container.innerHTML = '<p class="no-data">この月の日記はありません。</p>';
-                return;
-            }
-
-            posts.forEach(post => {
-                const article = document.createElement('article');
-                article.className = 'diary-post';
-
-                const authorHTML = post.author ? `<span class="diary-post-author">by ${escapeHTML(post.author)}</span>` : '';
-
-                article.innerHTML = `
-                    <header class="diary-post-header">
-                        <div class="diary-post-meta">
-                            <time datetime="${post.date}">${formatDate(post.date, post.dayOfWeek)}</time>
-                            ${authorHTML}
-                        </div>
-                        <h3 class="diary-post-title">${escapeHTML(post.title)}</h3>
-                    </header>
-                    <p class="diary-post-content">${escapeHTML(post.content).replace(/\n/g, '<br>')}</p>
-                `;
-                container.appendChild(article);
-            });
-        }
-
-        function renderCalendar(year, month) {
+        function renderCalendar(year, month, selectDateStr = null) {
             const calendarDays = document.getElementById('calendar-days');
             const calendarTitle = document.getElementById('calendar-title');
             if (!calendarDays || !calendarTitle) return;
@@ -749,9 +998,9 @@
             // 前月の最後の日を取得
             const prevLastDate = new Date(year, month, 0).getDate();
 
-            // 今日の日付文字列
-            const today = new Date();
-            const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const todayDateStr = getTodayKey();
+            const diaryDates = new Set(diaryPosts.map(post => post.date));
+            let dayToSelect = null;
 
             // 前月の日付を描画
             for (let i = firstDayIndex - 1; i >= 0; i--) {
@@ -763,34 +1012,46 @@
 
             // 当月の日付を描画
             for (let i = 1; i <= lastDate; i++) {
-                const dayDiv = document.createElement('div');
+                const dayDiv = document.createElement('button');
+                dayDiv.type = 'button';
                 dayDiv.className = 'calendar-day';
-                dayDiv.textContent = i;
 
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-
-                if (dateStr === todayDateStr) {
-                    dayDiv.classList.add('today');
-                }
-
-                // その日に予定があるか確認
+                const dayOfWeek = (firstDayIndex + i - 1) % 7;
                 const dayEvents = getEventsForDate(dateStr);
-                if (dayEvents.length > 0) {
-                    dayDiv.classList.add('has-event');
-                    const dot = document.createElement('span');
-                    dot.className = 'event-dot';
-                    dayDiv.appendChild(dot);
+                const hasDiary = diaryDates.has(dateStr);
+
+                dayDiv.innerHTML = `<span class="calendar-day-number">${i}</span>`;
+                if (dayOfWeek === 0) dayDiv.classList.add('is-sun');
+                if (dayOfWeek === 6) dayDiv.classList.add('is-sat');
+                if (dateStr < todayDateStr) dayDiv.classList.add('is-past');
+                if (dateStr === todayDateStr) dayDiv.classList.add('today');
+
+                if (dayEvents.length > 0 || hasDiary) {
+                    const marks = document.createElement('span');
+                    marks.className = 'calendar-marks';
+                    if (dayEvents.length > 0) {
+                        dayDiv.classList.add('has-event');
+                        marks.insertAdjacentHTML('beforeend', '<span class="event-dot"></span>');
+                    }
+                    if (hasDiary) {
+                        dayDiv.classList.add('has-diary');
+                        marks.insertAdjacentHTML('beforeend', '<span class="diary-dot"></span>');
+                    }
+                    dayDiv.appendChild(marks);
                 }
 
-                dayDiv.addEventListener('click', () => {
-                    document.querySelectorAll('.calendar-day').forEach(el => {
-                        el.classList.remove('selected');
-                    });
-                    dayDiv.classList.add('selected');
-                    showEventDetail(dateStr, dayEvents);
-                });
+                const labels = [`${month + 1}月${i}日`];
+                if (dayEvents.length > 0) labels.push('活動あり');
+                if (hasDiary) labels.push('日記あり');
+                dayDiv.setAttribute('aria-label', labels.join('、'));
 
+                dayDiv.addEventListener('click', () => selectCalendarDay(dayDiv, dateStr, dayEvents));
                 calendarDays.appendChild(dayDiv);
+
+                if (dateStr === (selectDateStr || todayDateStr)) {
+                    dayToSelect = () => selectCalendarDay(dayDiv, dateStr, dayEvents);
+                }
             }
 
             // 翌月の日付を描画
@@ -803,8 +1064,18 @@
                 calendarDays.appendChild(dayDiv);
             }
 
-            // 初期化時は詳細エリアに案内文を表示
-            showEventDetail(null, []);
+            // 今日（または指定した日）がこの月にあれば選んでおく
+            if (dayToSelect) {
+                dayToSelect();
+            } else {
+                showEventDetail(null, []);
+            }
+        }
+
+        function selectCalendarDay(dayDiv, dateStr, dayEvents) {
+            document.querySelectorAll('.calendar-day.selected').forEach(el => el.classList.remove('selected'));
+            dayDiv.classList.add('selected');
+            showEventDetail(dateStr, dayEvents);
         }
 
         function prevMonth() {
@@ -825,6 +1096,66 @@
             renderCalendar(currentYear, currentMonth);
         }
 
+        function goToToday() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            renderCalendar(currentYear, currentMonth);
+        }
+
+        function goToCalendarDate(dateStr) {
+            const date = parseDateKey(dateStr);
+            currentYear = date.getFullYear();
+            currentMonth = date.getMonth();
+            renderCalendar(currentYear, currentMonth, dateStr);
+            document.getElementById('event-detail-container')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 予定の終わりの時刻（"12:00 - 13:00" の 13:00）を過ぎたかどうか
+        function hasEventEnded(event, dateStr) {
+            const match = String(event.time || '').match(/(\d{1,2}):(\d{2})\s*$/);
+            if (!match) return false;
+            const end = parseDateKey(dateStr);
+            end.setHours(Number(match[1]), Number(match[2]));
+            return Date.now() > end.getTime();
+        }
+
+        function renderNextActivity() {
+            const host = document.getElementById('next-activity');
+            if (!host) return;
+
+            const today = parseDateKey(getTodayKey());
+            for (let offset = 0; offset < 120; offset++) {
+                const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
+                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                const events = getEventsForDate(dateStr).filter(event => offset > 0 || !hasEventEnded(event, dateStr));
+                if (events.length === 0) continue;
+
+                const event = events[0];
+                const countdown = offset === 0 ? '今日' : offset === 1 ? '明日' : `あと${offset}日`;
+                host.innerHTML = `
+                    <div class="next-activity-countdown${offset === 0 ? ' is-today' : ''}">${countdown}</div>
+                    <div class="next-activity-body">
+                        <p class="next-activity-label">次の活動</p>
+                        <p class="next-activity-date">${date.getMonth() + 1}月${date.getDate()}日 (${getDayOfWeek(dateStr)})${event.time ? ` <span class="next-activity-time">${escapeHTML(event.time)}</span>` : ''}</p>
+                        <p class="next-activity-meta">${escapeHTML(event.title)}${event.location ? ` · ${escapeHTML(event.location)}` : ''}</p>
+                    </div>
+                `;
+                host.hidden = false;
+                host.onclick = () => goToCalendarDate(dateStr);
+                host.setAttribute('role', 'button');
+                host.tabIndex = 0;
+                host.onkeydown = e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        goToCalendarDate(dateStr);
+                    }
+                };
+                return;
+            }
+            host.hidden = true;
+        }
+
         function showEventDetail(dateStr, events) {
             const container = document.getElementById('event-detail-container');
             if (!container) return;
@@ -835,6 +1166,8 @@
                 return;
             }
 
+            const posts = diaryPosts.filter(post => post.date === dateStr);
+
             if (events.length === 0) {
                 const date = parseDateKey(dateStr);
                 const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
@@ -844,7 +1177,6 @@
                         <p class="no-data" style="margin: 0;">この日の活動予定はありません。</p>
                     </div>
                 `;
-                return;
             }
 
             events.forEach(event => {
@@ -872,6 +1204,14 @@
                 `;
                 container.appendChild(card);
             });
+
+            if (posts.length > 0) {
+                const diaryBox = document.createElement('div');
+                diaryBox.className = 'event-diary';
+                diaryBox.innerHTML = '<p class="event-diary-label">この日の日記</p>';
+                posts.forEach(post => diaryBox.appendChild(createDiaryArticle(post)));
+                container.appendChild(diaryBox);
+            }
         }
 
         function formatDate(dateStr, dayOfWeek) {
@@ -940,7 +1280,7 @@
         }
 
         function showErrorMessages() {
-            const listIds = ['yearly-goals-list', 'achievements-list'];
+            const listIds = ['yearly-goals-list', 'achievements-list', 'activity-info'];
             listIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '<li class="error">データの読み込みに失敗しました。</li>';
